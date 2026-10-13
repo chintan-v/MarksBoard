@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { getAdminAccountsListAsync } from '../utils/storage';
-import { isSupabaseConfigured } from '../utils/supabaseClient';
+import { isSupabaseConfigured, sanitizedSupabaseUrl } from '../utils/supabaseClient';
 
 interface Props {
   isOpen: boolean;
@@ -190,8 +190,15 @@ export const AdminAccountsModal: React.FC<Props> = ({
                 {data.errorMessage.toLowerCase().includes('student_profiles') ||
                 data.errorMessage.toLowerCase().includes('does not exist')
                   ? 'Your Supabase project is connected, but the "student_profiles" table has NOT been created yet! Please go to your Supabase Dashboard → SQL Editor, paste the code from "supabase-schema.sql", and click Run.'
+                  : data.errorMessage.toLowerCase().includes('invalid path')
+                  ? 'Your VITE_SUPABASE_URL format had extra paths or dashboard links. Auto-sanitization has been applied to normalize it!'
                   : 'Unable to query Supabase cloud. Showing accounts saved locally on this browser.'}
               </p>
+              {sanitizedSupabaseUrl && (
+                <div className="text-[10px] text-slate-400 font-mono pt-1">
+                  Target: {sanitizedSupabaseUrl}
+                </div>
+              )}
             </div>
           </div>
         )}
