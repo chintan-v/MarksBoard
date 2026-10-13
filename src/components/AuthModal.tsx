@@ -12,7 +12,6 @@ import {
   EyeOff,
   Trash2,
   AlertCircle,
-  Users,
   Database,
   Loader2,
 } from 'lucide-react';
@@ -21,11 +20,10 @@ import { ENGINEERING_BRANCHES } from '../types';
 import {
   createEmptySemesters,
   getAvailableAccounts,
-  getAvailableAccountsAsync,
   findStudentProfileAsync,
   saveStudentProfileAsync,
   getOrCreateGuestProfile,
-  deleteSavedAccountAsync,
+  deleteSavedAccount,
   getActiveUSN,
 } from '../utils/storage';
 import { isSupabaseConfigured } from '../utils/supabaseClient';
@@ -36,7 +34,7 @@ interface Props {
   onLoginSuccess: (profile: StudentProfile) => void;
   promptReason?: string | null;
   onContinueAsGuest?: () => void;
-  onOpenAdminDirectory?: () => void;
+  onShowToast?: (type: 'success' | 'error' | 'info', message: string, title?: string) => void;
 }
 
 export const AuthModal: React.FC<Props> = ({
@@ -45,7 +43,7 @@ export const AuthModal: React.FC<Props> = ({
   onLoginSuccess,
   promptReason,
   onContinueAsGuest,
-  onOpenAdminDirectory,
+  onShowToast,
 }) => {
   const [tab, setTab] = useState<'login' | 'register'>(promptReason ? 'register' : 'login');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,13 +95,8 @@ export const AuthModal: React.FC<Props> = ({
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-      // Load local accounts immediately, then fetch cloud accounts
+      // Load accounts saved locally on THIS device only (not global cloud list)
       setSavedAccounts(getAvailableAccounts());
-      getAvailableAccountsAsync().then((accs) => {
-        if (accs && accs.length > 0) {
-          setSavedAccounts(accs);
-        }
-      });
       setErrorMsg('');
       setErrorPopup(null);
       if (promptReason) {
@@ -154,6 +147,7 @@ export const AuthModal: React.FC<Props> = ({
           suggestCreateAccount: true,
           attemptedUsn: cleanUSN,
         });
+        onShowToast?.('error', `No registered account found for USN "${cleanUSN}".`, 'Login Failed');
         return;
       }
 
@@ -165,15 +159,18 @@ export const AuthModal: React.FC<Props> = ({
           message: `The password entered does not match student account "${cleanUSN}". Please double-check and try again.`,
           suggestCreateAccount: false,
         });
+        onShowToast?.('error', 'Incorrect password entered. Please try again.', 'Login Failed');
         return;
       }
 
       // Authentication succeeded!
+      onShowToast?.('success', `Welcome back, ${profile.name}!`, 'Logged In Successfully');
       onLoginSuccess(profile);
       handleModalClose();
     } catch (err) {
       console.error('Login error', err);
       setErrorMsg('An unexpected error occurred while logging in. Please try again.');
+      onShowToast?.('error', 'An error occurred while logging in.', 'Login Error');
     } finally {
       setIsSubmitting(false);
     }
@@ -184,22 +181,24 @@ export const AuthModal: React.FC<Props> = ({
     try {
       const profile = await findStudentProfileAsync(targetUSN);
       if (profile) {
+        onShowToast?.('success', `Logged in as ${profile.name}!`, 'Logged In Successfully');
         onLoginSuccess(profile);
         handleModalClose();
       } else {
         setErrorMsg(`Account ${targetUSN} could not be loaded.`);
+        onShowToast?.('error', `Account ${targetUSN} could not be loaded.`, 'Login Failed');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteAccount = async (targetUSN: string, accountName: string) => {
-    if (window.confirm(`Remove saved account for ${accountName} (${targetUSN})?`)) {
-      await deleteSavedAccountAsync(targetUSN);
-      const updated = await getAvailableAccountsAsync();
-      setSavedAccounts(updated);
-      if (getActiveUSN() === 'GUEST') {
+  const handleForgetAccountOnDevice = (targetUSN: string, accountName: string) => {
+    if (window.confirm(`Forget "${accountName}" (${targetUSN}) from this device's quick login list?\n\n(Your cloud account is safe and not deleted).`)) {
+      deleteSavedAccount(targetUSN);
+      setSavedAccounts(getAvailableAccounts());
+      onShowToast?.('info', `Removed ${targetUSN} from this device's quick login list.`, 'Device Quick List');
+      if (getActiveUSN() === targetUSN) {
         const guest = getOrCreateGuestProfile();
         onLoginSuccess(guest);
       }
@@ -238,7 +237,9 @@ export const AuthModal: React.FC<Props> = ({
       // Check if account already exists in Supabase or local storage
       const existing = await findStudentProfileAsync(cleanUSN);
       if (existing) {
-        setErrorMsg(`An account with USN "${cleanUSN}" already exists. Please sign in instead!`);
+        const msg = `An account with USN "${cleanUSN}" already exists. Please sign in instead!`;
+        setErrorMsg(msg);
+        onShowToast?.('error', msg, 'Account Already Exists');
         return;
       }
 
@@ -258,11 +259,14 @@ export const AuthModal: React.FC<Props> = ({
       };
 
       await saveStudentProfileAsync(newProfile);
+      onShowToast?.('success', `Welcome, ${newProfile.name}! Student ID registered successfully.`, 'Account Created');
       onLoginSuccess(newProfile);
       handleModalClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Registration error', err);
-      setErrorMsg('Failed to create account. Please try again.');
+      const msg = err?.message || 'Failed to create account. Please try again.';
+      setErrorMsg(msg);
+      onShowToast?.('error', msg, 'Registration Failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -520,10 +524,10 @@ export const AuthModal: React.FC<Props> = ({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteAccount(acc.usn, acc.name);
+                              handleForgetAccountOnDevice(acc.usn, acc.name);
                             }}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                            title="Remove account from this device"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                            title="Forget from this device's quick login list"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -724,20 +728,6 @@ export const AuthModal: React.FC<Props> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {onOpenAdminDirectory && (
-              <button
-                type="button"
-                onClick={() => {
-                  handleModalClose();
-                  onOpenAdminDirectory();
-                }}
-                className="hover:text-cyan-400 transition-colors inline-flex items-center gap-1 text-slate-300 font-medium"
-              >
-                <Users className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Admin Directory ({savedAccounts.length})</span>
-              </button>
-            )}
-
             <button
               type="button"
               onClick={handleResetToGuest}

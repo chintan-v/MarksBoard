@@ -14,12 +14,25 @@ import { AuthModal } from './components/AuthModal';
 import { GradingScaleModal } from './components/GradingScaleModal';
 import { GradeCardReportModal } from './components/GradeCardReportModal';
 import { SemesterPredictorModal } from './components/SemesterPredictorModal';
-import { AdminAccountsModal } from './components/AdminAccountsModal';
+import { ToastContainer } from './components/Toast';
+import type { ToastMessage } from './components/Toast';
 
 export function App() {
   const [profile, setProfile] = useState<StudentProfile>(() => loadStudentProfile());
   const [viewMode, setViewMode] = useState<'overview' | 'semester'>('overview');
   const [activeSemNum, setActiveSemNum] = useState<number>(profile.currentSemester || 5);
+
+  // Toast Notifications
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (type: 'success' | 'error' | 'info', message: string, title?: string) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, type, message, title }]);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Modals
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -27,7 +40,6 @@ export function App() {
   const [authPromptReason, setAuthPromptReason] = useState<string | null>(null);
   const [isGradingScaleOpen, setIsGradingScaleOpen] = useState(false);
   const [isGradeCardOpen, setIsGradeCardOpen] = useState(false);
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [simulateSemNumber, setSimulateSemNumber] = useState<number | null>(null);
 
   // Sync profile to localStorage and Supabase Cloud on change
@@ -130,7 +142,6 @@ export function App() {
         }}
         onOpenGradingScale={() => setIsGradingScaleOpen(true)}
         onOpenGradeCard={() => setIsGradeCardOpen(true)}
-        onOpenAdminDirectory={() => setIsAdminModalOpen(true)}
       />
 
       {/* Main App Container - Utilizing Full Screen */}
@@ -186,13 +197,6 @@ export function App() {
             >
               Print Transcript
             </button>
-            <span>•</span>
-            <button
-              onClick={() => setIsAdminModalOpen(true)}
-              className="hover:text-cyan-400 transition-colors"
-            >
-              Accounts Directory
-            </button>
           </div>
 
           <div className="text-right text-[11px] text-slate-500 font-mono">
@@ -209,6 +213,7 @@ export function App() {
         onUpdateProfile={(updated) => setProfile(updated)}
         onLogout={handleLogout}
         onRequireAuth={handleRequireAuth}
+        onShowToast={showToast}
       />
 
       <AuthModal
@@ -219,12 +224,7 @@ export function App() {
         }}
         onLoginSuccess={handleLoginSuccess}
         promptReason={authPromptReason}
-        onOpenAdminDirectory={() => setIsAdminModalOpen(true)}
-      />
-
-      <AdminAccountsModal
-        isOpen={isAdminModalOpen}
-        onClose={() => setIsAdminModalOpen(false)}
+        onShowToast={showToast}
       />
 
       <GradingScaleModal
@@ -239,6 +239,9 @@ export function App() {
         profile={profile}
         activeSemester={activeSemester}
       />
+
+      {/* Toast Notification Container */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       {simulateSemesterObj && (
         <SemesterPredictorModal

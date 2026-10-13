@@ -4,7 +4,6 @@ import {
   Layers,
   FileText,
   Lock,
-  Users,
 } from 'lucide-react';
 import type { StudentProfile } from '../types';
 
@@ -18,7 +17,6 @@ interface Props {
   onOpenAuth: () => void;
   onOpenGradingScale: () => void;
   onOpenGradeCard: () => void;
-  onOpenAdminDirectory?: () => void;
 }
 
 export const Navbar: React.FC<Props> = ({
@@ -31,7 +29,6 @@ export const Navbar: React.FC<Props> = ({
   onOpenAuth,
   onOpenGradingScale,
   onOpenGradeCard,
-  onOpenAdminDirectory,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
@@ -122,19 +119,6 @@ export const Navbar: React.FC<Props> = ({
             <FileText className="w-3.5 h-3.5 text-fuchsia-400" />
             <span className="hidden sm:inline">Grade Sheet</span>
           </button>
-
-          {/* Accounts Directory */}
-          {onOpenAdminDirectory && (
-            <button
-              type="button"
-              onClick={onOpenAdminDirectory}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-cyan-300 transition-all border border-white/5"
-              title="View Registered Student Accounts & USNs"
-            >
-              <Users className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">Directory</span>
-            </button>
-          )}
 
           {/* Profile & Avatar */}
           <button

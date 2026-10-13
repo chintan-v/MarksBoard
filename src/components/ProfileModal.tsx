@@ -5,9 +5,15 @@ import {
   Camera,
   CheckCircle,
   LogOut,
+  KeyRound,
+  Trash2,
+  Eye,
+  EyeOff,
+  AlertTriangle,
 } from 'lucide-react';
 import type { StudentProfile } from '../types';
 import { ENGINEERING_BRANCHES } from '../types';
+import { deleteSavedAccountAsync, saveStudentProfileAsync } from '../utils/storage';
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +22,7 @@ interface Props {
   onUpdateProfile: (updated: StudentProfile) => void;
   onLogout: () => void;
   onRequireAuth?: (reason: string) => void;
+  onShowToast?: (type: 'success' | 'error' | 'info', message: string, title?: string) => void;
 }
 
 const AVATAR_OPTIONS = [
@@ -40,6 +47,7 @@ export const ProfileModal: React.FC<Props> = ({
   onUpdateProfile,
   onLogout,
   onRequireAuth,
+  onShowToast,
 }) => {
   const [name, setName] = useState(profile.name);
   const [usn, setUsn] = useState(profile.usn);
@@ -50,26 +58,58 @@ export const ProfileModal: React.FC<Props> = ({
   const [targetCGPA, setTargetCGPA] = useState(profile.targetCGPA);
   const [customAvatarUrl, setCustomAvatarUrl] = useState('');
 
+  // Password Change State
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  // Account Deletion State
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmUsn, setDeleteConfirmUsn] = useState('');
+  const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      setName(profile.name);
+      setUsn(profile.usn);
+      setCollege(profile.college);
+      setBranch(profile.branch);
+      setBio(profile.bio);
+      setAvatar(profile.avatar);
+      setTargetCGPA(profile.targetCGPA);
+      setIsChangingPassword(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setPasswordError('');
+      setPasswordSuccess('');
+      setIsDeletingAccount(false);
+      setDeleteConfirmUsn('');
       return () => {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [isOpen]);
+  }, [isOpen, profile]);
 
   if (!isOpen) return null;
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (profile.isGuest) {
       onClose();
       onRequireAuth?.('customize profile name, avatar, USN, and bio');
       return;
     }
-    onUpdateProfile({
+    const updated: StudentProfile = {
       ...profile,
       name: name.trim() || profile.name,
       usn: usn.trim().toUpperCase() || profile.usn,
@@ -78,8 +118,78 @@ export const ProfileModal: React.FC<Props> = ({
       bio: bio.trim(),
       avatar: customAvatarUrl.trim() || avatar,
       targetCGPA: Number(targetCGPA) || 9.0,
-    });
+    };
+    onUpdateProfile(updated);
+    await saveStudentProfileAsync(updated);
+    onShowToast?.('success', 'Profile details updated successfully!', 'Profile Saved');
     onClose();
+  };
+
+  const handleSavePassword = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!currentPassword) {
+      setPasswordError('Please enter your current password.');
+      return;
+    }
+    if (profile.password && profile.password !== currentPassword) {
+      setPasswordError('Current password is incorrect.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 4) {
+      setPasswordError('New password must be at least 4 characters long.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const updated: StudentProfile = {
+        ...profile,
+        password: newPassword,
+      };
+      await saveStudentProfileAsync(updated);
+      onUpdateProfile(updated);
+      setPasswordSuccess('Password updated successfully!');
+      onShowToast?.('success', 'Your account password has been updated.', 'Password Changed');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setIsChangingPassword(false);
+    } catch (err: any) {
+      setPasswordError(err?.message || 'Failed to update password.');
+      onShowToast?.('error', 'Failed to update password.', 'Error');
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  const handleConfirmDeleteAccount = async () => {
+    if (deleteConfirmUsn.trim().toUpperCase() !== profile.usn.toUpperCase()) {
+      alert(`Please type your USN "${profile.usn}" exactly to confirm deletion.`);
+      return;
+    }
+
+    if (!window.confirm(`Are you absolutely sure? This will permanently delete ${profile.usn} and all associated marks from both this device and Supabase cloud.`)) {
+      return;
+    }
+
+    setIsSubmittingDelete(true);
+    try {
+      await deleteSavedAccountAsync(profile.usn);
+      onShowToast?.('info', `Account ${profile.usn} has been permanently deleted.`, 'Account Deleted');
+      onLogout();
+      onClose();
+    } catch (err: any) {
+      alert('Failed to delete account: ' + (err?.message || 'Unknown error'));
+      onShowToast?.('error', 'Failed to delete account from cloud database.', 'Deletion Error');
+    } finally {
+      setIsSubmittingDelete(false);
+    }
   };
 
   return createPortal(
@@ -99,10 +209,10 @@ export const ProfileModal: React.FC<Props> = ({
             </div>
             <div>
               <h3 className="text-xl font-bold font-heading text-white">
-                Engineer Profile & Bio
+                Engineer Profile & Settings
               </h3>
               <p className="text-xs text-slate-400">
-                Personalize your dashboard presence and university details
+                Manage your credentials, details, and dashboard bio
               </p>
             </div>
           </div>
@@ -119,82 +229,84 @@ export const ProfileModal: React.FC<Props> = ({
           {profile.isGuest && (
             <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between gap-3">
               <div>
-                <strong className="text-amber-300 block font-semibold">Demo Guest Account ({profile.name})</strong>
-                <span className="text-[11px] text-amber-200/80">Saving changes requires signing in or creating a student account.</span>
+                <span className="font-bold block">Previewing Demo Profile</span>
+                <span className="text-[11px] text-amber-200/80">
+                  Create or sign into an account to customize bio, avatar, and security.
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   onClose();
-                  onRequireAuth?.('save profile and account details');
+                  onRequireAuth?.('create your personalized student ID');
                 }}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shrink-0 transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs shrink-0"
               >
-                Sign In / Register
+                Sign In
               </button>
             </div>
           )}
 
           {/* Avatar Selector */}
           <div className="space-y-2">
-            <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-              <Camera className="w-4 h-4 text-fuchsia-400" />
-              Choose Your Gen-Z Avatar
-            </label>
-            <div className="grid grid-cols-8 gap-2 p-2 rounded-2xl bg-black/40 border border-white/10">
-              {AVATAR_OPTIONS.map((emoji) => (
+            <label className="text-slate-400 font-medium block">Choose Emoji Avatar</label>
+            <div className="grid grid-cols-8 gap-2 p-3 rounded-2xl bg-black/40 border border-white/10">
+              {AVATAR_OPTIONS.map((opt) => (
                 <button
-                  key={emoji}
+                  key={opt}
                   type="button"
                   onClick={() => {
-                    setAvatar(emoji);
+                    setAvatar(opt);
                     setCustomAvatarUrl('');
                   }}
-                  className={`text-xl p-2 rounded-xl transition-all ${
-                    avatar === emoji && !customAvatarUrl
-                      ? 'bg-fuchsia-500/30 border border-fuchsia-400 scale-110 shadow-lg shadow-fuchsia-500/20'
-                      : 'hover:bg-white/10 border border-transparent'
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-transform hover:scale-110 ${
+                    avatar === opt && !customAvatarUrl
+                      ? 'bg-fuchsia-500/30 border border-fuchsia-500 scale-105'
+                      : 'hover:bg-white/5'
                   }`}
                 >
-                  {emoji}
+                  {opt}
                 </button>
               ))}
             </div>
 
-            <div className="pt-1">
-              <input
-                type="url"
-                placeholder="Or paste custom image URL..."
-                value={customAvatarUrl}
-                onChange={(e) => setCustomAvatarUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:border-fuchsia-500"
-              />
+            {/* Custom Avatar URL */}
+            <div className="pt-2">
+              <label className="text-slate-400 font-medium block mb-1">Or Paste Image URL</label>
+              <div className="relative">
+                <input
+                  type="url"
+                  placeholder="https://example.com/my-photo.jpg"
+                  value={customAvatarUrl}
+                  onChange={(e) => setCustomAvatarUrl(e.target.value)}
+                  className="w-full px-3 py-2 pl-9 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-fuchsia-500 text-xs"
+                />
+                <Camera className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              </div>
             </div>
           </div>
 
           {/* Name & USN */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-slate-400 block mb-1 font-medium">Student Full Name *</label>
+              <label className="text-slate-400 block mb-1 font-medium">Full Name</label>
               <input
                 type="text"
-                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Aryan Sharma"
+                placeholder="Aryan Sharma"
                 className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-fuchsia-500"
               />
             </div>
 
             <div>
-              <label className="text-slate-400 block mb-1 font-medium">USN Number *</label>
+              <label className="text-slate-400 block mb-1 font-medium">University Seat Number (USN)</label>
               <input
                 type="text"
-                required
                 value={usn}
                 onChange={(e) => setUsn(e.target.value)}
-                placeholder="e.g. 1DS22CS088"
-                className="w-full font-mono uppercase px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-fuchsia-500"
+                placeholder="1DS22CS088"
+                className="w-full uppercase font-mono px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-fuchsia-500"
               />
             </div>
           </div>
@@ -271,6 +383,187 @@ export const ProfileModal: React.FC<Props> = ({
               ))}
             </div>
           </div>
+
+          {/* Password Management (Enabled only for registered accounts) */}
+          {!profile.isGuest && (
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-cyan-400" />
+                  <span className="font-semibold text-white">Security & Password</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsChangingPassword(!isChangingPassword);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                  }}
+                  className="text-xs text-cyan-400 hover:text-cyan-300 font-medium"
+                >
+                  {isChangingPassword ? 'Cancel' : 'Change Password'}
+                </button>
+              </div>
+
+              {isChangingPassword && (
+                <div className="space-y-3 pt-2 border-t border-white/5 animate-fadeIn">
+                  {passwordError && (
+                    <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px]">
+                      {passwordError}
+                    </div>
+                  )}
+                  {passwordSuccess && (
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px]">
+                      {passwordSuccess}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-slate-400 block mb-1 font-medium">Current Password *</label>
+                    <div className="relative">
+                      <input
+                        type={showCurrentPass ? 'text' : 'password'}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password..."
+                        className="w-full px-3 py-2 pr-9 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPass(!showCurrentPass)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                      >
+                        {showCurrentPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-400 block mb-1 font-medium">New Password *</label>
+                      <div className="relative">
+                        <input
+                          type={showNewPass ? 'text' : 'password'}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="New password..."
+                          className="w-full px-3 py-2 pr-9 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPass(!showNewPass)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          {showNewPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-slate-400 block mb-1 font-medium">Confirm New Password *</label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPass ? 'text' : 'password'}
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          placeholder="Confirm new password..."
+                          className="w-full px-3 py-2 pr-9 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPass(!showConfirmPass)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          {showConfirmPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSavePassword}
+                    disabled={isSavingPassword}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs shadow-md transition-all flex items-center gap-1.5"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span>{isSavingPassword ? 'Updating...' : 'Update Password'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Danger Zone: Account Deletion (Enabled ONLY after logging in) */}
+          {!profile.isGuest && (
+            <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-500/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-rose-300">
+                  <Trash2 className="w-4 h-4 text-rose-400" />
+                  <span className="font-semibold">Danger Zone</span>
+                </div>
+                {!isDeletingAccount && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDeletingAccount(true)}
+                    className="px-3 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[11px] font-medium transition-colors"
+                  >
+                    Delete Account
+                  </button>
+                )}
+              </div>
+
+              {isDeletingAccount ? (
+                <div className="space-y-3 pt-2 border-t border-rose-500/20 animate-fadeIn">
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-[11px] flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>
+                      Permanently delete student account <strong>{profile.usn}</strong> and all recorded marks from Supabase cloud database and this device. This cannot be undone.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="text-rose-300 block mb-1 text-[11px] font-medium">
+                      Type your USN <span className="font-mono font-bold text-white">"{profile.usn}"</span> to confirm:
+                    </label>
+                    <input
+                      type="text"
+                      value={deleteConfirmUsn}
+                      onChange={(e) => setDeleteConfirmUsn(e.target.value)}
+                      placeholder={`Type ${profile.usn}...`}
+                      className="w-full px-3 py-2 rounded-xl bg-black/50 border border-rose-500/40 text-white uppercase font-mono text-xs focus:outline-none focus:border-rose-400"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleConfirmDeleteAccount}
+                      disabled={deleteConfirmUsn.trim().toUpperCase() !== profile.usn.toUpperCase() || isSubmittingDelete}
+                      className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-lg shadow-rose-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{isSubmittingDelete ? 'Deleting...' : 'Permanently Delete Account'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsDeletingAccount(false);
+                        setDeleteConfirmUsn('');
+                      }}
+                      className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-400">
+                  Delete your registered account <span className="font-mono text-slate-300">{profile.usn}</span> and all associated semester scores.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Footer Actions */}
           <div className="pt-4 border-t border-white/10 flex items-center justify-between">
