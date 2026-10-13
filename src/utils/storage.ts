@@ -554,7 +554,12 @@ export async function findStudentProfileAsync(usn: string): Promise<StudentProfi
         .eq('usn', clean)
         .maybeSingle();
 
-      if (!error && data) {
+      if (error) {
+        console.error('Supabase profile fetch error:', error);
+        throw new Error(error.message);
+      }
+
+      if (data) {
         const profile: StudentProfile = {
           usn: data.usn,
           name: data.name,
@@ -573,7 +578,10 @@ export async function findStudentProfileAsync(usn: string): Promise<StudentProfi
         return profile;
       }
     } catch (err) {
-      console.warn('Supabase profile fetch error, falling back to local storage', err);
+      console.warn('Supabase profile fetch error, checking local storage', err);
+      const local = findStudentProfile(clean);
+      if (local) return local;
+      throw err;
     }
   }
 

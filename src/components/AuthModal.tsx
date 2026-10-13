@@ -167,10 +167,11 @@ export const AuthModal: React.FC<Props> = ({
       onShowToast?.('success', `Welcome back, ${profile.name}!`, 'Logged In Successfully');
       onLoginSuccess(profile);
       handleModalClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error', err);
-      setErrorMsg('An unexpected error occurred while logging in. Please try again.');
-      onShowToast?.('error', 'An error occurred while logging in.', 'Login Error');
+      const msg = err?.message ? `Database Error: ${err.message}` : 'An unexpected error occurred while logging in. Please try again.';
+      setErrorMsg(msg);
+      onShowToast?.('error', msg, 'Login Error');
     } finally {
       setIsSubmitting(false);
     }
