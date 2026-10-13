@@ -153,6 +153,7 @@ export function App() {
             onSimulateSemester={handleSimulateSemester}
             onOpenProfile={() => setIsProfileModalOpen(true)}
             onRequireAuth={handleRequireAuth}
+            onUpdateSemester={handleUpdateSemester}
           />
         ) : (
           <SemesterDetail

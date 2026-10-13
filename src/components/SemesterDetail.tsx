@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   BookOpen,
   Search,
+  CheckCircle2,
 } from 'lucide-react';
 import type { LetterGrade, Semester, StudentProfile, Subject } from '../types';
 import { calculateSemesterResult } from '../utils/gradeCalculations';
@@ -175,17 +176,29 @@ export const SemesterDetail: React.FC<Props> = ({
 
       {/* Previous Semester Context Banner */}
       {semester.semNumber < profile.currentSemester && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className={`p-4 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg border transition-all duration-300 ${
+          semester.isCompleted
+            ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200 shadow-emerald-500/5'
+            : 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0 font-bold">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold border ${
+              semester.isCompleted
+                ? 'bg-emerald-500/25 border-emerald-500/40 text-emerald-300'
+                : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+            }`}>
               S{semester.semNumber}
             </div>
             <div>
-              <strong className="text-amber-300 font-bold block text-sm">
-                Past Semester Marks Entry (Active Semester is S{profile.currentSemester})
+              <strong className={`font-bold block text-sm ${semester.isCompleted ? 'text-emerald-300' : 'text-amber-300'}`}>
+                {semester.isCompleted
+                  ? `Semester ${semester.semNumber} Marked as Complete ✅`
+                  : `Past Semester Marks Entry (Active Semester is S${profile.currentSemester})`}
               </strong>
-              <span className="text-[11px] text-amber-200/90">
-                Enter your MSE, CIA & SEE scores below to accurately compute your historic SGPA and cumulative CGPA.
+              <span className={`text-[11px] ${semester.isCompleted ? 'text-emerald-300/80' : 'text-amber-200/90'}`}>
+                {semester.isCompleted
+                  ? 'All course marks and SGPA for this semester are recorded into your degree calculation.'
+                  : 'Enter your MSE, CIA & SEE scores below to accurately compute your historic SGPA and cumulative CGPA.'}
               </span>
             </div>
           </div>
@@ -198,9 +211,9 @@ export const SemesterDetail: React.FC<Props> = ({
               }
               onUpdateSemester({ ...semester, isCompleted: !semester.isCompleted });
             }}
-            className={`px-3.5 py-1.5 rounded-xl font-bold text-xs shrink-0 transition-colors border cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl font-bold text-xs shrink-0 transition-all border cursor-pointer ${
               semester.isCompleted
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/35'
                 : 'bg-amber-500 hover:bg-amber-400 text-black border-amber-400'
             }`}
           >
@@ -210,9 +223,15 @@ export const SemesterDetail: React.FC<Props> = ({
       )}
 
       {/* Main Top Card - Full Width, High-Impact & Spacious */}
-      <div className="w-full glass-panel rounded-3xl border border-purple-500/25 p-6 sm:p-8 bg-gradient-to-br from-slate-900/95 via-purple-950/20 to-slate-900/95 relative overflow-hidden shadow-2xl space-y-6">
+      <div className={`w-full glass-panel rounded-3xl border p-6 sm:p-8 relative overflow-hidden shadow-2xl space-y-6 transition-all duration-300 ${
+        semester.isCompleted
+          ? 'border-emerald-500/35 bg-gradient-to-br from-slate-900/95 via-emerald-950/20 to-slate-900/95 shadow-emerald-500/10'
+          : 'border-purple-500/25 bg-gradient-to-br from-slate-900/95 via-purple-950/20 to-slate-900/95'
+      }`}>
         {/* Ambient Neon Glows */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none ${
+          semester.isCompleted ? 'bg-emerald-500/15' : 'bg-purple-600/10'
+        }`} />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none" />
 
         {/* Top Header Row: Greeting & Bio with dedicated breathing space */}
@@ -254,13 +273,32 @@ export const SemesterDetail: React.FC<Props> = ({
 
           {/* Semester Badge & Scheme */}
           <div className="flex flex-col sm:items-end gap-1.5 self-start md:self-auto">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono font-bold px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs">
                 {semester.academicYear}
               </span>
               <span className="font-heading font-extrabold text-white text-lg">
                 {semester.title} Dashboard
               </span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (profile.isGuest) {
+                    onRequireAuth?.('mark semester completion status');
+                    return;
+                  }
+                  onUpdateSemester({ ...semester, isCompleted: !semester.isCompleted });
+                }}
+                className={`px-3 py-1 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all border cursor-pointer ${
+                  semester.isCompleted
+                    ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/35'
+                    : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white'
+                }`}
+                title={semester.isCompleted ? 'Click to unmark semester' : 'Click to mark semester as done'}
+              >
+                <CheckCircle2 className={`w-3.5 h-3.5 ${semester.isCompleted ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <span>{semester.isCompleted ? 'Done ✅' : 'Mark as Done'}</span>
+              </button>
             </div>
             <span className="text-slate-400 text-xs">
               CBCS Scheme: Standard 30 MSE + 30 CIA (or 20+40) + 40 SEE (100 Max)

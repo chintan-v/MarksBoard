@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react';
-import type { StudentProfile } from '../types';
+import type { StudentProfile, Semester } from '../types';
 import {
   calculateCGPA,
   calculateSemesterResult,
@@ -21,6 +21,7 @@ interface Props {
   onSimulateSemester: (semNumber: number) => void;
   onOpenProfile?: () => void;
   onRequireAuth?: (reason: string) => void;
+  onUpdateSemester?: (updated: Semester) => void;
 }
 
 export const SemesterCardsView: React.FC<Props> = ({
@@ -29,6 +30,7 @@ export const SemesterCardsView: React.FC<Props> = ({
   onSimulateSemester,
   onOpenProfile,
   onRequireAuth,
+  onUpdateSemester,
 }) => {
   const globalCGPA = calculateCGPA(profile.semesters);
   const prevProgress = getPreviousSemestersProgress(profile.semesters, profile.currentSemester);
@@ -308,27 +310,35 @@ export const SemesterCardsView: React.FC<Props> = ({
                 key={sem.semNumber}
                 onClick={() => onSelectSemester(sem.semNumber)}
                 className={`group cursor-pointer rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between relative overflow-hidden ${
-                  isCurrent
+                  isDone
+                    ? 'glass-panel border-emerald-500/50 bg-gradient-to-br from-slate-900/95 via-emerald-950/30 to-slate-900/95 shadow-xl shadow-emerald-500/15 hover:border-emerald-400'
+                    : isCurrent
                     ? 'glass-panel border-purple-500/50 shadow-xl shadow-purple-500/10 hover:border-purple-400'
                     : 'glass-card border-white/10 hover:border-white/20 hover:bg-slate-800/40'
                 }`}
               >
+                {/* Subtle Ambient Glow for completed or active card */}
+                {isDone ? (
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+                ) : isCurrent ? (
+                  <div className="absolute top-0 right-0 w-36 h-36 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+                ) : null}
+
                 {/* Active or Prior Status Pill */}
-                <div className="absolute top-3 right-3 flex items-center gap-1">
-                  {isCurrent ? (
+                <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                  {isDone ? (
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/45 flex items-center gap-1 shadow-sm">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span>{isCurrent ? 'ACTIVE • COMPLETED' : `S${sem.semNumber} DONE`}</span>
+                    </span>
+                  ) : isCurrent ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse">
                       🎯 ACTIVE SEM
                     </span>
                   ) : sem.semNumber < profile.currentSemester ? (
-                    isDone ? (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        ✅ S{sem.semNumber} RECORDED
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        ⚠️ S{sem.semNumber} FILL MARKS
-                      </span>
-                    )
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      ⚠️ S{sem.semNumber} FILL MARKS
+                    </span>
                   ) : (
                     <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60">
                       ⏳ UPCOMING
@@ -343,22 +353,30 @@ export const SemesterCardsView: React.FC<Props> = ({
                     <span>{sem.subjects.length} Subjects</span>
                   </div>
 
-                  <h4 className="text-lg font-bold font-heading text-white group-hover:text-purple-300 transition-colors">
+                  <h4 className={`text-lg font-bold font-heading transition-colors ${
+                    isDone ? 'text-white group-hover:text-emerald-300' : 'text-white group-hover:text-purple-300'
+                  }`}>
                     {sem.title}
                   </h4>
 
                   {/* SGPA & Percentage Meter */}
-                  <div className="my-4 p-3 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
+                  <div className={`my-4 p-3 rounded-xl border flex items-center justify-between transition-colors ${
+                    isDone
+                      ? 'bg-black/50 border-emerald-500/25'
+                      : 'bg-black/40 border-white/5'
+                  }`}>
                     <div>
                       <span className="text-[11px] text-slate-400 block">Semester SGPA</span>
-                      <div className="text-2xl font-black font-heading text-white">
+                      <div className={`text-2xl font-black font-heading ${
+                        isDone && hasMarks ? 'text-emerald-300' : 'text-white'
+                      }`}>
                         {hasMarks ? result.sgpa : '—'}
                       </div>
                     </div>
 
                     <div className="text-right">
                       <span className="text-[11px] text-slate-400 block">Credits</span>
-                      <div className="text-sm font-bold font-mono text-cyan-300">
+                      <div className={`text-sm font-bold font-mono ${isDone ? 'text-emerald-400' : 'text-cyan-300'}`}>
                         {result.totalCredits} Cr
                       </div>
                     </div>
@@ -366,7 +384,7 @@ export const SemesterCardsView: React.FC<Props> = ({
 
                   {/* Vibe badge */}
                   {hasMarks ? (
-                    <div className="mb-3">
+                    <div className="mb-3 flex items-center gap-1.5 flex-wrap">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                         result.sgpa >= 9.0
                           ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30'
@@ -378,6 +396,11 @@ export const SemesterCardsView: React.FC<Props> = ({
                       }`}>
                         {result.statusBadge.label}
                       </span>
+                      {isDone && (
+                        <span className="text-[10px] text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" /> Completed
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <div className="mb-3">
@@ -389,19 +412,51 @@ export const SemesterCardsView: React.FC<Props> = ({
                 </div>
 
                 {/* Card Actions */}
-                <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSimulateSemester(sem.semNumber);
-                    }}
-                    className="text-purple-400 hover:text-purple-300 text-[11px] font-medium flex items-center gap-1 hover:underline"
-                  >
-                    <Sparkles className="w-3 h-3" /> Simulate SEE
-                  </button>
+                <div className={`pt-3 border-t flex items-center justify-between text-xs ${
+                  isDone ? 'border-emerald-500/20' : 'border-white/5'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSimulateSemester(sem.semNumber);
+                      }}
+                      className="text-purple-400 hover:text-purple-300 text-[11px] font-medium flex items-center gap-1 hover:underline"
+                    >
+                      <Sparkles className="w-3 h-3" /> Simulate
+                    </button>
 
-                  <div className="flex items-center text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all">
+                    {onUpdateSemester && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (profile.isGuest) {
+                            onRequireAuth?.('toggle semester completion status');
+                            return;
+                          }
+                          onUpdateSemester({
+                            ...sem,
+                            isCompleted: !sem.isCompleted,
+                          });
+                        }}
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border flex items-center gap-1 transition-all ${
+                          sem.isCompleted
+                            ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/35'
+                            : 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:bg-white/10'
+                        }`}
+                        title={sem.isCompleted ? 'Click to unmark semester' : 'Click to mark semester as done'}
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>{sem.isCompleted ? 'Done' : 'Mark Done'}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={`flex items-center group-hover:translate-x-1 transition-all ${
+                    isDone ? 'text-emerald-300 group-hover:text-emerald-200' : 'text-slate-400 group-hover:text-white'
+                  }`}>
                     <span>Manage</span>
                     <ChevronRight className="w-4 h-4 ml-0.5" />
                   </div>
