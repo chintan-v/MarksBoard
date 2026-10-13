@@ -22,6 +22,16 @@ export const SubjectModuleTrackerModal: React.FC<Props> = ({
 }) => {
   const [modules, setModules] = useState<SubjectModule[]>(subject.modules);
 
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const completedCount = modules.filter(
@@ -69,16 +79,6 @@ export const SubjectModuleTrackerModal: React.FC<Props> = ({
     });
     onClose();
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">

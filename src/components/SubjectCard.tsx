@@ -162,7 +162,11 @@ export const SubjectCard: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={handleToggleMseScale}
-                title={`Click to switch MSE conversion scheme (Current: Max ${currentMseScale}). Max 30 = 30+30 CIA, Max 20 = 20+40 CIA.`}
+                title={`Click to switch MSE conversion scheme (Current: Max ${currentMseScale}). ${
+                  subject.hasSEE
+                    ? 'Max 30 = 30+30 CIA, Max 20 = 20+40 CIA.'
+                    : 'Max 30 = 30+70 CIA, Max 20 = 20+80 CIA.'
+                }`}
                 className={`text-xs font-semibold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
                   currentMseScale === 20
                     ? 'bg-amber-500/15 text-amber-300 border-amber-500/35 hover:bg-amber-500/25 hover:border-amber-400'
@@ -290,7 +294,9 @@ export const SubjectCard: React.FC<Props> = ({
                     }`}
                   >
                     <div className="font-bold text-[11px]">Convert to 30 Marks</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">30 MSE + 30 CIA</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {hasSEE ? '30 MSE + 30 CIA' : '30 MSE + 70 CIA'}
+                    </div>
                   </button>
 
                   <button
@@ -303,7 +309,9 @@ export const SubjectCard: React.FC<Props> = ({
                     }`}
                   >
                     <div className="font-bold text-[11px] text-amber-300">Convert to 20 Marks</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">20 MSE + 40 CIA</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {hasSEE ? '20 MSE + 40 CIA' : '20 MSE + 80 CIA'}
+                    </div>
                   </button>
                 </div>
               </div>

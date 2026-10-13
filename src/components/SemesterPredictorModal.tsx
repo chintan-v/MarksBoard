@@ -30,8 +30,6 @@ export const SemesterPredictorModal: React.FC<Props> = ({
   subjects,
   onApplyExpectedMarks,
 }) => {
-  if (!isOpen) return null;
-
   // Initialize simulated expected SEE scores
   const [expectedSEE, setExpectedSEE] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {};
@@ -49,6 +47,18 @@ export const SemesterPredictorModal: React.FC<Props> = ({
     });
     return map;
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const handleSliderChange = (subjectId: string, val: number) => {
     setExpectedSEE((prev) => ({
@@ -125,16 +135,6 @@ export const SemesterPredictorModal: React.FC<Props> = ({
     onApplyExpectedMarks(simulatedSubjects);
     onClose();
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">

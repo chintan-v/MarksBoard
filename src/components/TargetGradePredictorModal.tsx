@@ -91,7 +91,7 @@ export const TargetGradePredictorModal: React.FC<Props> = ({
               <span className="text-xs text-slate-400 font-medium">Internals Locked In (CIE):</span>
               <div className="text-2xl font-black font-heading text-white flex items-baseline gap-2 mt-0.5">
                 <span>{currentCalc.totalInternals}</span>
-                <span className="text-sm font-normal text-slate-400">/ 60 Marks</span>
+                <span className="text-sm font-normal text-slate-400">/ {subject.hasSEE ? 60 : 100} Marks</span>
               </div>
             </div>
 

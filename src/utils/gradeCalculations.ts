@@ -82,9 +82,9 @@ export function calculateSubjectMarks(subject: Subject): CalculatedSubjectMarks 
         ciaMax = 80;
         ciaScaled = Math.min(80, Math.max(0, subject.ciaMarks ?? 0));
       } else {
-        mseScaled = Math.min(50, Math.max(0, (rawMSE / 40) * 50));
-        ciaMax = 50;
-        ciaScaled = Math.min(50, Math.max(0, ((subject.ciaMarks ?? 0) / 30) * 50));
+        mseScaled = Math.min(30, Math.max(0, (rawMSE / 40) * 30));
+        ciaMax = 70;
+        ciaScaled = Math.min(70, Math.max(0, subject.ciaMarks ?? 0));
       }
       totalInternals = mseScaled + ciaScaled;
     } else {

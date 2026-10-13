@@ -493,7 +493,9 @@ export const SemesterDetail: React.FC<Props> = ({
                         }`}
                       >
                         <div className="font-bold text-[11px]">Convert to 30 M</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">30 MSE + 30 CIA (Standard)</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {newHasSEE ? '30 MSE + 30 CIA (Standard)' : '30 MSE + 70 CIA (100% CIE)'}
+                        </div>
                       </button>
 
                       <button
@@ -506,7 +508,9 @@ export const SemesterDetail: React.FC<Props> = ({
                         }`}
                       >
                         <div className="font-bold text-[11px] text-amber-300">Convert to 20 M</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">20 MSE + 40 CIA (Special)</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {newHasSEE ? '20 MSE + 40 CIA (Special)' : '20 MSE + 80 CIA (100% CIE)'}
+                        </div>
                       </button>
                     </div>
                   </div>

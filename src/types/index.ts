@@ -101,7 +101,7 @@ export interface CalculatedSubjectMarks {
   creditPoints: number; // credits * gradePoint
   isExternalPassed: boolean;
   mseMaxScale: number; // 30 or 20
-  ciaMax: number; // 30, 40, 60 or 100
+  ciaMax: number; // 30, 40, 60, 70, 80 or 100
 }
 
 export interface SemesterResult {
