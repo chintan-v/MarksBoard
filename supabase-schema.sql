@@ -48,4 +48,12 @@ CREATE POLICY "Allow public delete of student profiles"
   USING (true);
 
 -- 4. Enable Realtime updates (Optional, for instant live sync)
-ALTER PUBLICATION supabase_realtime ADD TABLE student_profiles;
+DO $$ 
+BEGIN 
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE student_profiles;
+  END IF;
+EXCEPTION 
+  WHEN duplicate_object THEN NULL;
+  WHEN OTHERS THEN NULL;
+END $$;

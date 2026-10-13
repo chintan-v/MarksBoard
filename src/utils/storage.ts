@@ -587,7 +587,7 @@ export async function saveStudentProfileAsync(profile: StudentProfile): Promise<
   if (isSupabaseConfigured && supabase && !profile.isGuest) {
     try {
       const cleanUSN = profile.usn.trim().toUpperCase();
-      await supabase.from('student_profiles').upsert({
+      const { error } = await supabase.from('student_profiles').upsert({
         usn: cleanUSN,
         name: profile.name,
         password: profile.password || '',
@@ -600,8 +600,13 @@ export async function saveStudentProfileAsync(profile: StudentProfile): Promise<
         semesters: profile.semesters,
         updated_at: new Date().toISOString(),
       });
+      if (error) {
+        console.error('Supabase upsert error:', error);
+        throw new Error(error.message || 'Failed to save to Supabase cloud');
+      }
     } catch (err) {
       console.error('Failed to sync profile to Supabase', err);
+      throw err;
     }
   }
 }
@@ -659,6 +664,7 @@ export async function getAdminAccountsListAsync(): Promise<{
   isCloud: boolean;
   totalCount: number;
   accounts: { usn: string; name: string; branch?: string; currentSemester?: number; createdAt?: string }[];
+  errorMessage?: string;
 }> {
   if (isSupabaseConfigured && supabase) {
     try {
@@ -667,7 +673,21 @@ export async function getAdminAccountsListAsync(): Promise<{
         .select('usn, name, branch, current_semester, created_at')
         .order('created_at', { ascending: false });
 
-      if (!error && Array.isArray(data)) {
+      if (error) {
+        console.error('Error fetching admin accounts list from Supabase:', error);
+        const local = getAvailableAccounts();
+        return {
+          isCloud: false,
+          totalCount: local.length,
+          accounts: local.map((l) => ({
+            usn: l.usn,
+            name: l.name,
+          })),
+          errorMessage: error.message || error.hint || 'Database table error',
+        };
+      }
+
+      if (Array.isArray(data)) {
         return {
           isCloud: true,
           totalCount: data.length,
@@ -680,8 +700,18 @@ export async function getAdminAccountsListAsync(): Promise<{
           })),
         };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching admin accounts list from Supabase', err);
+      const local = getAvailableAccounts();
+      return {
+        isCloud: false,
+        totalCount: local.length,
+        accounts: local.map((l) => ({
+          usn: l.usn,
+          name: l.name,
+        })),
+        errorMessage: err?.message || 'Connection error',
+      };
     }
   }
 

@@ -9,6 +9,7 @@ import {
   Copy,
   Check,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import { getAdminAccountsListAsync } from '../utils/storage';
 import { isSupabaseConfigured } from '../utils/supabaseClient';
@@ -28,6 +29,7 @@ export const AdminAccountsModal: React.FC<Props> = ({
   const [data, setData] = useState<{
     isCloud: boolean;
     totalCount: number;
+    errorMessage?: string;
     accounts: {
       usn: string;
       name: string;
@@ -172,6 +174,27 @@ export const AdminAccountsModal: React.FC<Props> = ({
             </button>
           </div>
         </div>
+
+        {/* Supabase Error / Status Notice */}
+        {data.errorMessage && (
+          <div className="mx-6 mt-4 p-4 rounded-2xl bg-rose-950/70 border border-rose-500/50 text-rose-200 text-xs flex items-start gap-3 shadow-lg animate-fadeIn">
+            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-1.5 flex-1">
+              <div className="font-bold text-rose-100 flex items-center gap-2">
+                <span>Supabase Database Error:</span>
+                <span className="font-mono text-[11px] text-rose-300 px-2 py-0.5 rounded bg-black/40 border border-rose-500/30">
+                  {data.errorMessage}
+                </span>
+              </div>
+              <p className="text-[11px] text-rose-200/90 leading-relaxed">
+                {data.errorMessage.toLowerCase().includes('student_profiles') ||
+                data.errorMessage.toLowerCase().includes('does not exist')
+                  ? 'Your Supabase project is connected, but the "student_profiles" table has NOT been created yet! Please go to your Supabase Dashboard → SQL Editor, paste the code from "supabase-schema.sql", and click Run.'
+                  : 'Unable to query Supabase cloud. Showing accounts saved locally on this browser.'}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="p-4 border-b border-white/5 bg-slate-900/60">
