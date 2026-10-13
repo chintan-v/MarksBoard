@@ -163,11 +163,17 @@ export function calculateSemesterResult(subjects: Subject[]): SemesterResult {
     tagline: 'Solid grind, keep pushing!',
   };
 
-  if (sgpa >= 9.0) {
+  if (sgpa >= 10.0) {
+    statusBadge = {
+      label: 'UNTOUCHABLE AURA 👑',
+      color: 'from-amber-400 via-rose-500 to-purple-600 text-amber-200 border-amber-400/40',
+      tagline: 'Absolute 10/10 perfection! God-tier demon!',
+    };
+  } else if (sgpa >= 9.0) {
     statusBadge = {
       label: 'ACADEMIC WEAPON ⚡',
       color: 'from-fuchsia-500 to-purple-600 text-fuchsia-200 border-fuchsia-500/30',
-      tagline: 'Untouchable aura! Absolute 10/10 demon!',
+      tagline: 'Dominating performance, keep this momentum alive!',
     };
   } else if (sgpa >= 8.0) {
     statusBadge = {

@@ -354,7 +354,9 @@ export const SemesterDetail: React.FC<Props> = ({
             </span>
             <div className="my-1.5">
               <span className={`inline-flex items-center text-xs font-bold font-heading px-3 py-1 rounded-lg border ${
-                semResult.sgpa >= 9.0
+                semResult.sgpa >= 10.0
+                  ? 'bg-gradient-to-r from-amber-500/25 via-rose-500/25 to-purple-500/25 text-amber-200 border-amber-400/40 shadow-sm'
+                  : semResult.sgpa >= 9.0
                   ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30'
                   : semResult.sgpa >= 8.0
                   ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'

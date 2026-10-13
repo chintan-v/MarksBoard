@@ -166,6 +166,7 @@ export const SemesterCardsView: React.FC<Props> = ({
             </span>
             <div className="text-xl sm:text-2xl font-black font-heading text-amber-300 my-1.5 truncate">
               {globalCGPA.totalCredits === 0 ? 'AWAITING MARKS ⏳' :
+               globalCGPA.cgpa >= 10.0 ? 'UNTOUCHABLE AURA 👑' :
                globalCGPA.cgpa >= 9.0 ? 'DISTINCTION 🏆' :
                globalCGPA.cgpa >= 7.5 ? 'FIRST CLASS ⭐' :
                globalCGPA.cgpa >= 6.0 ? 'GOOD STANDING 🤙' : 'IN RECOVERY 🔒'}
@@ -173,6 +174,8 @@ export const SemesterCardsView: React.FC<Props> = ({
             <span className="text-[11px] text-slate-400 block font-medium">
               {globalCGPA.totalCredits === 0
                 ? 'Enter marks below to calculate standing 📈'
+                : globalCGPA.cgpa >= 10.0
+                ? 'Flawless 10.0 CGPA! God-tier demon! ⚡'
                 : globalCGPA.cgpa >= profile.targetCGPA
                 ? 'Exceeding target goal! 📈'
                 : 'Consistent performance grind'}
@@ -386,7 +389,9 @@ export const SemesterCardsView: React.FC<Props> = ({
                   {hasMarks ? (
                     <div className="mb-3 flex items-center gap-1.5 flex-wrap">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                        result.sgpa >= 9.0
+                        result.sgpa >= 10.0
+                          ? 'bg-amber-500/20 text-amber-200 border-amber-400/40'
+                          : result.sgpa >= 9.0
                           ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30'
                           : result.sgpa >= 8.0
                           ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
