@@ -34,7 +34,7 @@ export const GradeCardReportModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   const semResult = calculateSemesterResult(activeSemester.subjects);
-  const globalCGPA = calculateCGPA(profile.semesters);
+  const globalCGPA = calculateCGPA(profile.semesters, profile.currentSemester);
 
   const handlePrint = () => {
     window.print();

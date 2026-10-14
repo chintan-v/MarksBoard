@@ -208,35 +208,6 @@ export function calculateSemesterResult(subjects: Subject[]): SemesterResult {
   };
 }
 
-export function calculateCGPA(semesters: Semester[]): { cgpa: number; totalCredits: number; percentage: number } {
-  let totalCreditsAll = 0;
-  let totalGradePointsAll = 0;
-
-  for (const sem of semesters) {
-    // Only include semesters that have at least one subject with entered marks
-    const hasAnyMarks = sem.subjects.some(
-      (s) => s.mseRawMarks !== null || s.ciaMarks !== null || s.seeRawMarks !== null || s.internalDirectMarks !== null
-    );
-
-    if (hasAnyMarks) {
-      const res = calculateSemesterResult(sem.subjects);
-      if (res.totalCredits > 0) {
-        totalCreditsAll += res.totalCredits;
-        totalGradePointsAll += res.totalGradePoints;
-      }
-    }
-  }
-
-  const cgpa = totalCreditsAll > 0 ? Math.round((totalGradePointsAll / totalCreditsAll) * 100) / 100 : 0;
-  const percentage = Math.round(cgpa * 10 * 10) / 10;
-
-  return {
-    cgpa,
-    totalCredits: totalCreditsAll,
-    percentage,
-  };
-}
-
 export function isSemesterComplete(sem: Semester): boolean {
   if (sem.isCompleted) return true;
   // A semester is completed if all subjects with credits > 0 have final marks entered
@@ -253,6 +224,49 @@ export function isSemesterComplete(sem: Semester): boolean {
       return s.internalDirectMarks !== null || (s.mseRawMarks !== null && s.ciaMarks !== null);
     }
   });
+}
+
+export function calculateCGPA(
+  semesters: Semester[],
+  currentSemester?: number
+): { cgpa: number; totalCredits: number; percentage: number; completedSemestersCount: number } {
+  let totalCreditsAll = 0;
+  let totalGradePointsAll = 0;
+  let completedSemestersCount = 0;
+
+  for (const sem of semesters) {
+    const isExplicitlyDone = Boolean(sem.isCompleted);
+    const isActiveOrFuture = currentSemester !== undefined && sem.semNumber >= currentSemester;
+
+    // Cumulative CGPA must only include finalized, completed semesters.
+    // Active ongoing semesters where tests (MSE/CIA) are still being taken must never contaminate CGPA.
+    let isEligible = false;
+    if (isExplicitlyDone) {
+      isEligible = true;
+    } else if (!isActiveOrFuture) {
+      // Previous semester: eligible if all subjects have final grades/SEE entered
+      isEligible = isSemesterComplete(sem);
+    }
+
+    if (isEligible) {
+      const res = calculateSemesterResult(sem.subjects);
+      if (res.totalCredits > 0) {
+        totalCreditsAll += res.totalCredits;
+        totalGradePointsAll += res.totalGradePoints;
+        completedSemestersCount++;
+      }
+    }
+  }
+
+  const cgpa = totalCreditsAll > 0 ? Math.round((totalGradePointsAll / totalCreditsAll) * 100) / 100 : 0;
+  const percentage = Math.round(cgpa * 10 * 10) / 10;
+
+  return {
+    cgpa,
+    totalCredits: totalCreditsAll,
+    percentage,
+    completedSemestersCount,
+  };
 }
 
 export function getPreviousSemestersProgress(semesters: Semester[], activeSemNum: number) {

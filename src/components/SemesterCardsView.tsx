@@ -32,7 +32,7 @@ export const SemesterCardsView: React.FC<Props> = ({
   onRequireAuth,
   onUpdateSemester,
 }) => {
-  const globalCGPA = calculateCGPA(profile.semesters);
+  const globalCGPA = calculateCGPA(profile.semesters, profile.currentSemester);
   const prevProgress = getPreviousSemestersProgress(profile.semesters, profile.currentSemester);
 
   return (
@@ -155,7 +155,11 @@ export const SemesterCardsView: React.FC<Props> = ({
               {globalCGPA.totalCredits} <span className="text-base font-normal text-slate-400">Credits</span>
             </div>
             <span className="text-[11px] text-slate-400 block font-medium">
-              Across Completed Semesters
+              {globalCGPA.completedSemestersCount > 0
+                ? `Across ${globalCGPA.completedSemestersCount} Completed ${
+                    globalCGPA.completedSemestersCount === 1 ? 'Semester' : 'Semesters'
+                  }`
+                : 'Across Completed Semesters'}
             </span>
           </div>
 
