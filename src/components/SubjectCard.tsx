@@ -154,7 +154,6 @@ export const SubjectCard: React.FC<Props> = ({
               }`}
             >
               {subject.credits} {subject.credits === 1 ? 'Credit' : 'Credits'}
-              {subject.credits === 0 && ' (Non-Credit)'}
             </span>
 
             {/* Quick 1-Click MSE Scheme Toggle Button */}
@@ -236,11 +235,11 @@ export const SubjectCard: React.FC<Props> = ({
                   onChange={(e) => setEditCredits(Number(e.target.value))}
                   className="w-full text-xs px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-purple-500"
                 >
-                  <option value={4}>4 Credits (Core)</option>
-                  <option value={3}>3 Credits (Specialization)</option>
-                  <option value={2}>2 Credits (Lab / Practical)</option>
-                  <option value={1}>1 Credit (Mini Project)</option>
-                  <option value={0}>0 Credits (Non-Credit)</option>
+                  <option value={4}>4 Credits</option>
+                  <option value={3}>3 Credits</option>
+                  <option value={2}>2 Credits</option>
+                  <option value={1}>1 Credit</option>
+                  <option value={0}>0 Credits</option>
                 </select>
               </div>
             </div>

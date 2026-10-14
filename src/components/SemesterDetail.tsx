@@ -487,11 +487,11 @@ export const SemesterDetail: React.FC<Props> = ({
                     onChange={(e) => setNewCredits(Number(e.target.value))}
                     className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value={4}>4 Credits (Core Heavyweight)</option>
-                    <option value={3}>3 Credits (Standard Theory)</option>
-                    <option value={2}>2 Credits (Practical / Laboratory)</option>
-                    <option value={1}>1 Credit (Mini Project / Seminar)</option>
-                    <option value={0}>0 Credits (Mandatory Non-Credit)</option>
+                    <option value={4}>4 Credits</option>
+                    <option value={3}>3 Credits</option>
+                    <option value={2}>2 Credits</option>
+                    <option value={1}>1 Credit</option>
+                    <option value={0}>0 Credits</option>
                   </select>
                 </div>
 
