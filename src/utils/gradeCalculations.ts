@@ -101,14 +101,8 @@ export function calculateSubjectMarks(subject: Subject): CalculatedSubjectMarks 
   const passed = totalMarks >= 40 && isExternalPassed;
   const { grade, gradePoint } = getGradeFromMarks(totalMarks);
 
-  // If 0-credit course, it is an Audit Course: AP (Audit Pass) or AF (Audit Fail)
-  let finalGrade: LetterGrade = passed ? grade : 'F';
-  let finalGradePoint = passed ? gradePoint : 0;
-
-  if (subject.credits === 0) {
-    finalGrade = passed ? 'AP' : 'AF';
-    finalGradePoint = 0; // Audit courses carry no grade points in CBCS
-  }
+  const finalGrade: LetterGrade = passed ? grade : 'F';
+  const finalGradePoint = passed ? gradePoint : 0;
 
   return {
     mseScaled: Math.round(mseScaled * 10) / 10,

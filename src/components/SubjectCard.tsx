@@ -154,7 +154,7 @@ export const SubjectCard: React.FC<Props> = ({
               }`}
             >
               {subject.credits} {subject.credits === 1 ? 'Credit' : 'Credits'}
-              {subject.credits === 0 && ' (Audit)'}
+              {subject.credits === 0 && ' (Non-Credit)'}
             </span>
 
             {/* Quick 1-Click MSE Scheme Toggle Button */}
@@ -514,8 +514,8 @@ export const SubjectCard: React.FC<Props> = ({
                   ? 'bg-violet-500/20 text-violet-300 border-violet-500/40'
                   : calc.grade === 'C'
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  : calc.grade === 'P'
-                  ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                  : calc.grade === 'P' || calc.grade === 'AP'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                   : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
               }`}
             >
