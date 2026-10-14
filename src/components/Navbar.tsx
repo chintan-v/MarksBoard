@@ -4,6 +4,9 @@ import {
   Layers,
   FileText,
   Lock,
+  Cloud,
+  CloudOff,
+  RefreshCw,
 } from 'lucide-react';
 import type { StudentProfile } from '../types';
 
@@ -17,6 +20,8 @@ interface Props {
   onOpenAuth: () => void;
   onOpenGradingScale: () => void;
   onOpenGradeCard: () => void;
+  syncStatus?: 'synced' | 'syncing' | 'offline' | 'guest';
+  onManualSync?: () => void;
 }
 
 export const Navbar: React.FC<Props> = ({
@@ -29,6 +34,8 @@ export const Navbar: React.FC<Props> = ({
   onOpenAuth,
   onOpenGradingScale,
   onOpenGradeCard,
+  syncStatus = 'synced',
+  onManualSync,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
@@ -119,6 +126,47 @@ export const Navbar: React.FC<Props> = ({
             <FileText className="w-3.5 h-3.5 text-fuchsia-400" />
             <span className="hidden sm:inline">Grade Sheet</span>
           </button>
+
+          {/* Cloud Database Sync Status */}
+          {syncStatus === 'syncing' ? (
+            <div
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 animate-pulse"
+              title="Syncing latest marks & semester changes to Supabase Cloud..."
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+              <span className="hidden md:inline">Syncing...</span>
+            </div>
+          ) : syncStatus === 'synced' ? (
+            <button
+              type="button"
+              onClick={onManualSync}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer"
+              title="All semester marks saved to Supabase Cloud database! Click to re-check latest data."
+            >
+              <Cloud className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Cloud Synced</span>
+            </button>
+          ) : syncStatus === 'offline' ? (
+            <button
+              type="button"
+              onClick={onManualSync}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all cursor-pointer"
+              title="Cloud sync unreachable. Click to retry connecting to Supabase."
+            >
+              <CloudOff className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden md:inline">Retry Sync</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+              title="Guest Mode: Saved on this device only. Sign in to sync across other devices!"
+            >
+              <CloudOff className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden md:inline">Local Only</span>
+            </button>
+          )}
 
           {/* Profile & Avatar */}
           <button

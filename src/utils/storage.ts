@@ -560,6 +560,24 @@ export async function findStudentProfileAsync(usn: string): Promise<StudentProfi
       }
 
       if (data) {
+        let semestersData = data.semesters;
+        if (typeof semestersData === 'string') {
+          try {
+            semestersData = JSON.parse(semestersData);
+          } catch (e) {
+            console.error('Failed to parse semesters JSON from Supabase', e);
+          }
+        }
+        if (!Array.isArray(semestersData) || semestersData.length === 0) {
+          console.warn('Semesters data from Supabase was empty, checking local cache');
+          const local = findStudentProfile(clean);
+          if (local && Array.isArray(local.semesters) && local.semesters.length > 0) {
+            semestersData = local.semesters;
+          } else {
+            semestersData = createEmptySemesters();
+          }
+        }
+
         const profile: StudentProfile = {
           usn: data.usn,
           name: data.name,
@@ -570,7 +588,7 @@ export async function findStudentProfileAsync(usn: string): Promise<StudentProfi
           bio: data.bio || 'Engineering Student 🚀',
           targetCGPA: Number(data.target_cgpa) || 9.0,
           currentSemester: Number(data.current_semester) || 5,
-          semesters: data.semesters,
+          semesters: semestersData,
           isGuest: false,
         };
         // Cache to localStorage

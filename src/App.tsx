@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Semester, StudentProfile } from './types';
 import {
   loadStudentProfile,
   saveStudentProfileAsync,
+  findStudentProfileAsync,
   getOrCreateGuestProfile,
   setActiveUSN,
+  getActiveUSN,
 } from './utils/storage';
 import { Navbar } from './components/Navbar';
 import { SemesterCardsView } from './components/SemesterCardsView';
@@ -21,6 +23,11 @@ export function App() {
   const [profile, setProfile] = useState<StudentProfile>(() => loadStudentProfile());
   const [viewMode, setViewMode] = useState<'overview' | 'semester'>('overview');
   const [activeSemNum, setActiveSemNum] = useState<number>(profile.currentSemester || 5);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'guest'>(
+    profile.isGuest ? 'guest' : 'synced'
+  );
+
+  const isInitialMount = useRef(true);
 
   // Toast Notifications
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -42,10 +49,78 @@ export function App() {
   const [isGradeCardOpen, setIsGradeCardOpen] = useState(false);
   const [simulateSemNumber, setSimulateSemNumber] = useState<number | null>(null);
 
-  // Sync profile to localStorage and Supabase Cloud on change
+  // 1. On Mount: If already logged in on this device, pull down latest cloud data from Supabase
   useEffect(() => {
-    saveStudentProfileAsync(profile);
+    const activeUsn = getActiveUSN();
+    if (activeUsn && activeUsn !== 'GUEST' && !profile.isGuest) {
+      setSyncStatus('syncing');
+      findStudentProfileAsync(activeUsn)
+        .then((cloudProfile) => {
+          if (cloudProfile) {
+            setProfile(cloudProfile);
+            setSyncStatus('synced');
+          } else {
+            setSyncStatus('synced');
+          }
+        })
+        .catch((err) => {
+          console.warn('Initial cloud sync could not reach Supabase, using local cache:', err);
+          setSyncStatus('offline');
+        });
+    } else {
+      setSyncStatus('guest');
+    }
+  }, []);
+
+  // 2. Debounced Cloud Save: Automatically sync changes to Supabase without racing keystrokes
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (profile.isGuest || profile.usn === 'GUEST') {
+      setSyncStatus('guest');
+      return;
+    }
+
+    setSyncStatus('syncing');
+    const timer = setTimeout(async () => {
+      try {
+        await saveStudentProfileAsync(profile);
+        setSyncStatus('synced');
+      } catch (err) {
+        console.error('Cloud auto-sync failed:', err);
+        setSyncStatus('offline');
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [profile]);
+
+  const handleManualSync = async () => {
+    if (profile.isGuest) {
+      handleRequireAuth('sync account to cloud database');
+      return;
+    }
+    setSyncStatus('syncing');
+    try {
+      const cloud = await findStudentProfileAsync(profile.usn);
+      if (cloud) {
+        setProfile(cloud);
+        setSyncStatus('synced');
+        showToast('success', 'Latest semester marks & data synced from Supabase Cloud!', 'Cloud Synced');
+      } else {
+        await saveStudentProfileAsync(profile);
+        setSyncStatus('synced');
+        showToast('success', 'Current semester marks uploaded to Supabase Cloud!', 'Cloud Synced');
+      }
+    } catch (err: any) {
+      console.error('Manual sync error', err);
+      setSyncStatus('offline');
+      showToast('error', err?.message || 'Could not connect to Supabase Cloud.', 'Sync Failed');
+    }
+  };
 
   const handleRequireAuth = (reason: string = 'modify marks or customize your account') => {
     setAuthPromptReason(reason);
@@ -83,6 +158,7 @@ export function App() {
     setActiveSemNum(newProfile.currentSemester || 5);
     setViewMode('overview');
     setAuthPromptReason(null);
+    setSyncStatus(newProfile.isGuest ? 'guest' : 'synced');
   };
 
   const handleLogout = () => {
@@ -92,6 +168,7 @@ export function App() {
     setActiveSemNum(guest.currentSemester || 5);
     setViewMode('overview');
     setAuthPromptReason(null);
+    setSyncStatus('guest');
     setIsAuthModalOpen(true);
   };
 
@@ -142,6 +219,8 @@ export function App() {
         }}
         onOpenGradingScale={() => setIsGradingScaleOpen(true)}
         onOpenGradeCard={() => setIsGradeCardOpen(true)}
+        syncStatus={syncStatus}
+        onManualSync={handleManualSync}
       />
 
       {/* Main App Container - Utilizing Full Screen */}
