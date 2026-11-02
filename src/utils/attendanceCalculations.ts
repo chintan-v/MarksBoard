@@ -44,12 +44,24 @@ export const DEFAULT_SUGGESTED_HOLIDAYS: CalendarHoliday[] = [
   { id: 'h-13', date: '2027-05-01', title: 'May Day (Labor Day) 🛠️' },
 ];
 
+function parseDateParts(dateStr: string): [number, number, number] | null {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const match = dateStr.trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!match) return null;
+  const y = parseInt(match[1], 10);
+  const m = parseInt(match[2], 10);
+  const d = parseInt(match[3], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+  return [y, m, d];
+}
+
 /**
  * Creates default attendance configuration for a semester, automatically
  * scheduling timetable slots for existing subjects based on credit weights.
  */
-export function createDefaultAttendanceConfig(semester: Semester): SemesterAttendanceConfig {
-  const isOddSem = semester.semNumber % 2 !== 0;
+export function createDefaultAttendanceConfig(semester?: Semester | null): SemesterAttendanceConfig {
+  const semNum = semester?.semNumber || 5;
+  const isOddSem = semNum % 2 !== 0;
   const currentYear = new Date().getFullYear();
 
   // Typical semester timeline:
@@ -60,26 +72,17 @@ export function createDefaultAttendanceConfig(semester: Semester): SemesterAtten
 
   const workingDays: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-  // Relevant holidays falling within the semester period
   const holidays = DEFAULT_SUGGESTED_HOLIDAYS.filter((h) => {
     return h.date >= startDate && h.date <= endDate;
   });
 
-  // Auto-generate realistic weekly timetable slots from subjects in this semester
   const timetable: TimetableSlot[] = [];
-  const subjects = semester.subjects || [];
+  const subjects = (semester?.subjects || []).filter(Boolean);
 
-  // Distribution map across week days for classes
-  const daySlotPlan: Record<DayOfWeek, string[]> = {
-    Monday: [],
-    Tuesday: [],
-    Wednesday: [],
-    Thursday: [],
-    Friday: [],
-    Saturday: [],
-  };
+  const subjectRecords: Record<string, SubjectAttendanceRecord> = {};
 
   subjects.forEach((sub, subIdx) => {
+    if (!sub || !sub.id) return;
     const weeklyFreq = Math.max(1, Math.min(5, sub.credits || 3));
     const targetDays: DayOfWeek[] = [];
 
@@ -90,7 +93,6 @@ export function createDefaultAttendanceConfig(semester: Semester): SemesterAtten
     } else if (weeklyFreq === 2) {
       targetDays.push('Tuesday', 'Thursday');
     } else {
-      // 1 or 0 credit
       const daysPool: DayOfWeek[] = ['Friday', 'Wednesday', 'Monday', 'Tuesday', 'Thursday'];
       targetDays.push(daysPool[subIdx % daysPool.length]);
     }
@@ -105,14 +107,8 @@ export function createDefaultAttendanceConfig(semester: Semester): SemesterAtten
         subjectId: sub.id,
         slotTime,
       });
-
-      daySlotPlan[day].push(sub.code);
     });
-  });
 
-  // Initialize records for each subject
-  const subjectRecords: Record<string, SubjectAttendanceRecord> = {};
-  subjects.forEach((sub) => {
     subjectRecords[sub.id] = {
       subjectId: sub.id,
       attendedClasses: 0,
@@ -135,15 +131,25 @@ export function createDefaultAttendanceConfig(semester: Semester): SemesterAtten
 
 /**
  * Calculates total working days and occurrences of each weekday in the semester
+ * using safe UTC millisecond stepping (immune to timezone/DST shifts).
  */
 export function calculateWorkingDaysDistribution(
-  startDateStr: string,
-  endDateStr: string,
-  workingDays: DayOfWeek[],
-  holidays: CalendarHoliday[],
+  startDateStr?: string,
+  endDateStr?: string,
+  workingDays?: DayOfWeek[],
+  holidays?: CalendarHoliday[],
   asOfDateStr?: string
 ) {
-  const holidayDateSet = new Set(holidays.map((h) => h.date));
+  const safeHolidays = Array.isArray(holidays) ? holidays : [];
+  const safeWorkingDays =
+    Array.isArray(workingDays) && workingDays.length > 0
+      ? workingDays
+      : (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as DayOfWeek[]);
+
+  const holidayDateSet = new Set(
+    safeHolidays.map((h) => (h && h.date ? h.date.trim() : '')).filter(Boolean)
+  );
+
   const todayStr = asOfDateStr || new Date().toISOString().split('T')[0];
 
   const daysByWeekday: Record<DayOfWeek, number> = {
@@ -167,11 +173,14 @@ export function calculateWorkingDaysDistribution(
   let totalWorkingDays = 0;
   let elapsedWorkingDays = 0;
 
-  const current = new Date(startDateStr);
-  const end = new Date(endDateStr);
+  const currentYear = new Date().getFullYear();
+  const startParts = parseDateParts(startDateStr || '') || [currentYear, 8, 3];
+  const endParts = parseDateParts(endDateStr || '') || [currentYear, 12, 18];
 
-  // If start is after end, return zeros
-  if (current > end) {
+  const tStart = Date.UTC(startParts[0], startParts[1] - 1, startParts[2]);
+  const tEnd = Date.UTC(endParts[0], endParts[1] - 1, endParts[2]);
+
+  if (tStart > tEnd) {
     return {
       totalWorkingDays: 0,
       elapsedWorkingDays: 0,
@@ -180,37 +189,39 @@ export function calculateWorkingDaysDistribution(
     };
   }
 
-  // Iterate day by day
-  while (current <= end) {
-    const yyyy = current.getFullYear();
-    const mm = String(current.getMonth() + 1).padStart(2, '0');
-    const dd = String(current.getDate()).padStart(2, '0');
+  const weekdayNames: (DayOfWeek | null)[] = [
+    null, // 0 = Sunday
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const maxDays = 366; // Safety ceiling to guarantee no runaway loop
+  let daysCount = 0;
+
+  for (let t = tStart; t <= tEnd && daysCount < maxDays; t += oneDayMs, daysCount++) {
+    const d = new Date(t);
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
     const dateStr = `${yyyy}-${mm}-${dd}`;
 
-    const dayNum = current.getDay(); // 0 is Sunday, 1 is Monday... 6 is Saturday
-    const weekdayMap: Record<number, DayOfWeek | null> = {
-      1: 'Monday',
-      2: 'Tuesday',
-      3: 'Wednesday',
-      4: 'Thursday',
-      5: 'Friday',
-      6: 'Saturday',
-      0: null, // Sunday
-    };
+    const dayNum = d.getUTCDay();
+    const weekday = weekdayNames[dayNum];
 
-    const weekday = weekdayMap[dayNum];
-
-    if (weekday && workingDays.includes(weekday) && !holidayDateSet.has(dateStr)) {
+    if (weekday && safeWorkingDays.includes(weekday) && !holidayDateSet.has(dateStr)) {
       totalWorkingDays++;
-      daysByWeekday[weekday]++;
+      daysByWeekday[weekday] = (daysByWeekday[weekday] || 0) + 1;
 
       if (dateStr <= todayStr) {
         elapsedWorkingDays++;
-        elapsedByWeekday[weekday]++;
+        elapsedByWeekday[weekday] = (elapsedByWeekday[weekday] || 0) + 1;
       }
     }
-
-    current.setDate(current.getDate() + 1);
   }
 
   return {
@@ -227,27 +238,80 @@ export function calculateWorkingDaysDistribution(
  */
 export function calculateSubjectAttendanceAnalysis(
   subject: Subject,
-  config: SemesterAttendanceConfig,
+  config?: SemesterAttendanceConfig | null,
   customTarget?: number,
   asOfDateStr?: string
 ): SubjectAttendanceAnalysis {
-  const targetPercentage = customTarget || config.targetPercentage || 75;
+  if (!subject) {
+    return {
+      subjectId: 'unknown',
+      subjectCode: 'SUB',
+      subjectName: 'Subject',
+      credits: 3,
+      totalScheduledClasses: 0,
+      scheduledTillToday: 0,
+      conductedClasses: 0,
+      attendedClasses: 0,
+      missedClasses: 0,
+      cancelledClasses: 0,
+      totalClassesInSemester: 0,
+      currentPercentage: 100,
+      targetPercentage: customTarget || 75,
+      canBunkMore: 0,
+      immediateBunkSafe: 0,
+      consecutiveClassesNeeded: 0,
+      isShortage: false,
+      status: 'safe',
+      statusBadge: {
+        label: 'Safe Margin',
+        color: 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30',
+        message: 'No data',
+      },
+    };
+  }
+
+  const safeConfig: SemesterAttendanceConfig =
+    config && typeof config === 'object'
+      ? {
+          startDate: config.startDate || '2026-08-03',
+          endDate: config.endDate || '2026-12-18',
+          workingDays:
+            Array.isArray(config.workingDays) && config.workingDays.length > 0
+              ? config.workingDays
+              : (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as DayOfWeek[]),
+          holidays: Array.isArray(config.holidays) ? config.holidays : [],
+          timetable: Array.isArray(config.timetable) ? config.timetable : [],
+          subjectRecords: config.subjectRecords || {},
+          targetPercentage: config.targetPercentage || 75,
+          calendarFileName: config.calendarFileName,
+          calendarFileDataUrl: config.calendarFileDataUrl,
+          timetableFileName: config.timetableFileName,
+          timetableFileDataUrl: config.timetableFileDataUrl,
+        }
+      : createDefaultAttendanceConfig(null);
+
+  const targetPercentage = Math.max(
+    50,
+    Math.min(100, customTarget || safeConfig.targetPercentage || 75)
+  );
 
   const { daysByWeekday, elapsedByWeekday } = calculateWorkingDaysDistribution(
-    config.startDate,
-    config.endDate,
-    config.workingDays,
-    config.holidays,
+    safeConfig.startDate,
+    safeConfig.endDate,
+    safeConfig.workingDays,
+    safeConfig.holidays,
     asOfDateStr
   );
 
-  // Count scheduled classes in the timetable for this subject
-  const subjectSlots = (config.timetable || []).filter((slot) => slot.subjectId === subject.id);
+  const subjectSlots = (safeConfig.timetable || []).filter(
+    (slot) => slot && slot.subjectId === subject.id
+  );
 
   let totalScheduledClasses = 0;
   let scheduledTillToday = 0;
 
   subjectSlots.forEach((slot) => {
+    if (!slot || !slot.day) return;
     const totalDayCount = daysByWeekday[slot.day] || 0;
     const elapsedDayCount = elapsedByWeekday[slot.day] || 0;
 
@@ -255,71 +319,56 @@ export function calculateSubjectAttendanceAnalysis(
     scheduledTillToday += elapsedDayCount;
   });
 
-  // Fallback: if no slots configured yet, estimate by credits & working weeks
   if (totalScheduledClasses === 0) {
     const weeklyFreq = Math.max(1, Math.min(5, subject.credits || 3));
-    // Average 16 teaching weeks in a university semester
     totalScheduledClasses = weeklyFreq * 16;
-    // Estimate 8 weeks elapsed if today is within semester, else 0
     scheduledTillToday = Math.floor(totalScheduledClasses * 0.45);
   }
 
-  const record: SubjectAttendanceRecord = config.subjectRecords?.[subject.id] || {
+  const record: SubjectAttendanceRecord = safeConfig.subjectRecords?.[subject.id] || {
     subjectId: subject.id,
     attendedClasses: 0,
     manualConductedOverride: null,
     manualTotalPlannedOverride: null,
   };
 
-  // User specification:
-  // "if the student think number of total classes is wrong cuz of any previous class cancellation,
-  // ask the user to manually enter how many classes were conducted till date. later, update it for the total number of classes."
   const hasConductedOverride =
     record.manualConductedOverride !== null &&
     record.manualConductedOverride !== undefined &&
-    record.manualConductedOverride >= 0;
+    !isNaN(Number(record.manualConductedOverride)) &&
+    Number(record.manualConductedOverride) >= 0;
 
   const conductedClasses = hasConductedOverride
-    ? Math.max(0, record.manualConductedOverride!)
+    ? Math.max(0, Number(record.manualConductedOverride))
     : scheduledTillToday;
 
-  // Calculate cancelled classes (difference between scheduled till date vs actual conducted)
   const cancelledClasses = hasConductedOverride
     ? Math.max(0, scheduledTillToday - conductedClasses)
     : 0;
 
-  // Total classes across the semester dynamically adjusted for cancellations:
   let totalClassesInSemester: number;
   if (
     record.manualTotalPlannedOverride !== null &&
     record.manualTotalPlannedOverride !== undefined &&
-    record.manualTotalPlannedOverride > 0
+    !isNaN(Number(record.manualTotalPlannedOverride)) &&
+    Number(record.manualTotalPlannedOverride) > 0
   ) {
-    totalClassesInSemester = record.manualTotalPlannedOverride;
+    totalClassesInSemester = Number(record.manualTotalPlannedOverride);
   } else {
-    // If classes were cancelled, the total planned classes for the semester drops accordingly
-    totalClassesInSemester = Math.max(
-      conductedClasses,
-      totalScheduledClasses - cancelledClasses
-    );
+    totalClassesInSemester = Math.max(conductedClasses, totalScheduledClasses - cancelledClasses);
   }
 
-  // Attended classes entered by the student (cannot exceed conducted)
-  const rawAttended = Math.max(0, record.attendedClasses || 0);
+  const rawAttended = Math.max(0, Number(record.attendedClasses) || 0);
   const attendedClasses = conductedClasses > 0 ? Math.min(conductedClasses, rawAttended) : 0;
   const missedClasses = Math.max(0, conductedClasses - attendedClasses);
 
-  // Current Attendance Percentage
   const currentPercentage =
     conductedClasses > 0 ? Number(((attendedClasses / conductedClasses) * 100).toFixed(1)) : 100.0;
 
-  // Bunk Forecaster (how many more classes they can take leave of across the entire semester)
-  // To finish semester with >= targetPercentage:
   const minAttendedNeededInSemester = Math.ceil((targetPercentage / 100) * totalClassesInSemester);
   const maxTotalLeavesInSemester = Math.max(0, totalClassesInSemester - minAttendedNeededInSemester);
   const canBunkMore = Math.max(0, maxTotalLeavesInSemester - missedClasses);
 
-  // Immediate Safe Bunk (how many consecutive upcoming classes can be skipped RIGHT NOW without dropping below target today)
   let immediateBunkSafe = 0;
   if (currentPercentage >= targetPercentage && conductedClasses > 0) {
     immediateBunkSafe = Math.floor(
@@ -328,17 +377,16 @@ export function calculateSubjectAttendanceAnalysis(
     if (immediateBunkSafe < 0) immediateBunkSafe = 0;
   }
 
-  // Consecutive classes needed to attend if currently below target:
   let consecutiveClassesNeeded = 0;
   const isShortage = currentPercentage < targetPercentage;
   if (isShortage && conductedClasses > 0) {
+    const denom = Math.max(1, 100 - targetPercentage);
     consecutiveClassesNeeded = Math.ceil(
-      (targetPercentage * conductedClasses - 100 * attendedClasses) / (100 - targetPercentage)
+      (targetPercentage * conductedClasses - 100 * attendedClasses) / denom
     );
     if (consecutiveClassesNeeded < 0) consecutiveClassesNeeded = 0;
   }
 
-  // Status & Badges
   let status: 'safe' | 'warning' | 'danger' | 'critical' = 'safe';
   let badgeLabel = 'Safe Margin';
   let badgeColor = 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30';
@@ -375,9 +423,9 @@ export function calculateSubjectAttendanceAnalysis(
 
   return {
     subjectId: subject.id,
-    subjectCode: subject.code,
-    subjectName: subject.name,
-    credits: subject.credits,
+    subjectCode: subject.code || 'SUB',
+    subjectName: subject.name || 'Subject',
+    credits: subject.credits || 0,
     totalScheduledClasses,
     scheduledTillToday,
     conductedClasses,

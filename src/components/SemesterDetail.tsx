@@ -622,14 +622,16 @@ export const SemesterDetail: React.FC<Props> = ({
       )}
 
       {/* Attendance & Leave Planner Modal */}
-      <AttendancePlannerModal
-        isOpen={isAttendanceModalOpen}
-        onClose={() => setIsAttendanceModalOpen(false)}
-        semester={semester}
-        onUpdateSemester={onUpdateSemester}
-        isGuest={profile.isGuest}
-        onRequireAuth={onRequireAuth}
-      />
+      {isAttendanceModalOpen && semester && (
+        <AttendancePlannerModal
+          isOpen={isAttendanceModalOpen}
+          onClose={() => setIsAttendanceModalOpen(false)}
+          semester={semester}
+          onUpdateSemester={onUpdateSemester}
+          isGuest={profile.isGuest}
+          onRequireAuth={onRequireAuth}
+        />
+      )}
 
       {/* Semester What-If Predictor Modal */}
       <SemesterPredictorModal

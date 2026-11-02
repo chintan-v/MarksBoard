@@ -324,14 +324,16 @@ export function App() {
       />
 
       {/* Attendance & Leave Planner Modal (Global from Navbar) */}
-      <AttendancePlannerModal
-        isOpen={isAttendanceModalOpen}
-        onClose={() => setIsAttendanceModalOpen(false)}
-        semester={activeSemester}
-        onUpdateSemester={handleUpdateSemester}
-        isGuest={profile.isGuest}
-        onRequireAuth={handleRequireAuth}
-      />
+      {isAttendanceModalOpen && activeSemester && (
+        <AttendancePlannerModal
+          isOpen={isAttendanceModalOpen}
+          onClose={() => setIsAttendanceModalOpen(false)}
+          semester={activeSemester}
+          onUpdateSemester={handleUpdateSemester}
+          isGuest={profile.isGuest}
+          onRequireAuth={handleRequireAuth}
+        />
+      )}
 
       {/* Toast Notification Container */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
