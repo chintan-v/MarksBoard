@@ -16,6 +16,7 @@ import { AuthModal } from './components/AuthModal';
 import { GradingScaleModal } from './components/GradingScaleModal';
 import { GradeCardReportModal } from './components/GradeCardReportModal';
 import { SemesterPredictorModal } from './components/SemesterPredictorModal';
+import { AttendancePlannerModal } from './components/AttendancePlannerModal';
 import { ToastContainer } from './components/Toast';
 import type { ToastMessage } from './components/Toast';
 
@@ -48,6 +49,7 @@ export function App() {
   const [isGradingScaleOpen, setIsGradingScaleOpen] = useState(false);
   const [isGradeCardOpen, setIsGradeCardOpen] = useState(false);
   const [simulateSemNumber, setSimulateSemNumber] = useState<number | null>(null);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
 
   // 1. On Mount: If already logged in on this device, pull down latest cloud data from Supabase
   useEffect(() => {
@@ -219,6 +221,7 @@ export function App() {
         }}
         onOpenGradingScale={() => setIsGradingScaleOpen(true)}
         onOpenGradeCard={() => setIsGradeCardOpen(true)}
+        onOpenAttendance={() => setIsAttendanceModalOpen(true)}
         syncStatus={syncStatus}
         onManualSync={handleManualSync}
       />
@@ -318,6 +321,16 @@ export function App() {
         onClose={() => setIsGradeCardOpen(false)}
         profile={profile}
         activeSemester={activeSemester}
+      />
+
+      {/* Attendance & Leave Planner Modal (Global from Navbar) */}
+      <AttendancePlannerModal
+        isOpen={isAttendanceModalOpen}
+        onClose={() => setIsAttendanceModalOpen(false)}
+        semester={activeSemester}
+        onUpdateSemester={handleUpdateSemester}
+        isGuest={profile.isGuest}
+        onRequireAuth={handleRequireAuth}
       />
 
       {/* Toast Notification Container */}

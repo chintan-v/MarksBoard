@@ -8,6 +8,7 @@ import {
   BookOpen,
   Search,
   CheckCircle2,
+  Calendar,
 } from 'lucide-react';
 import type { LetterGrade, Semester, StudentProfile, Subject } from '../types';
 import { calculateSemesterResult } from '../utils/gradeCalculations';
@@ -16,6 +17,7 @@ import { SubjectCard } from './SubjectCard';
 import { SubjectModuleTrackerModal } from './SubjectModuleTrackerModal';
 import { TargetGradePredictorModal } from './TargetGradePredictorModal';
 import { SemesterPredictorModal } from './SemesterPredictorModal';
+import { AttendancePlannerModal } from './AttendancePlannerModal';
 
 interface Props {
   profile: StudentProfile;
@@ -49,6 +51,7 @@ export const SemesterDetail: React.FC<Props> = ({
   const [activeModuleTrackerSubject, setActiveModuleTrackerSubject] = useState<Subject | null>(null);
   const [activeTargetPredictorSubject, setActiveTargetPredictorSubject] = useState<Subject | null>(null);
   const [isSimulateModalOpen, setIsSimulateModalOpen] = useState<boolean>(false);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState<boolean>(false);
 
   const semResult = calculateSemesterResult(semester.subjects);
 
@@ -390,6 +393,14 @@ export const SemesterDetail: React.FC<Props> = ({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
+            onClick={() => setIsAttendanceModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium transition-all shadow-lg shadow-cyan-600/30 flex items-center gap-1.5 cursor-pointer"
+          >
+            <Calendar className="w-3.5 h-3.5" /> Attendance & Leaves
+          </button>
+
+          <button
+            type="button"
             onClick={() => setIsSimulateModalOpen(true)}
             className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-xs font-medium transition-all shadow-lg shadow-purple-600/30 flex items-center gap-1.5"
           >
@@ -609,6 +620,16 @@ export const SemesterDetail: React.FC<Props> = ({
           onRequireAuth={onRequireAuth}
         />
       )}
+
+      {/* Attendance & Leave Planner Modal */}
+      <AttendancePlannerModal
+        isOpen={isAttendanceModalOpen}
+        onClose={() => setIsAttendanceModalOpen(false)}
+        semester={semester}
+        onUpdateSemester={onUpdateSemester}
+        isGuest={profile.isGuest}
+        onRequireAuth={onRequireAuth}
+      />
 
       {/* Semester What-If Predictor Modal */}
       <SemesterPredictorModal

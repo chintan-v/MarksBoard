@@ -67,12 +67,76 @@ export interface Subject {
   favouredGrade?: LetterGrade;
 }
 
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+
+export interface CalendarHoliday {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+}
+
+export interface TimetableSlot {
+  id: string;
+  day: DayOfWeek;
+  subjectId: string;
+  slotTime?: string;
+}
+
+export interface SubjectAttendanceRecord {
+  subjectId: string;
+  attendedClasses: number;
+  manualConductedOverride?: number | null; // User override if classes were cancelled
+  manualTotalPlannedOverride?: number | null;
+  notes?: string;
+}
+
+export interface SemesterAttendanceConfig {
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  workingDays: DayOfWeek[];
+  holidays: CalendarHoliday[];
+  timetable: TimetableSlot[];
+  subjectRecords: Record<string, SubjectAttendanceRecord>;
+  targetPercentage: number; // e.g. 75, 85, or n
+  calendarFileName?: string;
+  calendarFileDataUrl?: string;
+  timetableFileName?: string;
+  timetableFileDataUrl?: string;
+}
+
+export interface SubjectAttendanceAnalysis {
+  subjectId: string;
+  subjectCode: string;
+  subjectName: string;
+  credits: number;
+  totalScheduledClasses: number;
+  scheduledTillToday: number;
+  conductedClasses: number;
+  attendedClasses: number;
+  missedClasses: number;
+  cancelledClasses: number;
+  totalClassesInSemester: number;
+  currentPercentage: number;
+  targetPercentage: number;
+  canBunkMore: number;
+  immediateBunkSafe: number;
+  consecutiveClassesNeeded: number;
+  isShortage: boolean;
+  status: 'safe' | 'warning' | 'danger' | 'critical';
+  statusBadge: {
+    label: string;
+    color: string;
+    message: string;
+  };
+}
+
 export interface Semester {
   semNumber: number; // 1 to 8
   title: string;
   academicYear: string;
   subjects: Subject[];
   isCompleted?: boolean;
+  attendanceConfig?: SemesterAttendanceConfig;
 }
 
 export interface StudentProfile {

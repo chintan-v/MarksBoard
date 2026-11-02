@@ -3,6 +3,7 @@ import {
   Award,
   Layers,
   FileText,
+  Calendar,
   Lock,
   Cloud,
   CloudOff,
@@ -20,6 +21,7 @@ interface Props {
   onOpenAuth: () => void;
   onOpenGradingScale: () => void;
   onOpenGradeCard: () => void;
+  onOpenAttendance?: () => void;
   syncStatus?: 'synced' | 'syncing' | 'offline' | 'guest';
   onManualSync?: () => void;
 }
@@ -34,6 +36,7 @@ export const Navbar: React.FC<Props> = ({
   onOpenAuth,
   onOpenGradingScale,
   onOpenGradeCard,
+  onOpenAttendance,
   syncStatus = 'synced',
   onManualSync,
 }) => {
@@ -125,6 +128,17 @@ export const Navbar: React.FC<Props> = ({
           >
             <FileText className="w-3.5 h-3.5 text-fuchsia-400" />
             <span className="hidden sm:inline">Grade Sheet</span>
+          </button>
+
+          {/* Attendance & Leave Forecaster */}
+          <button
+            type="button"
+            onClick={onOpenAttendance}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 transition-all border border-cyan-500/25 cursor-pointer shadow-sm shadow-cyan-500/10"
+            title="Attendance, Weekly Timetable & Leave Forecaster"
+          >
+            <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Attendance</span>
           </button>
 
           {/* Cloud Database Sync Status */}
