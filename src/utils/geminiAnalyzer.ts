@@ -34,6 +34,7 @@ export interface AIExtractionResult {
   timetable: TimetableSlot[];
   summary: string;
   calendarNotes?: string;
+  modelUsed?: string;
 }
 
 interface FileData {
@@ -41,16 +42,273 @@ interface FileData {
   base64: string;
 }
 
-function parseDataUrl(dataUrl: string): FileData | null {
+function parseDataUrl(dataUrl: string, fileName?: string): FileData | null {
   try {
     if (!dataUrl || !dataUrl.includes(',')) return null;
     const [header, base64] = dataUrl.split(',');
     const mimeMatch = header.match(/data:([^;]+)/);
-    const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+    let mimeType = mimeMatch ? mimeMatch[1] : '';
+
+    // If mimeType is missing or generic octet-stream, infer from filename or base64 signature
+    if (!mimeType || mimeType === 'application/octet-stream') {
+      const lowerName = (fileName || '').toLowerCase();
+      if (lowerName.endsWith('.pdf') || base64.startsWith('JVBERi0')) {
+        mimeType = 'application/pdf';
+      } else if (lowerName.endsWith('.png')) {
+        mimeType = 'image/png';
+      } else if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+        mimeType = 'image/jpeg';
+      } else if (lowerName.endsWith('.webp')) {
+        mimeType = 'image/webp';
+      } else {
+        mimeType = base64.startsWith('JVBERi0') ? 'application/pdf' : 'image/png';
+      }
+    }
     return { mimeType, base64 };
   } catch {
     return null;
   }
+}
+
+/**
+ * Score and sort Gemini models so we prefer fast, multimodal Flash models.
+ */
+function scoreModel(name: string): number {
+  let score = 0;
+  const lower = name.toLowerCase();
+
+  // Primary preference: gemini models
+  if (lower.includes('gemini')) score += 100;
+
+  // Flash models are ideal for student multimodal document extraction (fast + generous limits)
+  if (lower.includes('flash')) score += 50;
+
+  // Newer generation preference
+  if (lower.includes('2.5')) score += 40;
+  else if (lower.includes('2.0')) score += 30;
+  else if (lower.includes('1.5')) score += 20;
+
+  // Latest aliases are preferred
+  if (lower.includes('latest')) score += 15;
+
+  // Stable over preview/exp, though preview/exp are still scored
+  if (lower.includes('exp') || lower.includes('preview')) score -= 5;
+
+  // Pro models are slower but capable
+  if (lower.includes('pro')) score += 25;
+
+  return score;
+}
+
+interface ModelCandidate {
+  model: string;
+  apiVersion: 'v1beta' | 'v1';
+}
+
+/**
+ * Dynamically queries Google AI Studio's ListModels endpoint to get the exact list of
+ * available models supported for generateContent with the user's specific API key.
+ */
+async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]> {
+  const discovered: ModelCandidate[] = [];
+  const versions: Array<'v1beta' | 'v1'> = ['v1beta', 'v1'];
+
+  for (const ver of versions) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/${ver}/models?key=${apiKey}`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (Array.isArray(data?.models)) {
+        for (const m of data.models) {
+          const methods = m.supportedGenerationMethods;
+          if (Array.isArray(methods) && methods.includes('generateContent')) {
+            const cleanName = (m.name || '').replace(/^models\//, '');
+            if (cleanName && !discovered.some((d) => d.model === cleanName)) {
+              discovered.push({ model: cleanName, apiVersion: ver });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`Model discovery via ${ver} skipped:`, err);
+    }
+  }
+
+  // Sort discovered models by preference score
+  discovered.sort((a, b) => scoreModel(b.model) - scoreModel(a.model));
+  return discovered;
+}
+
+/**
+ * Standard fallback candidate models to try in order if ListModels was unavailable
+ */
+const FALLBACK_CANDIDATES: ModelCandidate[] = [
+  { model: 'gemini-2.5-flash', apiVersion: 'v1beta' },
+  { model: 'gemini-2.0-flash', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-flash-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-2.0-flash-exp', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash', apiVersion: 'v1' },
+  { model: 'gemini-1.5-flash-002', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash-001', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-pro-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-2.5-pro', apiVersion: 'v1beta' },
+  { model: 'gemini-pro', apiVersion: 'v1' },
+];
+
+/**
+ * Cleans markdown code blocks (```json ... ```) or free-form text around JSON
+ * and parses it safely.
+ */
+function cleanAndParseJSON(rawText: string): any {
+  let cleaned = rawText.trim();
+
+  // Strip markdown code fences if wrapped entirely
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  }
+
+  // If text has embedded markdown fences
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenceMatch && fenceMatch[1]) {
+    cleaned = fenceMatch[1].trim();
+  }
+
+  // Extract from the first '{' to the last '}'
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
+
+  return JSON.parse(cleaned);
+}
+
+/**
+ * Normalizes any date string (YYYY-MM-DD or YYYY-M-D or Date string) to YYYY-MM-DD.
+ */
+function normalizeDateString(dateStr: string): string | null {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const trimmed = dateStr.trim();
+  const m = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) {
+    const year = m[1];
+    const month = m[2].padStart(2, '0');
+    const day = m[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  const d = new Date(trimmed);
+  if (!isNaN(d.getTime())) {
+    return d.toISOString().split('T')[0];
+  }
+  return null;
+}
+
+/**
+ * Fuzzy matches a subject reference from AI to an existing registered subject
+ */
+function resolveSubjectId(rawVal: string, subjects: Subject[]): string | null {
+  if (!rawVal || !subjects || subjects.length === 0) return null;
+  const clean = rawVal.trim().toLowerCase();
+
+  // 1. Direct match on id
+  const directId = subjects.find((s) => s.id === rawVal.trim());
+  if (directId) return directId.id;
+
+  // 2. Direct match on code
+  const codeMatch = subjects.find((s) => s.code && s.code.trim().toLowerCase() === clean);
+  if (codeMatch) return codeMatch.id;
+
+  // 3. Direct match on subject name
+  const nameMatch = subjects.find((s) => s.name && s.name.trim().toLowerCase() === clean);
+  if (nameMatch) return nameMatch.id;
+
+  // 4. Substring or code containment match
+  const partialMatch = subjects.find((s) => {
+    const sName = (s.name || '').toLowerCase();
+    const sCode = (s.code || '').toLowerCase();
+    return (
+      (sCode && clean.includes(sCode)) ||
+      (sName && (clean.includes(sName) || sName.includes(clean)))
+    );
+  });
+  if (partialMatch) return partialMatch.id;
+
+  return null;
+}
+
+function parseAndSanitizeResponse(
+  rawText: string,
+  subjects: Subject[],
+  modelUsed: string
+): AIExtractionResult {
+  const parsedJson = cleanAndParseJSON(rawText);
+
+  const currentYear = new Date().getFullYear();
+  const defaultStart = `${currentYear}-08-03`;
+  const defaultEnd = `${currentYear}-12-18`;
+
+  const parsedStart = normalizeDateString(parsedJson.startDate);
+  const parsedEnd = normalizeDateString(parsedJson.endDate);
+
+  const startDate = parsedStart || defaultStart;
+  const endDate = parsedEnd || defaultEnd;
+
+  const validDays: DayOfWeek[] = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+  const workingDays: DayOfWeek[] = Array.isArray(parsedJson.workingDays)
+    ? (parsedJson.workingDays.filter((d: string) =>
+        validDays.includes(d as DayOfWeek)
+      ) as DayOfWeek[])
+    : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+  const holidays: CalendarHoliday[] = Array.isArray(parsedJson.holidays)
+    ? parsedJson.holidays
+        .map((h: any, idx: number) => {
+          const normDate = normalizeDateString(h?.date);
+          if (!normDate) return null;
+          return {
+            id: `ai-hol-${Date.now()}-${idx}`,
+            date: normDate,
+            title: (h?.title || 'University Holiday').trim(),
+          };
+        })
+        .filter((h: any): h is CalendarHoliday => Boolean(h))
+    : [];
+
+  const timetable: TimetableSlot[] = Array.isArray(parsedJson.timetable)
+    ? parsedJson.timetable
+        .map((t: any, idx: number) => {
+          if (!t || !t.day || !validDays.includes(t.day as DayOfWeek)) return null;
+          const matchedId = resolveSubjectId(t.matchedSubjectId, subjects);
+          if (!matchedId) return null;
+          return {
+            id: `ai-slot-${Date.now()}-${idx}`,
+            day: t.day as DayOfWeek,
+            subjectId: matchedId,
+            slotTime: t.slotTime || '09:00 - 10:00 AM',
+          };
+        })
+        .filter((t: any): t is TimetableSlot => Boolean(t))
+    : [];
+
+  return {
+    startDate,
+    endDate,
+    workingDays: workingDays.length > 0 ? workingDays : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    holidays,
+    timetable,
+    summary: parsedJson.summary || 'AI successfully analyzed your schedule document(s)!',
+    calendarNotes: parsedJson.calendarNotes,
+    modelUsed,
+  };
 }
 
 /**
@@ -59,7 +317,9 @@ function parseDataUrl(dataUrl: string): FileData | null {
  */
 export async function analyzeAcademicDocumentsWithAI(options: {
   calendarFileDataUrl?: string;
+  calendarFileName?: string;
   timetableFileDataUrl?: string;
+  timetableFileName?: string;
   subjects: Subject[];
   semNumber: number;
   apiKey?: string;
@@ -97,7 +357,7 @@ TASK:
    - For every class period in the weekly timetable matrix, map each cell to one of the registered subjects by matching its subject code, abbreviation (e.g., "DLD", "DSA", "DBMS", "OS", "Maths"), or title.
    - For each period, assign:
      - day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday"
-     - matchedSubjectId: exact "id" from the student's subject list above (or "" if unmatchable/recess/lunch)
+     - matchedSubjectId: exact "id" from the student's subject list above (or subject code if id cannot be determined, or "" if unmatchable/recess/lunch)
      - slotTime: e.g. "09:00 - 10:00 AM", "10:00 - 11:00 AM", etc. (if visible in timetable header, else estimate standard period)
 
 Return ONLY a valid JSON object matching this exact schema:
@@ -111,7 +371,7 @@ Return ONLY a valid JSON object matching this exact schema:
   "timetable": [
     {
       "day": "Monday",
-      "matchedSubjectId": "<subject_id_from_provided_list>",
+      "matchedSubjectId": "<subject_id_or_code_from_provided_list>",
       "slotTime": "09:00 - 10:00 AM"
     }
   ],
@@ -124,11 +384,11 @@ Return ONLY a valid JSON object matching this exact schema:
   let hasAttachment = false;
 
   if (options.calendarFileDataUrl) {
-    const calFile = parseDataUrl(options.calendarFileDataUrl);
+    const calFile = parseDataUrl(options.calendarFileDataUrl, options.calendarFileName);
     if (calFile) {
       parts.push({
-        inline_data: {
-          mime_type: calFile.mimeType,
+        inlineData: {
+          mimeType: calFile.mimeType,
           data: calFile.base64,
         },
       });
@@ -137,11 +397,11 @@ Return ONLY a valid JSON object matching this exact schema:
   }
 
   if (options.timetableFileDataUrl) {
-    const ttFile = parseDataUrl(options.timetableFileDataUrl);
+    const ttFile = parseDataUrl(options.timetableFileDataUrl, options.timetableFileName);
     if (ttFile) {
       parts.push({
-        inline_data: {
-          mime_type: ttFile.mimeType,
+        inlineData: {
+          mimeType: ttFile.mimeType,
           data: ttFile.base64,
         },
       });
@@ -155,32 +415,46 @@ Return ONLY a valid JSON object matching this exact schema:
     );
   }
 
-  // Model hierarchy: try gemini-2.0-flash first, fallback to gemini-1.5-flash
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+  // 1. Discover dynamically supported models for this user's key
+  let candidates = await discoverSupportedModels(apiKey);
+
+  // If dynamic discovery returned nothing (e.g. network or permissions), use comprehensive fallbacks
+  if (candidates.length === 0) {
+    candidates = FALLBACK_CANDIDATES;
+  } else {
+    // Append any fallback models not already discovered to be maximally resilient
+    for (const fb of FALLBACK_CANDIDATES) {
+      if (!candidates.some((c) => c.model === fb.model)) {
+        candidates.push(fb);
+      }
+    }
+  }
+
   let lastError: any = null;
 
-  for (const model of models) {
+  // Try candidate models in order of ranking
+  for (const candidate of candidates) {
+    const { model, apiVersion } = candidate;
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts,
-              },
-            ],
-            generationConfig: {
-              response_mime_type: 'application/json',
-              temperature: 0.1,
+      const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts,
             },
-          }),
-        }
-      );
+          ],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.1,
+          },
+        }),
+      });
 
       if (!response.ok) {
         const errorBody = await response.text();
@@ -189,82 +463,63 @@ Return ONLY a valid JSON object matching this exact schema:
           const parsed = JSON.parse(errorBody);
           errMsg = parsed.error?.message || errMsg;
         } catch {}
+
+        // If the model was not found for this apiVersion, try alternate version (v1 <-> v1beta)
+        if (
+          response.status === 404 ||
+          errMsg.includes('not found') ||
+          errMsg.includes('not supported')
+        ) {
+          const altVersion = apiVersion === 'v1beta' ? 'v1' : 'v1beta';
+          const altUrl = `https://generativelanguage.googleapis.com/${altVersion}/models/${model}:generateContent?key=${apiKey}`;
+          try {
+            const altResponse = await fetch(altUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts }],
+                generationConfig: {
+                  responseMimeType: 'application/json',
+                  temperature: 0.1,
+                },
+              }),
+            });
+            if (altResponse.ok) {
+              const altData = await altResponse.json();
+              const altText = altData?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (altText) {
+                return parseAndSanitizeResponse(altText, options.subjects, model);
+              }
+            }
+          } catch {}
+        }
+
         throw new Error(errMsg);
       }
 
       const data = await response.json();
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!rawText) {
-        throw new Error('AI returned an empty response. Please verify the uploaded document image/PDF.');
+        throw new Error(
+          'AI returned an empty response. Please verify the uploaded document image/PDF.'
+        );
       }
 
-      const parsedJson = JSON.parse(rawText);
-
-      // Sanitize and validate extracted response
-      const currentYear = new Date().getFullYear();
-      const defaultStart = `${currentYear}-08-03`;
-      const defaultEnd = `${currentYear}-12-18`;
-
-      const validDateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      const startDate =
-        parsedJson.startDate && validDateRegex.test(parsedJson.startDate)
-          ? parsedJson.startDate
-          : defaultStart;
-      const endDate =
-        parsedJson.endDate && validDateRegex.test(parsedJson.endDate)
-          ? parsedJson.endDate
-          : defaultEnd;
-
-      const workingDays: DayOfWeek[] = Array.isArray(parsedJson.workingDays)
-        ? (parsedJson.workingDays.filter((d: string) =>
-            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].includes(d)
-          ) as DayOfWeek[])
-        : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-
-      const validSubjectIds = new Set(options.subjects.map((s) => s.id));
-
-      const holidays: CalendarHoliday[] = Array.isArray(parsedJson.holidays)
-        ? parsedJson.holidays
-            .filter((h: any) => h && h.date && validDateRegex.test(h.date))
-            .map((h: any, idx: number) => ({
-              id: `ai-hol-${Date.now()}-${idx}`,
-              date: h.date,
-              title: h.title || 'University Holiday',
-            }))
-        : [];
-
-      const timetable: TimetableSlot[] = Array.isArray(parsedJson.timetable)
-        ? parsedJson.timetable
-            .filter(
-              (t: any) =>
-                t &&
-                t.day &&
-                t.matchedSubjectId &&
-                validSubjectIds.has(t.matchedSubjectId)
-            )
-            .map((t: any, idx: number) => ({
-              id: `ai-slot-${Date.now()}-${idx}`,
-              day: t.day as DayOfWeek,
-              subjectId: t.matchedSubjectId,
-              slotTime: t.slotTime || '09:00 - 10:00 AM',
-            }))
-        : [];
-
-      return {
-        startDate,
-        endDate,
-        workingDays: workingDays.length > 0 ? workingDays : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        holidays,
-        timetable,
-        summary: parsedJson.summary || 'AI successfully analyzed your schedule document(s)!',
-        calendarNotes: parsedJson.calendarNotes,
-      };
+      return parseAndSanitizeResponse(rawText, options.subjects, model);
     } catch (err: any) {
       lastError = err;
-      console.warn(`Attempt with ${model} failed:`, err);
-      // If error is 404 or model not found, loop to next model
+      console.warn(
+        `Attempt with ${candidate.apiVersion}/models/${candidate.model} failed:`,
+        err.message
+      );
+      // Continue to next candidate
     }
   }
 
-  throw lastError || new Error('Failed to analyze documents with Gemini AI.');
+  throw (
+    lastError ||
+    new Error(
+      'Failed to analyze documents with Gemini AI. Please check your API key and document format.'
+    )
+  );
 }

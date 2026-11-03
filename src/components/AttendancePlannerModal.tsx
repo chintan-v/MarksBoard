@@ -282,7 +282,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     try {
       const result = await analyzeAcademicDocumentsWithAI({
         calendarFileDataUrl: config.calendarFileDataUrl,
+        calendarFileName: config.calendarFileName,
         timetableFileDataUrl: config.timetableFileDataUrl,
+        timetableFileName: config.timetableFileName,
         subjects: safeSemester.subjects,
         semNumber: safeSemester.semNumber,
         apiKey: currentKey,
