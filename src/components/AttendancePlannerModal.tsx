@@ -25,9 +25,12 @@ import {
   Key,
   Loader2,
   Wand2,
+  FlaskConical,
+  BookOpen,
 } from 'lucide-react';
 import type {
   CalendarHoliday,
+  ClassSlotType,
   DayOfWeek,
   Semester,
   SemesterAttendanceConfig,
@@ -37,6 +40,7 @@ import {
   DAYS_OF_WEEK,
   DEFAULT_SUGGESTED_HOLIDAYS,
   STANDARD_TIME_SLOTS,
+  PRACTICAL_TIME_SLOTS,
   calculateSubjectAttendanceAnalysis,
   calculateWorkingDaysDistribution,
   createDefaultAttendanceConfig,
@@ -196,6 +200,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
   const [slotSubjectId, setSlotSubjectId] = useState<string>(
     safeSemester.subjects[0]?.id || ''
   );
+  const [slotType, setSlotType] = useState<ClassSlotType>('theory');
   const [slotTime, setSlotTime] = useState<string>(STANDARD_TIME_SLOTS[0]);
 
   // AI Document Scanning State
@@ -488,11 +493,34 @@ export const AttendancePlannerModal: React.FC<Props> = ({
       day: slotDay,
       subjectId: slotSubjectId,
       slotTime,
+      type: slotType,
     };
 
     saveConfig({
       ...config,
       timetable: [...(config.timetable || []), newSlot],
+    });
+  };
+
+  const handleToggleSlotType = (id: string) => {
+    if (isGuest) {
+      onRequireAuth?.('modify weekly timetable');
+      return;
+    }
+    saveConfig({
+      ...config,
+      timetable: (config.timetable || []).map((s) =>
+        s.id === id
+          ? {
+              ...s,
+              type: s.type === 'practical' ? 'theory' : 'practical',
+              slotTime:
+                s.type === 'practical'
+                  ? STANDARD_TIME_SLOTS[0]
+                  : PRACTICAL_TIME_SLOTS[0],
+            }
+          : s
+      ),
     });
   };
 
@@ -542,6 +570,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     const currentRecord = subjectMap[subjectId] || {
       subjectId,
       attendedClasses: 0,
+      attendedTheory: 0,
+      attendedPractical: 0,
       manualConductedOverride: null,
       manualTotalPlannedOverride: null,
     };
@@ -561,6 +591,16 @@ export const AttendancePlannerModal: React.FC<Props> = ({
       Math.min(maxLimit, (currentRecord.attendedClasses || 0) + delta)
     );
 
+    let curTh = currentRecord.attendedTheory;
+    let curPr = currentRecord.attendedPractical;
+    if (currentAnalysis.courseCategory === 'theory_only') {
+      curTh = newAttended;
+      curPr = 0;
+    } else if (currentAnalysis.courseCategory === 'practical_only') {
+      curTh = 0;
+      curPr = newAttended;
+    }
+
     saveConfig({
       ...config,
       subjectRecords: {
@@ -568,6 +608,121 @@ export const AttendancePlannerModal: React.FC<Props> = ({
         [subjectId]: {
           ...currentRecord,
           attendedClasses: newAttended,
+          attendedTheory: curTh,
+          attendedPractical: curPr,
+        },
+      },
+    });
+  };
+
+  const handleUpdateAttendedType = (
+    subjectId: string,
+    type: 'theory' | 'practical',
+    delta: number
+  ) => {
+    if (isGuest) {
+      onRequireAuth?.('record attendance');
+      return;
+    }
+    const subjectMap = config.subjectRecords || {};
+    const currentRecord = subjectMap[subjectId] || {
+      subjectId,
+      attendedClasses: 0,
+      attendedTheory: 0,
+      attendedPractical: 0,
+      manualConductedOverride: null,
+      manualTotalPlannedOverride: null,
+    };
+
+    const targetSub = safeSemester.subjects.find((s) => s.id === subjectId);
+    if (!targetSub) return;
+
+    const currentAnalysis = calculateSubjectAttendanceAnalysis(
+      targetSub,
+      config,
+      effectiveTarget
+    );
+
+    let curTh = currentRecord.attendedTheory ?? currentAnalysis.theoryAttended;
+    let curPr = currentRecord.attendedPractical ?? currentAnalysis.practicalAttended;
+
+    if (type === 'theory') {
+      const maxTh = currentAnalysis.theoryConducted || 100;
+      curTh = Math.max(0, Math.min(maxTh, curTh + delta));
+    } else {
+      const maxPr = currentAnalysis.practicalConducted || 100;
+      curPr = Math.max(0, Math.min(maxPr, curPr + delta));
+    }
+
+    const totalAttended = curTh + curPr;
+
+    saveConfig({
+      ...config,
+      subjectRecords: {
+        ...subjectMap,
+        [subjectId]: {
+          ...currentRecord,
+          attendedTheory: curTh,
+          attendedPractical: curPr,
+          attendedClasses: totalAttended,
+        },
+      },
+    });
+  };
+
+  const handleSetAttendedTypeDirect = (
+    subjectId: string,
+    type: 'theory' | 'practical',
+    valStr: string
+  ) => {
+    if (isGuest) {
+      onRequireAuth?.('record attendance');
+      return;
+    }
+    const num = parseInt(valStr, 10);
+    const valid = isNaN(num) ? 0 : Math.max(0, num);
+
+    const subjectMap = config.subjectRecords || {};
+    const currentRecord = subjectMap[subjectId] || {
+      subjectId,
+      attendedClasses: 0,
+      attendedTheory: 0,
+      attendedPractical: 0,
+      manualConductedOverride: null,
+      manualTotalPlannedOverride: null,
+    };
+
+    const targetSub = safeSemester.subjects.find((s) => s.id === subjectId);
+    if (!targetSub) return;
+
+    const currentAnalysis = calculateSubjectAttendanceAnalysis(
+      targetSub,
+      config,
+      effectiveTarget
+    );
+
+    let curTh = currentRecord.attendedTheory ?? currentAnalysis.theoryAttended;
+    let curPr = currentRecord.attendedPractical ?? currentAnalysis.practicalAttended;
+
+    if (type === 'theory') {
+      const maxTh = currentAnalysis.theoryConducted || 100;
+      curTh = Math.max(0, Math.min(maxTh, valid));
+    } else {
+      const maxPr = currentAnalysis.practicalConducted || 100;
+      curPr = Math.max(0, Math.min(maxPr, valid));
+    }
+
+    const totalAttended = curTh + curPr;
+
+    saveConfig({
+      ...config,
+      subjectRecords: {
+        ...subjectMap,
+        [subjectId]: {
+          ...currentRecord,
+          attendedTheory: curTh,
+          attendedPractical: curPr,
+          attendedClasses: totalAttended,
         },
       },
     });
@@ -847,6 +1002,10 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   <strong className="text-purple-300 font-mono text-sm block mt-0.5">
                     {aiResult.timetable.length} Class Slots Mapped
                   </strong>
+                  <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                    {aiResult.theoryCount ?? aiResult.timetable.filter((s) => s.type !== 'practical').length} Theory •{' '}
+                    {aiResult.practicalCount ?? aiResult.timetable.filter((s) => s.type === 'practical').length} Practical/Lab
+                  </span>
                 </div>
               </div>
 
@@ -1129,6 +1288,28 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5">
                               {analysis.credits} Credits
                             </span>
+
+                            {/* Theory vs Practical / Lab Badging */}
+                            {analysis.courseCategory === 'integrated' ? (
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-purple-500/15 border-purple-500/30 text-purple-300 flex items-center gap-1">
+                                <BookOpen className="w-3 h-3 text-cyan-300" />
+                                <span>Theory</span>
+                                <span className="text-white/40">+</span>
+                                <FlaskConical className="w-3 h-3 text-amber-300" />
+                                <span>Lab</span>
+                              </span>
+                            ) : analysis.courseCategory === 'practical_only' ? (
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-amber-500/15 border-amber-500/30 text-amber-300 flex items-center gap-1">
+                                <FlaskConical className="w-3 h-3" />
+                                <span>Practical / Lab</span>
+                              </span>
+                            ) : (
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-cyan-500/15 border-cyan-500/30 text-cyan-300 flex items-center gap-1">
+                                <BookOpen className="w-3 h-3" />
+                                <span>Theory Course</span>
+                              </span>
+                            )}
+
                             <span
                               className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${analysis.statusBadge.color}`}
                             >
@@ -1158,8 +1339,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             <div
                               className={`text-2xl sm:text-3xl font-black font-heading ${
                                 analysis.currentPercentage >= effectiveTarget
-                                  ? 'text-emerald-300'
-                                  : 'text-rose-400'
+                                    ? 'text-emerald-300'
+                                    : 'text-rose-400'
                               }`}
                             >
                               {analysis.currentPercentage}%
@@ -1172,7 +1353,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           {/* Interactive Attended Stepper */}
                           <div className="space-y-1">
                             <span className="text-[10px] text-slate-400 block font-semibold text-center">
-                              Classes Present
+                              {analysis.courseCategory === 'practical_only'
+                                ? 'Lab Sessions'
+                                : analysis.courseCategory === 'integrated'
+                                ? 'Total Classes'
+                                : 'Classes Present'}
                             </span>
                             <div className="flex items-center gap-1.5">
                               <button
@@ -1286,6 +1471,119 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           </div>
                         </div>
                       </div>
+
+                      {/* Integrated Subject: Theory vs Lab Interactive Breakdown */}
+                      {analysis.courseCategory === 'integrated' && (
+                        <div className="mt-4 pt-3.5 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Theory Breakdown Box */}
+                          <div className="p-3 rounded-xl bg-slate-950/60 border border-cyan-500/20 flex items-center justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
+                                <BookOpen className="w-3.5 h-3.5" />
+                                <span>Theory Classes</span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 mt-0.5">
+                                Conducted: <strong className="text-white">{analysis.theoryConducted}</strong> • Attended:{' '}
+                                <strong className="text-cyan-300">{analysis.theoryAttended}</strong>
+                              </p>
+                              <div className="text-[11px] font-mono font-bold mt-1">
+                                <span className={analysis.theoryPercentage >= effectiveTarget ? 'text-emerald-300' : 'text-rose-400'}>
+                                  {analysis.theoryPercentage}% Attendance
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'theory', -1)}
+                                disabled={analysis.theoryAttended <= 0}
+                                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white text-xs font-bold flex items-center justify-center border border-white/10 cursor-pointer"
+                                title="Decrease theory class"
+                              >
+                                -
+                              </button>
+                              <input
+                                type="number"
+                                min={0}
+                                max={analysis.theoryConducted || 100}
+                                value={analysis.theoryAttended}
+                                onChange={(e) =>
+                                  handleSetAttendedTypeDirect(analysis.subjectId, 'theory', e.target.value)
+                                }
+                                className="w-11 h-7 text-center font-mono font-bold text-xs bg-black/60 rounded-lg border border-white/20 text-white focus:outline-none focus:border-cyan-400"
+                                title="Directly enter attended theory classes"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'theory', 1)}
+                                disabled={
+                                  analysis.theoryAttended >= analysis.theoryConducted &&
+                                  analysis.theoryConducted > 0
+                                }
+                                className="w-7 h-7 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-cyan-200 text-xs font-bold flex items-center justify-center border border-cyan-500/40 cursor-pointer"
+                                title="Add attended theory class"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Practical / Lab Breakdown Box */}
+                          <div className="p-3 rounded-xl bg-slate-950/60 border border-amber-500/20 flex items-center justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+                                <FlaskConical className="w-3.5 h-3.5" />
+                                <span>Practical / Lab Sessions</span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 mt-0.5">
+                                Conducted: <strong className="text-white">{analysis.practicalConducted}</strong> • Attended:{' '}
+                                <strong className="text-amber-300">{analysis.practicalAttended}</strong>
+                              </p>
+                              <div className="text-[11px] font-mono font-bold mt-1">
+                                <span className={analysis.practicalPercentage >= effectiveTarget ? 'text-emerald-300' : 'text-rose-400'}>
+                                  {analysis.practicalPercentage}% Attendance
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'practical', -1)}
+                                disabled={analysis.practicalAttended <= 0}
+                                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white text-xs font-bold flex items-center justify-center border border-white/10 cursor-pointer"
+                                title="Decrease lab session"
+                              >
+                                -
+                              </button>
+                              <input
+                                type="number"
+                                min={0}
+                                max={analysis.practicalConducted || 100}
+                                value={analysis.practicalAttended}
+                                onChange={(e) =>
+                                  handleSetAttendedTypeDirect(analysis.subjectId, 'practical', e.target.value)
+                                }
+                                className="w-11 h-7 text-center font-mono font-bold text-xs bg-black/60 rounded-lg border border-white/20 text-white focus:outline-none focus:border-amber-400"
+                                title="Directly enter attended practical sessions"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'practical', 1)}
+                                disabled={
+                                  analysis.practicalAttended >= analysis.practicalConducted &&
+                                  analysis.practicalConducted > 0
+                                }
+                                className="w-7 h-7 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-amber-200 text-xs font-bold flex items-center justify-center border border-amber-500/40 cursor-pointer"
+                                title="Add attended lab session"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Expandable Class Cancellation & Conducted Override Section */}
                       {isAdjustOpen && (
@@ -1777,7 +2075,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               </div>
 
               {/* Add Class Period Form */}
-              <form onSubmit={handleAddSlot} className="p-4 rounded-2xl bg-black/40 border border-white/10 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <form onSubmit={handleAddSlot} className="p-4 rounded-2xl bg-black/40 border border-white/10 grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
                 <div>
                   <label className="text-slate-400 block mb-1 font-semibold">Day of Week</label>
                   <select
@@ -1809,17 +2107,62 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
 
                 <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Class Type</label>
+                  <div className="flex rounded-xl bg-slate-900 border border-white/10 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSlotType('theory');
+                        setSlotTime(STANDARD_TIME_SLOTS[0]);
+                      }}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        slotType === 'theory'
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>Theory</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSlotType('practical');
+                        setSlotTime(PRACTICAL_TIME_SLOTS[0]);
+                      }}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        slotType === 'practical'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <FlaskConical className="w-3 h-3" />
+                      <span>Lab</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
                   <label className="text-slate-400 block mb-1 font-semibold">Time Slot</label>
                   <select
                     value={slotTime}
                     onChange={(e) => setSlotTime(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-cyan-400"
                   >
-                    {STANDARD_TIME_SLOTS.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
+                    <optgroup label={slotType === 'practical' ? '🧪 Lab Sessions (2-3 Hours)' : '📖 Standard Class Hours'}>
+                      {(slotType === 'practical' ? PRACTICAL_TIME_SLOTS : STANDARD_TIME_SLOTS).map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label={slotType === 'practical' ? '📖 Standard Single Hours' : '🧪 Lab Sessions'}>
+                      {(slotType === 'practical' ? STANDARD_TIME_SLOTS : PRACTICAL_TIME_SLOTS).map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
 
@@ -1829,7 +2172,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                     className="w-full py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Add Class Slot</span>
+                    <span>Add Slot</span>
                   </button>
                 </div>
               </form>
@@ -1856,20 +2199,53 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                         <div className="space-y-2 mt-3">
                           {daySlots.map((slot) => {
                             const sub = safeSemester.subjects.find((s) => s.id === slot.subjectId);
+                            const isLab = slot.type === 'practical';
                             return (
                               <div
                                 key={slot.id}
-                                className="p-2.5 rounded-xl bg-slate-900 border border-white/10 hover:border-cyan-500/40 transition-colors group flex items-start justify-between gap-1.5"
+                                className={`p-2.5 rounded-xl border transition-all group flex items-start justify-between gap-1.5 ${
+                                  isLab
+                                    ? 'bg-amber-950/20 border-amber-500/30 hover:border-amber-400/50'
+                                    : 'bg-slate-900 border-white/10 hover:border-cyan-500/40'
+                                }`}
                               >
                                 <div className="min-w-0">
-                                  <span className="font-mono font-bold text-xs text-white block truncate">
-                                    {sub?.code || 'SUB'}
-                                  </span>
-                                  <span className="text-[10px] text-slate-400 block truncate">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="font-mono font-bold text-xs text-white block truncate">
+                                      {sub?.code || 'SUB'}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleSlotType(slot.id)}
+                                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors ${
+                                        isLab
+                                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30'
+                                          : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/25'
+                                      }`}
+                                      title="Click to toggle Theory ↔ Practical/Lab"
+                                    >
+                                      {isLab ? (
+                                        <>
+                                          <FlaskConical className="w-2.5 h-2.5" />
+                                          <span>Lab</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <BookOpen className="w-2.5 h-2.5" />
+                                          <span>Theory</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className="text-[10px] text-slate-400 block truncate mt-0.5">
                                     {sub?.name || 'Subject'}
                                   </span>
                                   {slot.slotTime && (
-                                    <span className="text-[9px] text-cyan-400/90 font-mono block mt-0.5">
+                                    <span
+                                      className={`text-[9px] font-mono block mt-0.5 ${
+                                        isLab ? 'text-amber-400/90' : 'text-cyan-400/90'
+                                      }`}
+                                    >
                                       {slot.slotTime}
                                     </span>
                                   )}
@@ -1877,7 +2253,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteSlot(slot.id)}
-                                  className="text-slate-600 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition-opacity p-0.5 cursor-pointer"
+                                  className="text-slate-600 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0"
                                   title="Remove slot"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />

@@ -35,6 +35,8 @@ export interface AIExtractionResult {
   summary: string;
   calendarNotes?: string;
   modelUsed?: string;
+  theoryCount?: number;
+  practicalCount?: number;
 }
 
 interface FileData {
@@ -289,15 +291,40 @@ function parseAndSanitizeResponse(
           if (!t || !t.day || !validDays.includes(t.day as DayOfWeek)) return null;
           const matchedId = resolveSubjectId(t.matchedSubjectId, subjects);
           if (!matchedId) return null;
+
+          const matchedSub = subjects.find((s) => s.id === matchedId);
+          const rawType = String(t.type || '').trim().toLowerCase();
+          const rawTime = String(t.slotTime || '').toLowerCase();
+          const subText = `${matchedSub?.name || ''} ${matchedSub?.code || ''} ${rawTime} ${t.notes || ''}`.toLowerCase();
+
+          // Robust detection for Lab / Practical slots
+          const isLab =
+            rawType === 'practical' ||
+            rawType === 'lab' ||
+            rawType === 'laboratory' ||
+            rawType === 'workshop' ||
+            subText.includes('lab') ||
+            subText.includes('practical') ||
+            subText.includes('workshop') ||
+            rawTime.includes('2 hour') ||
+            rawTime.includes('3 hour') ||
+            (matchedSub && matchedSub.credits === 2 && subText.includes('lab'));
+
+          const slotType: 'theory' | 'practical' = isLab ? 'practical' : 'theory';
+
           return {
             id: `ai-slot-${Date.now()}-${idx}`,
             day: t.day as DayOfWeek,
             subjectId: matchedId,
-            slotTime: t.slotTime || '09:00 - 10:00 AM',
+            slotTime: t.slotTime || (slotType === 'practical' ? '02:00 - 04:00 PM' : '09:00 - 10:00 AM'),
+            type: slotType,
           };
         })
         .filter((t: any): t is TimetableSlot => Boolean(t))
     : [];
+
+  const theoryCount = timetable.filter((s) => s.type !== 'practical').length;
+  const practicalCount = timetable.filter((s) => s.type === 'practical').length;
 
   return {
     startDate,
@@ -305,7 +332,11 @@ function parseAndSanitizeResponse(
     workingDays: workingDays.length > 0 ? workingDays : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
     holidays,
     timetable,
-    summary: parsedJson.summary || 'AI successfully analyzed your schedule document(s)!',
+    theoryCount,
+    practicalCount,
+    summary:
+      parsedJson.summary ||
+      `AI detected ${timetable.length} classes (${theoryCount} Theory + ${practicalCount} Lab/Practical slots) and ${holidays.length} holidays.`,
     calendarNotes: parsedJson.calendarNotes,
     modelUsed,
   };
@@ -353,12 +384,18 @@ TASK:
    - Identify Working Days: Array of active class days (e.g., ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] or including "Saturday").
    - Extract ALL official Holidays, non-instructional days, and festival breaks with exact date (YYYY-MM-DD) and descriptive title.
 
-2. WEEKLY TIMETABLE:
+2. WEEKLY TIMETABLE & LAB/PRACTICAL DETECTION:
    - For every class period in the weekly timetable matrix, map each cell to one of the registered subjects by matching its subject code, abbreviation (e.g., "DLD", "DSA", "DBMS", "OS", "Maths"), or title.
-   - For each period, assign:
-     - day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday"
-     - matchedSubjectId: exact "id" from the student's subject list above (or subject code if id cannot be determined, or "" if unmatchable/recess/lunch)
-     - slotTime: e.g. "09:00 - 10:00 AM", "10:00 - 11:00 AM", etc. (if visible in timetable header, else estimate standard period)
+   - CRITICAL REQUIREMENT: YOU MUST CAREFULLY DISTINGUISH BETWEEN THEORY CLASSES AND LAB / PRACTICAL CLASSES!
+     * How to recognize PRACTICAL / LAB slots:
+       - The slot text contains "LAB", "LABORATORY", "PRACTICAL", "PR", "WORKSHOP", "TUTORIAL", or practical batch codes like "BATCH A", "BATCH B", "B1", "B2", "B3" (e.g., "DSA LAB", "DLD LAB", "PHY LAB", "DBMS LAB", "CS LAB 2").
+       - Multi-period continuous sessions: Labs in engineering colleges usually run for 2 or 3 hours (e.g., "02:00 - 04:00 PM", "02:00 - 05:00 PM", "09:00 - 11:00 AM", or spanning 2 consecutive timetable columns).
+       - The course itself has 2 or 1 credits, or has "Lab" / "Practical" in its name.
+     * For each timetable slot, assign:
+       - day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday"
+       - matchedSubjectId: exact "id" from the student's subject list above (or subject code if id cannot be determined, or "" if unmatchable/recess/lunch)
+       - slotTime: e.g. "09:00 - 10:00 AM" for theory, or "02:00 - 04:00 PM" for lab
+       - type: "practical" for laboratory, workshop, or practical sessions; "theory" for regular lecture classes. DO NOT classify lab classes as normal theory classes!
 
 Return ONLY a valid JSON object matching this exact schema:
 {
@@ -372,10 +409,17 @@ Return ONLY a valid JSON object matching this exact schema:
     {
       "day": "Monday",
       "matchedSubjectId": "<subject_id_or_code_from_provided_list>",
-      "slotTime": "09:00 - 10:00 AM"
+      "slotTime": "09:00 - 10:00 AM",
+      "type": "theory"
+    },
+    {
+      "day": "Tuesday",
+      "matchedSubjectId": "<subject_id_or_code_from_provided_list>",
+      "slotTime": "02:00 - 04:00 PM",
+      "type": "practical"
     }
   ],
-  "summary": "Brief 1-2 sentence overview of what was detected (e.g. 18-week semester from Aug to Dec, 7 holidays, and 26 weekly classes).",
+  "summary": "Brief 1-2 sentence overview of what was detected (e.g. 18-week semester, 7 holidays, and 24 weekly classes including 4 lab sessions).",
   "calendarNotes": "Any additional detected dates like mid-term exams or revision week."
 }`;
 

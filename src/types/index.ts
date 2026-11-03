@@ -75,16 +75,21 @@ export interface CalendarHoliday {
   title: string;
 }
 
+export type ClassSlotType = 'theory' | 'practical';
+
 export interface TimetableSlot {
   id: string;
   day: DayOfWeek;
   subjectId: string;
   slotTime?: string;
+  type?: ClassSlotType; // 'theory' | 'practical'
 }
 
 export interface SubjectAttendanceRecord {
   subjectId: string;
   attendedClasses: number;
+  attendedTheory?: number; // specific theory classes attended
+  attendedPractical?: number; // specific practical/lab classes attended
   manualConductedOverride?: number | null; // User override if classes were cancelled
   manualTotalPlannedOverride?: number | null;
   notes?: string;
@@ -128,6 +133,21 @@ export interface SubjectAttendanceAnalysis {
     color: string;
     message: string;
   };
+
+  // Theory vs Practical / Lab breakdown
+  courseCategory: 'theory_only' | 'practical_only' | 'integrated';
+  hasTheory: boolean;
+  hasPractical: boolean;
+  theoryScheduled: number;
+  theoryScheduledTillToday: number;
+  theoryConducted: number;
+  theoryAttended: number;
+  theoryPercentage: number;
+  practicalScheduled: number;
+  practicalScheduledTillToday: number;
+  practicalConducted: number;
+  practicalAttended: number;
+  practicalPercentage: number;
 }
 
 export interface Semester {

@@ -28,6 +28,15 @@ export const STANDARD_TIME_SLOTS = [
   '04:00 - 05:00 PM',
 ];
 
+export const PRACTICAL_TIME_SLOTS = [
+  '02:00 - 04:00 PM (2 Hours)',
+  '02:00 - 05:00 PM (3 Hours)',
+  '09:00 - 11:00 AM (2 Hours)',
+  '11:15 - 01:15 PM (2 Hours)',
+  '10:00 - 12:00 PM (2 Hours)',
+  '03:00 - 05:00 PM (2 Hours)',
+];
+
 export const DEFAULT_SUGGESTED_HOLIDAYS: CalendarHoliday[] = [
   { id: 'h-1', date: '2026-08-15', title: 'Independence Day 🇮🇳' },
   { id: 'h-2', date: '2026-09-04', title: 'Ganesh Chaturthi 🐘' },
@@ -97,21 +106,31 @@ export function createDefaultAttendanceConfig(semester?: Semester | null): Semes
       targetDays.push(daysPool[subIdx % daysPool.length]);
     }
 
+    const isLab =
+      (sub.name || '').toLowerCase().includes('lab') ||
+      (sub.name || '').toLowerCase().includes('practical') ||
+      sub.credits === 2;
+    const defaultType: 'theory' | 'practical' = isLab ? 'practical' : 'theory';
+
     targetDays.forEach((day, dayIndex) => {
-      const slotTimeIndex = (subIdx + dayIndex) % STANDARD_TIME_SLOTS.length;
-      const slotTime = STANDARD_TIME_SLOTS[slotTimeIndex];
+      const slotTime = isLab
+        ? PRACTICAL_TIME_SLOTS[dayIndex % PRACTICAL_TIME_SLOTS.length]
+        : STANDARD_TIME_SLOTS[(subIdx + dayIndex) % STANDARD_TIME_SLOTS.length];
 
       timetable.push({
-        id: `slot-${sub.id}-${day}-${slotTimeIndex}`,
+        id: `slot-${sub.id}-${day}-${dayIndex}`,
         day,
         subjectId: sub.id,
         slotTime,
+        type: defaultType,
       });
     });
 
     subjectRecords[sub.id] = {
       subjectId: sub.id,
       attendedClasses: 0,
+      attendedTheory: 0,
+      attendedPractical: 0,
       manualConductedOverride: null,
       manualTotalPlannedOverride: null,
       notes: '',
@@ -267,6 +286,19 @@ export function calculateSubjectAttendanceAnalysis(
         color: 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30',
         message: 'No data',
       },
+      courseCategory: 'theory_only',
+      hasTheory: true,
+      hasPractical: false,
+      theoryScheduled: 0,
+      theoryScheduledTillToday: 0,
+      theoryConducted: 0,
+      theoryAttended: 0,
+      theoryPercentage: 100,
+      practicalScheduled: 0,
+      practicalScheduledTillToday: 0,
+      practicalConducted: 0,
+      practicalAttended: 0,
+      practicalPercentage: 100,
     };
   }
 
@@ -307,27 +339,63 @@ export function calculateSubjectAttendanceAnalysis(
     (slot) => slot && slot.subjectId === subject.id
   );
 
-  let totalScheduledClasses = 0;
-  let scheduledTillToday = 0;
+  const isSubNameLab =
+    (subject.name || '').toLowerCase().includes('lab') ||
+    (subject.name || '').toLowerCase().includes('practical');
 
-  subjectSlots.forEach((slot) => {
+  const theorySlots = subjectSlots.filter((slot) => slot.type !== 'practical');
+  const practicalSlots = subjectSlots.filter((slot) => slot.type === 'practical');
+
+  let theoryScheduled = 0;
+  let theoryScheduledTillToday = 0;
+  theorySlots.forEach((slot) => {
     if (!slot || !slot.day) return;
-    const totalDayCount = daysByWeekday[slot.day] || 0;
-    const elapsedDayCount = elapsedByWeekday[slot.day] || 0;
-
-    totalScheduledClasses += totalDayCount;
-    scheduledTillToday += elapsedDayCount;
+    theoryScheduled += daysByWeekday[slot.day] || 0;
+    theoryScheduledTillToday += elapsedByWeekday[slot.day] || 0;
   });
+
+  let practicalScheduled = 0;
+  let practicalScheduledTillToday = 0;
+  practicalSlots.forEach((slot) => {
+    if (!slot || !slot.day) return;
+    practicalScheduled += daysByWeekday[slot.day] || 0;
+    practicalScheduledTillToday += elapsedByWeekday[slot.day] || 0;
+  });
+
+  let totalScheduledClasses = theoryScheduled + practicalScheduled;
+  let scheduledTillToday = theoryScheduledTillToday + practicalScheduledTillToday;
 
   if (totalScheduledClasses === 0) {
     const weeklyFreq = Math.max(1, Math.min(5, subject.credits || 3));
-    totalScheduledClasses = weeklyFreq * 16;
-    scheduledTillToday = Math.floor(totalScheduledClasses * 0.45);
+    if (isSubNameLab || subject.credits === 2) {
+      practicalScheduled = weeklyFreq * 16;
+      practicalScheduledTillToday = Math.floor(practicalScheduled * 0.45);
+    } else {
+      theoryScheduled = weeklyFreq * 16;
+      theoryScheduledTillToday = Math.floor(theoryScheduled * 0.45);
+    }
+    totalScheduledClasses = theoryScheduled + practicalScheduled;
+    scheduledTillToday = theoryScheduledTillToday + practicalScheduledTillToday;
+  }
+
+  const hasTheory = theoryScheduled > 0;
+  const hasPractical = practicalScheduled > 0;
+  let courseCategory: 'theory_only' | 'practical_only' | 'integrated' = 'theory_only';
+  if (hasTheory && hasPractical) {
+    courseCategory = 'integrated';
+  } else if (!hasTheory && hasPractical) {
+    courseCategory = 'practical_only';
+  } else if (isSubNameLab) {
+    courseCategory = 'practical_only';
+  } else {
+    courseCategory = 'theory_only';
   }
 
   const record: SubjectAttendanceRecord = safeConfig.subjectRecords?.[subject.id] || {
     subjectId: subject.id,
     attendedClasses: 0,
+    attendedTheory: 0,
+    attendedPractical: 0,
     manualConductedOverride: null,
     manualTotalPlannedOverride: null,
   };
@@ -346,6 +414,52 @@ export function calculateSubjectAttendanceAnalysis(
     ? Math.max(0, scheduledTillToday - conductedClasses)
     : 0;
 
+  // Breakdown for conducted theory vs practical
+  let theoryConducted = theoryScheduledTillToday;
+  let practicalConducted = practicalScheduledTillToday;
+  if (hasConductedOverride && scheduledTillToday > 0) {
+    const ratio = conductedClasses / scheduledTillToday;
+    theoryConducted = Math.round(theoryScheduledTillToday * ratio);
+    practicalConducted = Math.max(0, conductedClasses - theoryConducted);
+  } else if (hasConductedOverride) {
+    theoryConducted = courseCategory === 'practical_only' ? 0 : conductedClasses;
+    practicalConducted = courseCategory === 'practical_only' ? conductedClasses : 0;
+  }
+
+  // Attended counts for theory and practical
+  const rawAttendedTotal = Math.max(0, Number(record.attendedClasses) || 0);
+  let theoryAttended = 0;
+  let practicalAttended = 0;
+  let attendedClasses = 0;
+
+  if (record.attendedTheory !== undefined || record.attendedPractical !== undefined) {
+    const rawTh = Math.max(0, Number(record.attendedTheory) || 0);
+    const rawPr = Math.max(0, Number(record.attendedPractical) || 0);
+    theoryAttended = theoryConducted > 0 ? Math.min(theoryConducted, rawTh) : rawTh;
+    practicalAttended = practicalConducted > 0 ? Math.min(practicalConducted, rawPr) : rawPr;
+    attendedClasses = theoryAttended + practicalAttended;
+  } else {
+    if (courseCategory === 'practical_only') {
+      practicalAttended = conductedClasses > 0 ? Math.min(conductedClasses, rawAttendedTotal) : rawAttendedTotal;
+      theoryAttended = 0;
+      attendedClasses = practicalAttended;
+    } else if (courseCategory === 'theory_only') {
+      theoryAttended = conductedClasses > 0 ? Math.min(conductedClasses, rawAttendedTotal) : rawAttendedTotal;
+      practicalAttended = 0;
+      attendedClasses = theoryAttended;
+    } else {
+      // Integrated: distribute proportionally
+      theoryAttended = Math.min(theoryConducted, rawAttendedTotal);
+      practicalAttended = Math.min(practicalConducted, Math.max(0, rawAttendedTotal - theoryAttended));
+      attendedClasses = theoryAttended + practicalAttended;
+    }
+  }
+
+  const theoryPercentage =
+    theoryConducted > 0 ? Number(((theoryAttended / theoryConducted) * 100).toFixed(1)) : 100.0;
+  const practicalPercentage =
+    practicalConducted > 0 ? Number(((practicalAttended / practicalConducted) * 100).toFixed(1)) : 100.0;
+
   let totalClassesInSemester: number;
   if (
     record.manualTotalPlannedOverride !== null &&
@@ -358,8 +472,6 @@ export function calculateSubjectAttendanceAnalysis(
     totalClassesInSemester = Math.max(conductedClasses, totalScheduledClasses - cancelledClasses);
   }
 
-  const rawAttended = Math.max(0, Number(record.attendedClasses) || 0);
-  const attendedClasses = conductedClasses > 0 ? Math.min(conductedClasses, rawAttended) : 0;
   const missedClasses = Math.max(0, conductedClasses - attendedClasses);
 
   const currentPercentage =
@@ -445,5 +557,18 @@ export function calculateSubjectAttendanceAnalysis(
       color: badgeColor,
       message: badgeMessage,
     },
+    courseCategory,
+    hasTheory,
+    hasPractical,
+    theoryScheduled,
+    theoryScheduledTillToday,
+    theoryConducted,
+    theoryAttended,
+    theoryPercentage,
+    practicalScheduled,
+    practicalScheduledTillToday,
+    practicalConducted,
+    practicalAttended,
+    practicalPercentage,
   };
 }
