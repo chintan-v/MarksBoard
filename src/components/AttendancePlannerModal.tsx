@@ -21,6 +21,10 @@ import {
   ShieldCheck,
   Info,
   RotateCcw,
+  Bot,
+  Key,
+  Loader2,
+  Wand2,
 } from 'lucide-react';
 import type {
   CalendarHoliday,
@@ -37,6 +41,13 @@ import {
   calculateWorkingDaysDistribution,
   createDefaultAttendanceConfig,
 } from '../utils/attendanceCalculations';
+import {
+  analyzeAcademicDocumentsWithAI,
+  getStoredGeminiApiKey,
+  setStoredGeminiApiKey,
+  hasGeminiApiKey,
+  type AIExtractionResult,
+} from '../utils/geminiAnalyzer';
 
 interface Props {
   isOpen: boolean;
@@ -187,6 +198,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
   );
   const [slotTime, setSlotTime] = useState<string>(STANDARD_TIME_SLOTS[0]);
 
+  // AI Document Scanning State
+  const [isAiScanning, setIsAiScanning] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AIExtractionResult | null>(null);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(() => getStoredGeminiApiKey());
+  const [hasKey, setHasKey] = useState(() => hasGeminiApiKey());
+
   // Synchronize local state with props when semester changes or modal opens
   useEffect(() => {
     if (safeSemester.attendanceConfig) {
@@ -234,6 +253,81 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     saveConfig(fresh);
     setTargetPreset('75');
     setCustomTarget(75);
+  };
+
+  // AI Scan Trigger
+  const handleTriggerAiScan = async () => {
+    if (isGuest) {
+      onRequireAuth?.('use AI document scanner');
+      return;
+    }
+
+    if (!config.calendarFileDataUrl && !config.timetableFileDataUrl) {
+      alert(
+        'Please upload your Academic Calendar and/or Timetable document (PDF or Image) first!'
+      );
+      return;
+    }
+
+    const currentKey = getStoredGeminiApiKey();
+    if (!currentKey) {
+      setIsApiKeyModalOpen(true);
+      return;
+    }
+
+    setIsAiScanning(true);
+    setAiError(null);
+    setAiResult(null);
+
+    try {
+      const result = await analyzeAcademicDocumentsWithAI({
+        calendarFileDataUrl: config.calendarFileDataUrl,
+        timetableFileDataUrl: config.timetableFileDataUrl,
+        subjects: safeSemester.subjects,
+        semNumber: safeSemester.semNumber,
+        apiKey: currentKey,
+      });
+      setAiResult(result);
+    } catch (err: any) {
+      console.error('AI Scan error:', err);
+      setAiError(
+        err.message ||
+          'AI was unable to extract the schedule. Please check the document format or your API key.'
+      );
+    } finally {
+      setIsAiScanning(false);
+    }
+  };
+
+  const handleApplyAiResult = () => {
+    if (!aiResult) return;
+
+    const updatedConfig: SemesterAttendanceConfig = {
+      ...config,
+      startDate: aiResult.startDate || config.startDate,
+      endDate: aiResult.endDate || config.endDate,
+      workingDays:
+        aiResult.workingDays.length > 0 ? aiResult.workingDays : config.workingDays,
+      holidays: aiResult.holidays.length > 0 ? aiResult.holidays : config.holidays,
+      timetable: aiResult.timetable.length > 0 ? aiResult.timetable : config.timetable,
+    };
+
+    saveConfig(updatedConfig);
+    setAiResult(null);
+  };
+
+  const handleSaveApiKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStoredGeminiApiKey(apiKeyInput.trim());
+    setHasKey(hasGeminiApiKey());
+    setIsApiKeyModalOpen(false);
+
+    if (apiKeyInput.trim() && (config.calendarFileDataUrl || config.timetableFileDataUrl)) {
+      // Automatically trigger scan after setting key
+      setTimeout(() => {
+        handleTriggerAiScan();
+      }, 100);
+    }
   };
 
   // Target change handler
@@ -323,7 +417,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
     saveConfig({
       ...config,
-      holidays: [...(config.holidays || []), ...toAdd].sort((a, b) => a.date.localeCompare(b.date)),
+      holidays: [...(config.holidays || []), ...toAdd].sort((a, b) =>
+        a.date.localeCompare(b.date)
+      ),
     });
   };
 
@@ -434,7 +530,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     }
   };
 
-  // Attendance Record Updates (Attended, Conducted Override, Total Override)
+  // Attendance Record Updates
   const handleUpdateAttended = (subjectId: string, delta: number) => {
     if (isGuest) {
       onRequireAuth?.('record attendance');
@@ -458,7 +554,10 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     );
 
     const maxLimit = currentAnalysis.conductedClasses || 100;
-    const newAttended = Math.max(0, Math.min(maxLimit, (currentRecord.attendedClasses || 0) + delta));
+    const newAttended = Math.max(
+      0,
+      Math.min(maxLimit, (currentRecord.attendedClasses || 0) + delta)
+    );
 
     saveConfig({
       ...config,
@@ -581,12 +680,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     config.holidays
   );
 
+  const hasUploadedDocs = Boolean(config.calendarFileDataUrl || config.timetableFileDataUrl);
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div className="relative w-full max-w-5xl glass-panel rounded-3xl border border-cyan-500/30 shadow-2xl overflow-hidden bg-slate-900/95 max-h-[94vh] flex flex-col my-auto">
         <AttendanceErrorBoundary onReset={handleResetToDefaults}>
           {/* Header */}
-          <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 shrink-0">
+          <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 shrink-0">
             <div className="flex items-center gap-3.5">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shadow-lg shadow-cyan-500/10">
                 <Calendar className="w-5 h-5" />
@@ -601,17 +702,177 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Calculate total classes from Academic Calendar & Timetable, factor cancellations, and find how many leaves you can safely take!
+                  AI reads your uploaded calendar & timetable, detects cancellations, and computes your safe leave margins!
                 </p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
+            <div className="flex items-center gap-2">
+              {/* AI Scanner Button in Header */}
+              <button
+                type="button"
+                onClick={handleTriggerAiScan}
+                disabled={isAiScanning || !hasUploadedDocs}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                title={
+                  hasUploadedDocs
+                    ? 'Let Gemini AI scan uploaded calendar & timetable'
+                    : 'Upload your Academic Calendar or Timetable first to enable AI Scanning'
+                }
+              >
+                {isAiScanning ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>AI Scanning...</span>
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                    <span>Scan with AI</span>
+                  </>
+                )}
+              </button>
+
+              {/* Gemini Key Settings */}
+              <button
+                type="button"
+                onClick={() => setIsApiKeyModalOpen(true)}
+                className={`p-2 rounded-xl border text-xs transition-colors cursor-pointer ${
+                  hasKey
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                }`}
+                title={hasKey ? 'Gemini AI API Key active' : 'Configure Gemini API Key'}
+              >
+                <Key className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={onClose}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer ml-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
+
+          {/* AI Status Banners */}
+          {isAiScanning && (
+            <div className="mx-6 mt-4 p-4 rounded-2xl bg-gradient-to-r from-cyan-950/70 to-purple-950/70 border border-cyan-400/40 text-cyan-200 text-xs flex items-center gap-3.5 animate-pulse shadow-lg">
+              <Loader2 className="w-6 h-6 text-cyan-400 animate-spin shrink-0" />
+              <div>
+                <h5 className="font-bold text-sm text-white mb-0.5">
+                  🤖 Gemini AI is reading your uploaded documents...
+                </h5>
+                <p className="text-[11px] text-cyan-300/80">
+                  Extracting semester dates, identifying holiday lists, and matching timetable class periods to your course cards.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {aiError && (
+            <div className="mx-6 mt-4 p-4 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-3 shadow-lg animate-fadeIn">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <strong className="font-bold text-rose-100 block text-sm">AI Scan Notice:</strong>
+                <p className="text-[11px] text-rose-200/90 mt-0.5 leading-relaxed">{aiError}</p>
+                <button
+                  type="button"
+                  onClick={() => setIsApiKeyModalOpen(true)}
+                  className="mt-2 text-[11px] underline text-rose-300 hover:text-white font-semibold"
+                >
+                  Verify or update your Gemini API Key
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAiError(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* AI Result Review Card */}
+          {aiResult && (
+            <div className="mx-6 mt-4 p-5 rounded-2xl bg-gradient-to-r from-purple-950/80 via-cyan-950/80 to-slate-900 border border-cyan-400/50 shadow-2xl animate-fadeIn space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                    <Wand2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                      <span>AI Document Analysis Complete</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Ready to Apply
+                      </span>
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-0.5">{aiResult.summary}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setAiResult(null)}
+                  className="text-slate-400 hover:text-white p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                    Detected Semester
+                  </span>
+                  <strong className="text-cyan-300 font-mono text-sm block mt-0.5">
+                    {aiResult.startDate} → {aiResult.endDate}
+                  </strong>
+                </div>
+                <div className="p-3 rounded-xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                    Holidays Found
+                  </span>
+                  <strong className="text-amber-300 font-mono text-sm block mt-0.5">
+                    {aiResult.holidays.length} Holidays Detected
+                  </strong>
+                </div>
+                <div className="p-3 rounded-xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                    Timetable Classes
+                  </span>
+                  <strong className="text-purple-300 font-mono text-sm block mt-0.5">
+                    {aiResult.timetable.length} Class Slots Mapped
+                  </strong>
+                </div>
+              </div>
+
+              {aiResult.calendarNotes && (
+                <div className="text-[11px] text-slate-300 bg-white/5 p-2.5 rounded-lg border border-white/5">
+                  💡 <strong>Detected Details:</strong> {aiResult.calendarNotes}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setAiResult(null)}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs transition-colors cursor-pointer"
+                >
+                  Dismiss
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyAiResult}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Apply AI Extracted Schedule</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Global Summary Stats Bar */}
           <div className="px-6 py-3 bg-slate-950/60 border-b border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
@@ -683,7 +944,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </span>
                 <span
                   className={`text-base font-extrabold font-heading ${
-                    shortageSubjectsCount === 0 ? 'text-emerald-300' : 'text-rose-300'
+                    shortageSubjectsCount === 0
+                      ? 'All Safe'
+                      : `${shortageSubjectsCount} Subjects Under ${effectiveTarget}%`
                   }`}
                 >
                   {shortageSubjectsCount === 0
@@ -935,7 +1198,10 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               <button
                                 type="button"
                                 onClick={() => handleUpdateAttended(analysis.subjectId, 1)}
-                                disabled={analysis.attendedClasses >= analysis.conductedClasses && analysis.conductedClasses > 0}
+                                disabled={
+                                  analysis.attendedClasses >= analysis.conductedClasses &&
+                                  analysis.conductedClasses > 0
+                                }
                                 className="w-8 h-8 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-cyan-200 text-base font-bold transition-all flex items-center justify-center border border-cyan-500/40 cursor-pointer"
                                 title="Present today (+1 class)"
                               >
@@ -961,7 +1227,10 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                   <span className="text-xs text-emerald-400/80 font-medium">Safe</span>
                                 </div>
                                 <p className="text-[11px] text-slate-400 leading-tight">
-                                  You can safely take <strong className="text-emerald-300">{analysis.canBunkMore}</strong> more leaves across the semester and finish at or above {effectiveTarget}%.
+                                  You can safely take{' '}
+                                  <strong className="text-emerald-300">{analysis.canBunkMore}</strong>{' '}
+                                  more leaves across the semester and finish at or above{' '}
+                                  {effectiveTarget}%.
                                 </p>
                                 {analysis.immediateBunkSafe > 0 && (
                                   <p className="text-[10px] text-cyan-300/90 font-medium pt-0.5">
@@ -976,7 +1245,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                   <span>Shortage: Need Next {analysis.consecutiveClassesNeeded} Classes!</span>
                                 </div>
                                 <p className="text-[11px] text-rose-200/90 leading-tight">
-                                  Attend the next <strong className="text-rose-100 font-bold">{analysis.consecutiveClassesNeeded} consecutive classes</strong> without missing any to restore {effectiveTarget}%.
+                                  Attend the next{' '}
+                                  <strong className="text-rose-100 font-bold">
+                                    {analysis.consecutiveClassesNeeded} consecutive classes
+                                  </strong>{' '}
+                                  without missing any to restore {effectiveTarget}%.
                                 </p>
                               </div>
                             )}
@@ -987,7 +1260,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             <button
                               type="button"
                               onClick={() =>
-                                setExpandedAdjustSubjectId(isAdjustOpen ? null : analysis.subjectId)
+                                setExpandedAdjustSubjectId(
+                                  isAdjustOpen ? null : analysis.subjectId
+                                )
                               }
                               className="text-[11px] text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 transition-colors cursor-pointer"
                             >
@@ -1018,7 +1293,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             <span>Class Cancellation & Actual Conducted Classes Adjustment</span>
                           </div>
                           <p className="text-slate-400 text-[11px] leading-relaxed">
-                            Timetable scheduled <strong className="text-slate-200">{analysis.scheduledTillToday} classes</strong> up to today. If faculty was on leave or classes were cancelled, enter the actual conducted count below. The website will automatically update the total semester classes accordingly!
+                            Timetable scheduled{' '}
+                            <strong className="text-slate-200">
+                              {analysis.scheduledTillToday} classes
+                            </strong>{' '}
+                            up to today. If faculty was on leave or classes were cancelled, enter the actual conducted count below. The website will automatically update the total semester classes accordingly!
                           </p>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
@@ -1095,6 +1374,113 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           {/* Tab 2: Academic Calendar & Holidays */}
           {activeTab === 'calendar' && (
             <div className="p-6 overflow-y-auto space-y-6">
+              {/* AI Assistant Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 via-cyan-950/60 to-slate-900 border border-cyan-400/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-sm text-white">
+                      AI Academic Calendar Scanner
+                    </h5>
+                    <p className="text-xs text-slate-300">
+                      Upload your college's official calendar circular below. Gemini AI will automatically extract the start date, end date, and all holidays!
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleTriggerAiScan}
+                  disabled={isAiScanning || !config.calendarFileDataUrl}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Scan Calendar with AI</span>
+                </button>
+              </div>
+
+              {/* Academic Calendar Document Attachment / Upload */}
+              <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                      <UploadCloud className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white">
+                        Upload Academic Calendar Document
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Upload your official college PDF or image calendar for AI to read
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>{config.calendarFileName ? 'Replace File' : 'Upload File (PDF/Image)'}</span>
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        onChange={(e) => handleFileUpload(e, 'calendar')}
+                        className="hidden"
+                      />
+                    </label>
+                    {config.calendarFileName && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile('calendar')}
+                        className="p-2 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"
+                        title="Remove uploaded document"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {config.calendarFileName && (
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-cyan-500/30 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="w-5 h-5 text-cyan-400" />
+                      <div>
+                        <span className="text-xs font-semibold text-white block">
+                          {config.calendarFileName}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-mono">
+                          Ready for AI scanning & date extraction
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleTriggerAiScan}
+                        disabled={isAiScanning}
+                        className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>AI Scan</span>
+                      </button>
+                      {config.calendarFileDataUrl && (
+                        <a
+                          href={config.calendarFileDataUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          <span>Preview</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Calendar Dates & Working Days Configuration */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Semester Date Range */}
@@ -1104,7 +1490,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                     <span>Semester Working Period</span>
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Enter the start and end dates from your college's official academic calendar. The website counts every working day and scheduled class period between these dates.
+                    Start and end dates extracted by AI or entered manually. All working days between these dates are computed automatically.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -1146,7 +1532,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                     <span>Weekly Working Days</span>
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Select the days of the week on which classes are conducted (e.g., Mon–Fri or including Saturdays).
+                    Select active days on which classes are conducted (e.g., Mon–Fri or including Saturdays).
                   </p>
 
                   <div className="grid grid-cols-3 gap-2">
@@ -1172,73 +1558,6 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Academic Calendar Document Attachment / Upload */}
-              <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                      <UploadCloud className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">Upload Academic Calendar Document</h4>
-                      <p className="text-xs text-slate-400">
-                        Upload your official college PDF or image calendar to reference dates anytime
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <label className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
-                      <UploadCloud className="w-3.5 h-3.5" />
-                      <span>{config.calendarFileName ? 'Replace File' : 'Upload File (PDF/Image)'}</span>
-                      <input
-                        type="file"
-                        accept=".pdf,image/*"
-                        onChange={(e) => handleFileUpload(e, 'calendar')}
-                        className="hidden"
-                      />
-                    </label>
-                    {config.calendarFileName && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFile('calendar')}
-                        className="p-2 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"
-                        title="Remove uploaded document"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {config.calendarFileName && (
-                  <div className="p-3.5 rounded-xl bg-black/40 border border-cyan-500/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <FileText className="w-5 h-5 text-cyan-400" />
-                      <div>
-                        <span className="text-xs font-semibold text-white block">
-                          {config.calendarFileName}
-                        </span>
-                        <span className="text-[10px] text-emerald-400 font-mono">
-                          Attached to Semester {safeSemester.semNumber} Calendar
-                        </span>
-                      </div>
-                    </div>
-                    {config.calendarFileDataUrl && (
-                      <a
-                        href={config.calendarFileDataUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1 transition-colors"
-                      >
-                        <span>Preview / Open</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-
               {/* University Holidays / Non-Instructional Days List */}
               <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1248,7 +1567,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                       <span>Holidays & University Vacations ({(config.holidays || []).length})</span>
                     </h4>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Classes scheduled on holidays are automatically deducted from the total semester class count.
+                      Classes falling on holidays are automatically deducted from the total semester class count.
                     </p>
                   </div>
 
@@ -1319,6 +1638,33 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           {/* Tab 3: Weekly Timetable */}
           {activeTab === 'timetable' && (
             <div className="p-6 overflow-y-auto space-y-6">
+              {/* AI Timetable Assistant Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 via-fuchsia-950/60 to-slate-900 border border-purple-400/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-sm text-white">
+                      AI Timetable Scanner & Subject Mapper
+                    </h5>
+                    <p className="text-xs text-slate-300">
+                      Upload a photo or PDF of your weekly timetable. Gemini AI will read every period and automatically assign classes to your registered subjects!
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleTriggerAiScan}
+                  disabled={isAiScanning || !config.timetableFileDataUrl}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Scan Timetable with AI</span>
+                </button>
+              </div>
+
               {/* Timetable Document Attachment */}
               <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1327,9 +1673,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                       <Clock className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white">Upload Weekly Timetable Document</h4>
+                      <h4 className="text-sm font-bold text-white">
+                        Upload Weekly Timetable Document
+                      </h4>
                       <p className="text-xs text-slate-400">
-                        Upload your official section timetable PDF or image for quick access
+                        Upload your section timetable PDF or image for AI parsing
                       </p>
                     </div>
                   </div>
@@ -1367,21 +1715,32 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           {config.timetableFileName}
                         </span>
                         <span className="text-[10px] text-purple-300 font-mono">
-                          Official Timetable Document
+                          Ready for AI scanning & period mapping
                         </span>
                       </div>
                     </div>
-                    {config.timetableFileDataUrl && (
-                      <a
-                        href={config.timetableFileDataUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleTriggerAiScan}
+                        disabled={isAiScanning}
+                        className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <span>Preview / Open</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>AI Scan</span>
+                      </button>
+                      {config.timetableFileDataUrl && (
+                        <a
+                          href={config.timetableFileDataUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          <span>Preview</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1389,9 +1748,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               {/* Quick Actions Bar */}
               <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl glass-card border border-white/10">
                 <div>
-                  <h4 className="text-sm font-bold text-white">Interactive Timetable Matrix</h4>
+                  <h4 className="text-sm font-bold text-white">Weekly Timetable Matrix</h4>
                   <p className="text-xs text-slate-400">
-                    Assign classes to days of the week. Subject names are automatically taken from your semester cards!
+                    Auto-populated by AI from your uploaded timetable or customizable below.
                   </p>
                 </div>
 
@@ -1551,9 +1910,20 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
           {/* Footer */}
           <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between bg-slate-950/80 shrink-0">
-            <span className="text-xs text-slate-400 hidden sm:inline">
-              All timetable and attendance data auto-saved to your student profile!
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400 hidden sm:inline">
+                All timetable and attendance data auto-saved to your student profile!
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsApiKeyModalOpen(true)}
+                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-medium cursor-pointer"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>{hasKey ? 'Gemini AI Configured' : 'Set Gemini AI Key'}</span>
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={onClose}
@@ -1563,6 +1933,89 @@ export const AttendancePlannerModal: React.FC<Props> = ({
             </button>
           </div>
         </AttendanceErrorBoundary>
+
+        {/* Gemini API Key Dialog Modal */}
+        {isApiKeyModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+            <div className="w-full max-w-md glass-panel rounded-3xl border border-cyan-500/40 p-6 bg-slate-900 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                    <Key className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-white">Google Gemini AI Setup</h4>
+                    <span className="text-[11px] text-emerald-400 font-semibold">
+                      100% Free • Powered by Gemini Vision
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsApiKeyModalOpen(false)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-300 leading-relaxed">
+                MarksBoard uses Google Gemini to read your uploaded Academic Calendar & Timetable photos or PDFs, detect semester dates, find holidays, and automatically map class periods to your course cards.
+              </p>
+
+              <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/20 text-xs text-cyan-200 space-y-1.5">
+                <span className="font-bold block">Don't have a free key yet?</span>
+                <p className="text-[11px] text-slate-300">
+                  You can generate a free Gemini API key in 30 seconds with any Google account:
+                </p>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] shadow-sm transition-all"
+                >
+                  <span>Get Free Key at Google AI Studio</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              <form onSubmit={handleSaveApiKey} className="space-y-3 pt-1">
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1 font-semibold">
+                    Paste Gemini API Key:
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="AIzaSy..."
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 block">
+                    Your key is saved locally in this browser and never uploaded anywhere else.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsApiKeyModalOpen(false)}
+                    className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md"
+                  >
+                    Save & Activate AI
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body
