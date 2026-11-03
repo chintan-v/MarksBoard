@@ -34,6 +34,7 @@ import type {
   DayOfWeek,
   Semester,
   SemesterAttendanceConfig,
+  SubjectAttendanceRecord,
   TimetableSlot,
 } from '../types';
 import {
@@ -41,7 +42,7 @@ import {
   DEFAULT_SUGGESTED_HOLIDAYS,
   STANDARD_TIME_SLOTS,
   PRACTICAL_TIME_SLOTS,
-  calculateSubjectAttendanceAnalysis,
+  calculateAllSemesterAttendanceAnalyses,
   calculateWorkingDaysDistribution,
   createDefaultAttendanceConfig,
 } from '../utils/attendanceCalculations';
@@ -560,121 +561,65 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     }
   };
 
-  // Attendance Record Updates
-  const handleUpdateAttended = (subjectId: string, delta: number) => {
+  // Attendance Record Updates (key can be sub.id, sub.id__theory, or sub.id__practical)
+  const handleUpdateAttended = (analysisId: string, delta: number) => {
     if (isGuest) {
       onRequireAuth?.('record attendance');
       return;
     }
+    const targetAnalysis = subjectAnalyses.find((s) => s.id === analysisId);
+    if (!targetAnalysis) return;
+
     const subjectMap = config.subjectRecords || {};
-    const currentRecord = subjectMap[subjectId] || {
-      subjectId,
+    const currentRecord = subjectMap[analysisId] || {
+      subjectId: targetAnalysis.subjectId,
       attendedClasses: 0,
-      attendedTheory: 0,
-      attendedPractical: 0,
       manualConductedOverride: null,
       manualTotalPlannedOverride: null,
     };
 
-    const targetSub = safeSemester.subjects.find((s) => s.id === subjectId);
-    if (!targetSub) return;
+    const maxLimit = targetAnalysis.conductedClasses || 100;
+    const curAttended = currentRecord.attendedClasses ?? targetAnalysis.attendedClasses;
+    const newAttended = Math.max(0, Math.min(maxLimit, curAttended + delta));
 
-    const currentAnalysis = calculateSubjectAttendanceAnalysis(
-      targetSub,
-      config,
-      effectiveTarget
-    );
-
-    const maxLimit = currentAnalysis.conductedClasses || 100;
-    const newAttended = Math.max(
-      0,
-      Math.min(maxLimit, (currentRecord.attendedClasses || 0) + delta)
-    );
-
-    let curTh = currentRecord.attendedTheory;
-    let curPr = currentRecord.attendedPractical;
-    if (currentAnalysis.courseCategory === 'theory_only') {
-      curTh = newAttended;
-      curPr = 0;
-    } else if (currentAnalysis.courseCategory === 'practical_only') {
-      curTh = 0;
-      curPr = newAttended;
-    }
-
-    saveConfig({
-      ...config,
-      subjectRecords: {
-        ...subjectMap,
-        [subjectId]: {
-          ...currentRecord,
-          attendedClasses: newAttended,
-          attendedTheory: curTh,
-          attendedPractical: curPr,
-        },
+    const updatedMap: Record<string, SubjectAttendanceRecord> = {
+      ...subjectMap,
+      [analysisId]: {
+        ...currentRecord,
+        attendedClasses: newAttended,
       },
-    });
-  };
-
-  const handleUpdateAttendedType = (
-    subjectId: string,
-    type: 'theory' | 'practical',
-    delta: number
-  ) => {
-    if (isGuest) {
-      onRequireAuth?.('record attendance');
-      return;
-    }
-    const subjectMap = config.subjectRecords || {};
-    const currentRecord = subjectMap[subjectId] || {
-      subjectId,
-      attendedClasses: 0,
-      attendedTheory: 0,
-      attendedPractical: 0,
-      manualConductedOverride: null,
-      manualTotalPlannedOverride: null,
     };
 
-    const targetSub = safeSemester.subjects.find((s) => s.id === subjectId);
-    if (!targetSub) return;
+    // If this is an integrated item (ends with __theory or __practical),
+    // sync the parent subjectRecord[targetAnalysis.subjectId] as well
+    if (analysisId.includes('__')) {
+      const parentSubId = targetAnalysis.subjectId;
+      const thKey = `${parentSubId}__theory`;
+      const prKey = `${parentSubId}__practical`;
+      const thVal =
+        analysisId === thKey
+          ? newAttended
+          : updatedMap[thKey]?.attendedClasses ?? updatedMap[parentSubId]?.attendedTheory ?? 0;
+      const prVal =
+        analysisId === prKey
+          ? newAttended
+          : updatedMap[prKey]?.attendedClasses ?? updatedMap[parentSubId]?.attendedPractical ?? 0;
 
-    const currentAnalysis = calculateSubjectAttendanceAnalysis(
-      targetSub,
-      config,
-      effectiveTarget
-    );
-
-    let curTh = currentRecord.attendedTheory ?? currentAnalysis.theoryAttended;
-    let curPr = currentRecord.attendedPractical ?? currentAnalysis.practicalAttended;
-
-    if (type === 'theory') {
-      const maxTh = currentAnalysis.theoryConducted || 100;
-      curTh = Math.max(0, Math.min(maxTh, curTh + delta));
-    } else {
-      const maxPr = currentAnalysis.practicalConducted || 100;
-      curPr = Math.max(0, Math.min(maxPr, curPr + delta));
+      updatedMap[parentSubId] = {
+        ...(updatedMap[parentSubId] || { subjectId: parentSubId }),
+        attendedClasses: thVal + prVal,
+        attendedTheory: thVal,
+        attendedPractical: prVal,
+      };
     }
-
-    const totalAttended = curTh + curPr;
 
     saveConfig({
       ...config,
-      subjectRecords: {
-        ...subjectMap,
-        [subjectId]: {
-          ...currentRecord,
-          attendedTheory: curTh,
-          attendedPractical: curPr,
-          attendedClasses: totalAttended,
-        },
-      },
+      subjectRecords: updatedMap,
     });
   };
 
-  const handleSetAttendedTypeDirect = (
-    subjectId: string,
-    type: 'theory' | 'practical',
-    valStr: string
-  ) => {
+  const handleSetAttendedDirect = (analysisId: string, valStr: string) => {
     if (isGuest) {
       onRequireAuth?.('record attendance');
       return;
@@ -682,90 +627,68 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     const num = parseInt(valStr, 10);
     const valid = isNaN(num) ? 0 : Math.max(0, num);
 
-    const subjectMap = config.subjectRecords || {};
-    const currentRecord = subjectMap[subjectId] || {
-      subjectId,
-      attendedClasses: 0,
-      attendedTheory: 0,
-      attendedPractical: 0,
-      manualConductedOverride: null,
-      manualTotalPlannedOverride: null,
-    };
-
-    const targetSub = safeSemester.subjects.find((s) => s.id === subjectId);
-    if (!targetSub) return;
-
-    const currentAnalysis = calculateSubjectAttendanceAnalysis(
-      targetSub,
-      config,
-      effectiveTarget
-    );
-
-    let curTh = currentRecord.attendedTheory ?? currentAnalysis.theoryAttended;
-    let curPr = currentRecord.attendedPractical ?? currentAnalysis.practicalAttended;
-
-    if (type === 'theory') {
-      const maxTh = currentAnalysis.theoryConducted || 100;
-      curTh = Math.max(0, Math.min(maxTh, valid));
-    } else {
-      const maxPr = currentAnalysis.practicalConducted || 100;
-      curPr = Math.max(0, Math.min(maxPr, valid));
-    }
-
-    const totalAttended = curTh + curPr;
-
-    saveConfig({
-      ...config,
-      subjectRecords: {
-        ...subjectMap,
-        [subjectId]: {
-          ...currentRecord,
-          attendedTheory: curTh,
-          attendedPractical: curPr,
-          attendedClasses: totalAttended,
-        },
-      },
-    });
-  };
-
-  const handleSetAttendedDirect = (subjectId: string, valStr: string) => {
-    if (isGuest) {
-      onRequireAuth?.('record attendance');
-      return;
-    }
-    const num = parseInt(valStr, 10);
-    const valid = isNaN(num) ? 0 : Math.max(0, num);
+    const targetAnalysis = subjectAnalyses.find((s) => s.id === analysisId);
+    if (!targetAnalysis) return;
 
     const subjectMap = config.subjectRecords || {};
-    const currentRecord = subjectMap[subjectId] || {
-      subjectId,
+    const currentRecord = subjectMap[analysisId] || {
+      subjectId: targetAnalysis.subjectId,
       attendedClasses: 0,
       manualConductedOverride: null,
       manualTotalPlannedOverride: null,
     };
 
+    const maxLimit = targetAnalysis.conductedClasses || 100;
+    const finalVal = Math.min(maxLimit, valid);
+
+    const updatedMap: Record<string, SubjectAttendanceRecord> = {
+      ...subjectMap,
+      [analysisId]: {
+        ...currentRecord,
+        attendedClasses: finalVal,
+      },
+    };
+
+    if (analysisId.includes('__')) {
+      const parentSubId = targetAnalysis.subjectId;
+      const thKey = `${parentSubId}__theory`;
+      const prKey = `${parentSubId}__practical`;
+      const thVal =
+        analysisId === thKey
+          ? finalVal
+          : updatedMap[thKey]?.attendedClasses ?? updatedMap[parentSubId]?.attendedTheory ?? 0;
+      const prVal =
+        analysisId === prKey
+          ? finalVal
+          : updatedMap[prKey]?.attendedClasses ?? updatedMap[parentSubId]?.attendedPractical ?? 0;
+
+      updatedMap[parentSubId] = {
+        ...(updatedMap[parentSubId] || { subjectId: parentSubId }),
+        attendedClasses: thVal + prVal,
+        attendedTheory: thVal,
+        attendedPractical: prVal,
+      };
+    }
+
     saveConfig({
       ...config,
-      subjectRecords: {
-        ...subjectMap,
-        [subjectId]: {
-          ...currentRecord,
-          attendedClasses: valid,
-        },
-      },
+      subjectRecords: updatedMap,
     });
   };
 
-  // Manual Conducted Override (for cancelled classes)
-  const handleSetConductedOverride = (subjectId: string, valStr: string) => {
+  // Manual Conducted Override (for cancelled classes / sessions)
+  const handleSetConductedOverride = (analysisId: string, valStr: string) => {
     if (isGuest) {
       onRequireAuth?.('override conducted classes');
       return;
     }
+    const targetAnalysis = subjectAnalyses.find((s) => s.id === analysisId);
+    if (!targetAnalysis) return;
+
     const subjectMap = config.subjectRecords || {};
-    const currentRecord = subjectMap[subjectId] || {
-      subjectId,
-      attendedClasses: 0,
+    const currentRecord = subjectMap[analysisId] || {
+      subjectId: targetAnalysis.subjectId,
+      attendedClasses: targetAnalysis.attendedClasses,
       manualConductedOverride: null,
       manualTotalPlannedOverride: null,
     };
@@ -776,7 +699,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
       ...config,
       subjectRecords: {
         ...subjectMap,
-        [subjectId]: {
+        [analysisId]: {
           ...currentRecord,
           manualConductedOverride: overrideVal,
         },
@@ -785,15 +708,18 @@ export const AttendancePlannerModal: React.FC<Props> = ({
   };
 
   // Manual Total Planned Classes Override
-  const handleSetTotalPlannedOverride = (subjectId: string, valStr: string) => {
+  const handleSetTotalPlannedOverride = (analysisId: string, valStr: string) => {
     if (isGuest) {
       onRequireAuth?.('override total semester classes');
       return;
     }
+    const targetAnalysis = subjectAnalyses.find((s) => s.id === analysisId);
+    if (!targetAnalysis) return;
+
     const subjectMap = config.subjectRecords || {};
-    const currentRecord = subjectMap[subjectId] || {
-      subjectId,
-      attendedClasses: 0,
+    const currentRecord = subjectMap[analysisId] || {
+      subjectId: targetAnalysis.subjectId,
+      attendedClasses: targetAnalysis.attendedClasses,
       manualConductedOverride: null,
       manualTotalPlannedOverride: null,
     };
@@ -804,7 +730,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
       ...config,
       subjectRecords: {
         ...subjectMap,
-        [subjectId]: {
+        [analysisId]: {
           ...currentRecord,
           manualTotalPlannedOverride: overrideVal,
         },
@@ -812,11 +738,13 @@ export const AttendancePlannerModal: React.FC<Props> = ({
     });
   };
 
-  // Calculations for all subjects (guarded against corrupt data)
+  // Calculations for all subjects (Theory and Practicals counted as different subjects in attendance!)
   const subjectAnalyses = useMemo(() => {
-    return (safeSemester.subjects || [])
-      .filter((sub) => sub && sub.id)
-      .map((sub) => calculateSubjectAttendanceAnalysis(sub, config, effectiveTarget));
+    return calculateAllSemesterAttendanceAnalyses(
+      safeSemester.subjects || [],
+      config,
+      effectiveTarget
+    );
   }, [safeSemester.subjects, config, effectiveTarget]);
 
   // Aggregate stats
@@ -1262,19 +1190,24 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               {/* Subject Attendance Cards Grid */}
               <div className="space-y-4">
                 {subjectAnalyses.map((analysis) => {
-                  const isAdjustOpen = expandedAdjustSubjectId === analysis.subjectId;
-                  const rec = (config.subjectRecords || {})[analysis.subjectId];
+                  const isAdjustOpen = expandedAdjustSubjectId === analysis.id;
+                  const rec =
+                    (config.subjectRecords || {})[analysis.id] ||
+                    (config.subjectRecords || {})[analysis.subjectId];
                   const hasConductedOverride =
                     rec?.manualConductedOverride !== null && rec?.manualConductedOverride !== undefined;
+                  const isLab = analysis.componentType === 'practical';
 
                   return (
                     <div
-                      key={analysis.subjectId}
+                      key={analysis.id}
                       className={`rounded-2xl border p-4 sm:p-5 transition-all glass-card ${
                         analysis.isShortage
                           ? 'border-rose-500/40 bg-gradient-to-br from-slate-900/90 via-rose-950/20 to-slate-900/90'
                           : analysis.canBunkMore <= 1
                           ? 'border-amber-500/40 bg-gradient-to-br from-slate-900/90 via-amber-950/15 to-slate-900/90'
+                          : isLab
+                          ? 'border-amber-500/25 bg-gradient-to-br from-slate-900/90 via-amber-950/10 to-slate-900/90 hover:border-amber-400/40'
                           : 'border-white/10 hover:border-cyan-500/30'
                       }`}
                     >
@@ -1289,16 +1222,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               {analysis.credits} Credits
                             </span>
 
-                            {/* Theory vs Practical / Lab Badging */}
-                            {analysis.courseCategory === 'integrated' ? (
-                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-purple-500/15 border-purple-500/30 text-purple-300 flex items-center gap-1">
-                                <BookOpen className="w-3 h-3 text-cyan-300" />
-                                <span>Theory</span>
-                                <span className="text-white/40">+</span>
-                                <FlaskConical className="w-3 h-3 text-amber-300" />
-                                <span>Lab</span>
-                              </span>
-                            ) : analysis.courseCategory === 'practical_only' ? (
+                            {/* Component Type Badge */}
+                            {isLab ? (
                               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-amber-500/15 border-amber-500/30 text-amber-300 flex items-center gap-1">
                                 <FlaskConical className="w-3 h-3" />
                                 <span>Practical / Lab</span>
@@ -1306,7 +1231,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             ) : (
                               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-cyan-500/15 border-cyan-500/30 text-cyan-300 flex items-center gap-1">
                                 <BookOpen className="w-3 h-3" />
-                                <span>Theory Course</span>
+                                <span>Theory</span>
                               </span>
                             )}
 
@@ -1320,7 +1245,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             {analysis.subjectName}
                           </h4>
                           <p className="text-xs text-slate-400">
-                            Scheduled: <strong className="text-slate-200">{analysis.totalScheduledClasses}</strong> classes in semester • Conducted so far: <strong className="text-slate-200">{analysis.conductedClasses}</strong>
+                            Scheduled: <strong className="text-slate-200">{analysis.totalScheduledClasses}</strong> {isLab ? 'lab sessions' : 'classes'} in semester • Conducted so far: <strong className="text-slate-200">{analysis.conductedClasses}</strong>
                             {analysis.cancelledClasses > 0 && (
                               <span className="text-amber-400 font-semibold ml-1">
                                 ({analysis.cancelledClasses} cancelled)
@@ -1353,19 +1278,15 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           {/* Interactive Attended Stepper */}
                           <div className="space-y-1">
                             <span className="text-[10px] text-slate-400 block font-semibold text-center">
-                              {analysis.courseCategory === 'practical_only'
-                                ? 'Lab Sessions'
-                                : analysis.courseCategory === 'integrated'
-                                ? 'Total Classes'
-                                : 'Classes Present'}
+                              {isLab ? 'Lab Sessions Present' : 'Classes Present'}
                             </span>
                             <div className="flex items-center gap-1.5">
                               <button
                                 type="button"
-                                onClick={() => handleUpdateAttended(analysis.subjectId, -1)}
+                                onClick={() => handleUpdateAttended(analysis.id, -1)}
                                 disabled={analysis.attendedClasses <= 0}
                                 className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white text-base font-bold transition-all flex items-center justify-center border border-white/10 cursor-pointer"
-                                title="Decrease 1 class"
+                                title={`Decrease 1 ${isLab ? 'lab session' : 'class'}`}
                               >
                                 -
                               </button>
@@ -1376,21 +1297,27 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 max={analysis.conductedClasses || 100}
                                 value={analysis.attendedClasses}
                                 onChange={(e) =>
-                                  handleSetAttendedDirect(analysis.subjectId, e.target.value)
+                                  handleSetAttendedDirect(analysis.id, e.target.value)
                                 }
-                                className="w-14 h-8 text-center font-mono font-bold text-sm bg-black/60 rounded-xl border border-white/20 text-white focus:outline-none focus:border-cyan-400"
-                                title="Directly enter number of attended classes"
+                                className={`w-14 h-8 text-center font-mono font-bold text-sm bg-black/60 rounded-xl border text-white focus:outline-none ${
+                                  isLab ? 'border-amber-500/30 focus:border-amber-400' : 'border-white/20 focus:border-cyan-400'
+                                }`}
+                                title={`Directly enter attended ${isLab ? 'lab sessions' : 'classes'}`}
                               />
 
                               <button
                                 type="button"
-                                onClick={() => handleUpdateAttended(analysis.subjectId, 1)}
+                                onClick={() => handleUpdateAttended(analysis.id, 1)}
                                 disabled={
                                   analysis.attendedClasses >= analysis.conductedClasses &&
                                   analysis.conductedClasses > 0
                                 }
-                                className="w-8 h-8 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-cyan-200 text-base font-bold transition-all flex items-center justify-center border border-cyan-500/40 cursor-pointer"
-                                title="Present today (+1 class)"
+                                className={`w-8 h-8 rounded-xl active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-base font-bold transition-all flex items-center justify-center border cursor-pointer ${
+                                  isLab
+                                    ? 'bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border-amber-500/40'
+                                    : 'bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 border-cyan-500/40'
+                                }`}
+                                title={`Present today (+1 ${isLab ? 'lab session' : 'class'})`}
                               >
                                 +
                               </button>
@@ -1409,19 +1336,19 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               <div className="mt-1 space-y-1">
                                 <div className="flex items-center gap-2">
                                   <span className="text-xl font-extrabold text-emerald-300 font-heading">
-                                    {analysis.canBunkMore} More {analysis.canBunkMore === 1 ? 'Leave' : 'Leaves'}
+                                    {analysis.canBunkMore} More {isLab ? (analysis.canBunkMore === 1 ? 'Lab' : 'Labs') : (analysis.canBunkMore === 1 ? 'Leave' : 'Leaves')}
                                   </span>
                                   <span className="text-xs text-emerald-400/80 font-medium">Safe</span>
                                 </div>
                                 <p className="text-[11px] text-slate-400 leading-tight">
                                   You can safely take{' '}
                                   <strong className="text-emerald-300">{analysis.canBunkMore}</strong>{' '}
-                                  more leaves across the semester and finish at or above{' '}
+                                  more {isLab ? (analysis.canBunkMore === 1 ? 'lab session' : 'lab sessions') : (analysis.canBunkMore === 1 ? 'leave' : 'leaves')} across the semester and finish at or above{' '}
                                   {effectiveTarget}%.
                                 </p>
                                 {analysis.immediateBunkSafe > 0 && (
                                   <p className="text-[10px] text-cyan-300/90 font-medium pt-0.5">
-                                    ⚡ Can skip next {analysis.immediateBunkSafe} classes right now without falling below {effectiveTarget}% today.
+                                    ⚡ Can skip next {analysis.immediateBunkSafe} {isLab ? 'lab sessions' : 'classes'} right now without falling below {effectiveTarget}% today.
                                   </p>
                                 )}
                               </div>
@@ -1429,12 +1356,12 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               <div className="mt-1 space-y-1">
                                 <div className="flex items-center gap-1.5 text-rose-400 font-bold text-sm">
                                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                                  <span>Shortage: Need Next {analysis.consecutiveClassesNeeded} Classes!</span>
+                                  <span>Shortage: Need Next {analysis.consecutiveClassesNeeded} {isLab ? 'Labs' : 'Classes'}!</span>
                                 </div>
                                 <p className="text-[11px] text-rose-200/90 leading-tight">
                                   Attend the next{' '}
                                   <strong className="text-rose-100 font-bold">
-                                    {analysis.consecutiveClassesNeeded} consecutive classes
+                                    {analysis.consecutiveClassesNeeded} consecutive {isLab ? (analysis.consecutiveClassesNeeded === 1 ? 'lab session' : 'lab sessions') : (analysis.consecutiveClassesNeeded === 1 ? 'class' : 'classes')}
                                   </strong>{' '}
                                   without missing any to restore {effectiveTarget}%.
                                 </p>
@@ -1448,7 +1375,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               type="button"
                               onClick={() =>
                                 setExpandedAdjustSubjectId(
-                                  isAdjustOpen ? null : analysis.subjectId
+                                  isAdjustOpen ? null : analysis.id
                                 )
                               }
                               className="text-[11px] text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 transition-colors cursor-pointer"
@@ -1456,7 +1383,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               <span>
                                 {hasConductedOverride
                                   ? `Conducted Overridden (${analysis.conductedClasses})`
-                                  : 'Teacher cancelled classes? Adjust'}
+                                  : `Faculty cancelled ${isLab ? 'labs' : 'classes'}? Adjust`}
                               </span>
                               {isAdjustOpen ? (
                                 <ChevronUp className="w-3.5 h-3.5" />
@@ -1466,144 +1393,33 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             </button>
 
                             <span className="text-[10px] text-slate-500 font-mono">
-                              Total: {analysis.totalClassesInSemester} classes
+                              Total: {analysis.totalClassesInSemester} {isLab ? 'labs' : 'classes'}
                             </span>
                           </div>
                         </div>
                       </div>
-
-                      {/* Integrated Subject: Theory vs Lab Interactive Breakdown */}
-                      {analysis.courseCategory === 'integrated' && (
-                        <div className="mt-4 pt-3.5 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {/* Theory Breakdown Box */}
-                          <div className="p-3 rounded-xl bg-slate-950/60 border border-cyan-500/20 flex items-center justify-between gap-3">
-                            <div>
-                              <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
-                                <BookOpen className="w-3.5 h-3.5" />
-                                <span>Theory Classes</span>
-                              </div>
-                              <p className="text-[11px] text-slate-400 mt-0.5">
-                                Conducted: <strong className="text-white">{analysis.theoryConducted}</strong> • Attended:{' '}
-                                <strong className="text-cyan-300">{analysis.theoryAttended}</strong>
-                              </p>
-                              <div className="text-[11px] font-mono font-bold mt-1">
-                                <span className={analysis.theoryPercentage >= effectiveTarget ? 'text-emerald-300' : 'text-rose-400'}>
-                                  {analysis.theoryPercentage}% Attendance
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'theory', -1)}
-                                disabled={analysis.theoryAttended <= 0}
-                                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white text-xs font-bold flex items-center justify-center border border-white/10 cursor-pointer"
-                                title="Decrease theory class"
-                              >
-                                -
-                              </button>
-                              <input
-                                type="number"
-                                min={0}
-                                max={analysis.theoryConducted || 100}
-                                value={analysis.theoryAttended}
-                                onChange={(e) =>
-                                  handleSetAttendedTypeDirect(analysis.subjectId, 'theory', e.target.value)
-                                }
-                                className="w-11 h-7 text-center font-mono font-bold text-xs bg-black/60 rounded-lg border border-white/20 text-white focus:outline-none focus:border-cyan-400"
-                                title="Directly enter attended theory classes"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'theory', 1)}
-                                disabled={
-                                  analysis.theoryAttended >= analysis.theoryConducted &&
-                                  analysis.theoryConducted > 0
-                                }
-                                className="w-7 h-7 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-cyan-200 text-xs font-bold flex items-center justify-center border border-cyan-500/40 cursor-pointer"
-                                title="Add attended theory class"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Practical / Lab Breakdown Box */}
-                          <div className="p-3 rounded-xl bg-slate-950/60 border border-amber-500/20 flex items-center justify-between gap-3">
-                            <div>
-                              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
-                                <FlaskConical className="w-3.5 h-3.5" />
-                                <span>Practical / Lab Sessions</span>
-                              </div>
-                              <p className="text-[11px] text-slate-400 mt-0.5">
-                                Conducted: <strong className="text-white">{analysis.practicalConducted}</strong> • Attended:{' '}
-                                <strong className="text-amber-300">{analysis.practicalAttended}</strong>
-                              </p>
-                              <div className="text-[11px] font-mono font-bold mt-1">
-                                <span className={analysis.practicalPercentage >= effectiveTarget ? 'text-emerald-300' : 'text-rose-400'}>
-                                  {analysis.practicalPercentage}% Attendance
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'practical', -1)}
-                                disabled={analysis.practicalAttended <= 0}
-                                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white text-xs font-bold flex items-center justify-center border border-white/10 cursor-pointer"
-                                title="Decrease lab session"
-                              >
-                                -
-                              </button>
-                              <input
-                                type="number"
-                                min={0}
-                                max={analysis.practicalConducted || 100}
-                                value={analysis.practicalAttended}
-                                onChange={(e) =>
-                                  handleSetAttendedTypeDirect(analysis.subjectId, 'practical', e.target.value)
-                                }
-                                className="w-11 h-7 text-center font-mono font-bold text-xs bg-black/60 rounded-lg border border-white/20 text-white focus:outline-none focus:border-amber-400"
-                                title="Directly enter attended practical sessions"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateAttendedType(analysis.subjectId, 'practical', 1)}
-                                disabled={
-                                  analysis.practicalAttended >= analysis.practicalConducted &&
-                                  analysis.practicalConducted > 0
-                                }
-                                className="w-7 h-7 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-amber-200 text-xs font-bold flex items-center justify-center border border-amber-500/40 cursor-pointer"
-                                title="Add attended lab session"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
 
                       {/* Expandable Class Cancellation & Conducted Override Section */}
                       {isAdjustOpen && (
                         <div className="mt-4 pt-4 border-t border-white/10 bg-slate-950/70 p-4 rounded-xl space-y-3 animate-fadeIn text-xs">
                           <div className="flex items-center gap-2 text-cyan-300 font-bold">
                             <Info className="w-4 h-4" />
-                            <span>Class Cancellation & Actual Conducted Classes Adjustment</span>
+                            <span>
+                              {isLab ? 'Lab Session' : 'Class'} Cancellation & Actual Conducted Adjustment
+                            </span>
                           </div>
                           <p className="text-slate-400 text-[11px] leading-relaxed">
                             Timetable scheduled{' '}
                             <strong className="text-slate-200">
-                              {analysis.scheduledTillToday} classes
+                              {analysis.scheduledTillToday} {isLab ? 'lab sessions' : 'classes'}
                             </strong>{' '}
-                            up to today. If faculty was on leave or classes were cancelled, enter the actual conducted count below. The website will automatically update the total semester classes accordingly!
+                            up to today. If faculty was on leave or {isLab ? 'lab sessions were cancelled' : 'classes were cancelled'}, enter the actual conducted count below. The website will automatically update the total semester count accordingly!
                           </p>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                             <div>
                               <label className="text-slate-400 block mb-1 font-semibold text-[11px]">
-                                Actual Conducted Classes Till Date:
+                                Actual Conducted {isLab ? 'Lab Sessions' : 'Classes'} Till Date:
                               </label>
                               <div className="flex items-center gap-2">
                                 <input
@@ -1617,14 +1433,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                       : ''
                                   }
                                   onChange={(e) =>
-                                    handleSetConductedOverride(analysis.subjectId, e.target.value)
+                                    handleSetConductedOverride(analysis.id, e.target.value)
                                   }
                                   className="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-white font-mono focus:outline-none focus:border-cyan-400"
                                 />
                                 {hasConductedOverride && (
                                   <button
                                     type="button"
-                                    onClick={() => handleSetConductedOverride(analysis.subjectId, '')}
+                                    onClick={() => handleSetConductedOverride(analysis.id, '')}
                                     className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-[10px] cursor-pointer"
                                     title="Reset to timetable scheduled"
                                   >
@@ -1639,7 +1455,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
                             <div>
                               <label className="text-slate-400 block mb-1 font-semibold text-[11px]">
-                                Total Semester Classes Override (Optional):
+                                Total Semester {isLab ? 'Lab Sessions' : 'Classes'} Override (Optional):
                               </label>
                               <input
                                 type="number"
@@ -1647,12 +1463,12 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 placeholder={`Auto: ${analysis.totalClassesInSemester}`}
                                 value={rec?.manualTotalPlannedOverride ?? ''}
                                 onChange={(e) =>
-                                  handleSetTotalPlannedOverride(analysis.subjectId, e.target.value)
+                                  handleSetTotalPlannedOverride(analysis.id, e.target.value)
                                 }
                                 className="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-white font-mono focus:outline-none focus:border-cyan-400"
                               />
                               <span className="text-[10px] text-slate-500 mt-1 block">
-                                Automatically computed as {analysis.totalClassesInSemester} classes based on calendar working days minus cancellations.
+                                Automatically computed as {analysis.totalClassesInSemester} {isLab ? 'sessions' : 'classes'} based on calendar working days minus cancellations.
                               </span>
                             </div>
                           </div>

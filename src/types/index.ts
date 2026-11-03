@@ -110,10 +110,12 @@ export interface SemesterAttendanceConfig {
 }
 
 export interface SubjectAttendanceAnalysis {
+  id: string; // unique item id (sub.id or `${sub.id}__theory` / `${sub.id}__practical`)
   subjectId: string;
   subjectCode: string;
   subjectName: string;
   credits: number;
+  componentType: ClassSlotType; // 'theory' | 'practical'
   totalScheduledClasses: number;
   scheduledTillToday: number;
   conductedClasses: number;
@@ -134,20 +136,20 @@ export interface SubjectAttendanceAnalysis {
     message: string;
   };
 
-  // Theory vs Practical / Lab breakdown
-  courseCategory: 'theory_only' | 'practical_only' | 'integrated';
-  hasTheory: boolean;
-  hasPractical: boolean;
-  theoryScheduled: number;
-  theoryScheduledTillToday: number;
-  theoryConducted: number;
-  theoryAttended: number;
-  theoryPercentage: number;
-  practicalScheduled: number;
-  practicalScheduledTillToday: number;
-  practicalConducted: number;
-  practicalAttended: number;
-  practicalPercentage: number;
+  // Optional categorization references
+  courseCategory?: 'theory_only' | 'practical_only' | 'integrated';
+  hasTheory?: boolean;
+  hasPractical?: boolean;
+  theoryScheduled?: number;
+  theoryScheduledTillToday?: number;
+  theoryConducted?: number;
+  theoryAttended?: number;
+  theoryPercentage?: number;
+  practicalScheduled?: number;
+  practicalScheduledTillToday?: number;
+  practicalConducted?: number;
+  practicalAttended?: number;
+  practicalPercentage?: number;
 }
 
 export interface Semester {

@@ -253,20 +253,34 @@ export function calculateWorkingDaysDistribution(
 
 /**
  * Calculates complete attendance status, bunk allowance margin,
- * class cancellation adjustments, and recovery targets for a subject.
+ * class cancellation adjustments, and recovery targets for a subject or a specific component (Theory / Practical).
  */
 export function calculateSubjectAttendanceAnalysis(
   subject: Subject,
   config?: SemesterAttendanceConfig | null,
   customTarget?: number,
-  asOfDateStr?: string
+  asOfDateStr?: string,
+  componentType?: 'theory' | 'practical'
 ): SubjectAttendanceAnalysis {
+  const fallbackId = subject?.id || 'unknown';
+  const effectiveComponent: 'theory' | 'practical' = componentType || (
+    ((subject?.name || '').toLowerCase().includes('lab') ||
+     (subject?.name || '').toLowerCase().includes('practical') ||
+     subject?.credits === 2)
+      ? 'practical'
+      : 'theory'
+  );
+
+  const itemId = componentType ? `${fallbackId}__${componentType}` : fallbackId;
+
   if (!subject) {
     return {
+      id: itemId,
       subjectId: 'unknown',
       subjectCode: 'SUB',
       subjectName: 'Subject',
       credits: 3,
+      componentType: effectiveComponent,
       totalScheduledClasses: 0,
       scheduledTillToday: 0,
       conductedClasses: 0,
@@ -286,19 +300,6 @@ export function calculateSubjectAttendanceAnalysis(
         color: 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30',
         message: 'No data',
       },
-      courseCategory: 'theory_only',
-      hasTheory: true,
-      hasPractical: false,
-      theoryScheduled: 0,
-      theoryScheduledTillToday: 0,
-      theoryConducted: 0,
-      theoryAttended: 0,
-      theoryPercentage: 100,
-      practicalScheduled: 0,
-      practicalScheduledTillToday: 0,
-      practicalConducted: 0,
-      practicalAttended: 0,
-      practicalPercentage: 100,
     };
   }
 
@@ -339,65 +340,46 @@ export function calculateSubjectAttendanceAnalysis(
     (slot) => slot && slot.subjectId === subject.id
   );
 
-  const isSubNameLab =
-    (subject.name || '').toLowerCase().includes('lab') ||
-    (subject.name || '').toLowerCase().includes('practical');
-
-  const theorySlots = subjectSlots.filter((slot) => slot.type !== 'practical');
-  const practicalSlots = subjectSlots.filter((slot) => slot.type === 'practical');
-
-  let theoryScheduled = 0;
-  let theoryScheduledTillToday = 0;
-  theorySlots.forEach((slot) => {
-    if (!slot || !slot.day) return;
-    theoryScheduled += daysByWeekday[slot.day] || 0;
-    theoryScheduledTillToday += elapsedByWeekday[slot.day] || 0;
+  // Filter slots for this specific component
+  const relevantSlots = subjectSlots.filter((slot) => {
+    if (effectiveComponent === 'practical') {
+      return slot.type === 'practical';
+    }
+    return slot.type !== 'practical';
   });
 
-  let practicalScheduled = 0;
-  let practicalScheduledTillToday = 0;
-  practicalSlots.forEach((slot) => {
+  let totalScheduledClasses = 0;
+  let scheduledTillToday = 0;
+  relevantSlots.forEach((slot) => {
     if (!slot || !slot.day) return;
-    practicalScheduled += daysByWeekday[slot.day] || 0;
-    practicalScheduledTillToday += elapsedByWeekday[slot.day] || 0;
+    totalScheduledClasses += daysByWeekday[slot.day] || 0;
+    scheduledTillToday += elapsedByWeekday[slot.day] || 0;
   });
-
-  let totalScheduledClasses = theoryScheduled + practicalScheduled;
-  let scheduledTillToday = theoryScheduledTillToday + practicalScheduledTillToday;
 
   if (totalScheduledClasses === 0) {
-    const weeklyFreq = Math.max(1, Math.min(5, subject.credits || 3));
-    if (isSubNameLab || subject.credits === 2) {
-      practicalScheduled = weeklyFreq * 16;
-      practicalScheduledTillToday = Math.floor(practicalScheduled * 0.45);
+    if (effectiveComponent === 'practical') {
+      const weeklyFreq = subject.credits === 2 ? 2 : 1;
+      totalScheduledClasses = weeklyFreq * 16;
+      scheduledTillToday = Math.floor(totalScheduledClasses * 0.45);
     } else {
-      theoryScheduled = weeklyFreq * 16;
-      theoryScheduledTillToday = Math.floor(theoryScheduled * 0.45);
+      const weeklyFreq = Math.max(1, Math.min(5, subject.credits || 3));
+      totalScheduledClasses = weeklyFreq * 16;
+      scheduledTillToday = Math.floor(totalScheduledClasses * 0.45);
     }
-    totalScheduledClasses = theoryScheduled + practicalScheduled;
-    scheduledTillToday = theoryScheduledTillToday + practicalScheduledTillToday;
   }
 
-  const hasTheory = theoryScheduled > 0;
-  const hasPractical = practicalScheduled > 0;
-  let courseCategory: 'theory_only' | 'practical_only' | 'integrated' = 'theory_only';
-  if (hasTheory && hasPractical) {
-    courseCategory = 'integrated';
-  } else if (!hasTheory && hasPractical) {
-    courseCategory = 'practical_only';
-  } else if (isSubNameLab) {
-    courseCategory = 'practical_only';
-  } else {
-    courseCategory = 'theory_only';
-  }
+  // Retrieve attendance record: look for specific component key first, then fallback to subject.id
+  const specificRecord = safeConfig.subjectRecords?.[itemId];
+  const baseRecord = safeConfig.subjectRecords?.[subject.id];
 
-  const record: SubjectAttendanceRecord = safeConfig.subjectRecords?.[subject.id] || {
+  const record: SubjectAttendanceRecord = specificRecord || {
     subjectId: subject.id,
-    attendedClasses: 0,
-    attendedTheory: 0,
-    attendedPractical: 0,
-    manualConductedOverride: null,
-    manualTotalPlannedOverride: null,
+    attendedClasses:
+      effectiveComponent === 'practical'
+        ? (baseRecord?.attendedPractical ?? (baseRecord?.attendedClasses || 0))
+        : (baseRecord?.attendedTheory ?? (baseRecord?.attendedClasses || 0)),
+    manualConductedOverride: baseRecord?.manualConductedOverride ?? null,
+    manualTotalPlannedOverride: baseRecord?.manualTotalPlannedOverride ?? null,
   };
 
   const hasConductedOverride =
@@ -414,52 +396,6 @@ export function calculateSubjectAttendanceAnalysis(
     ? Math.max(0, scheduledTillToday - conductedClasses)
     : 0;
 
-  // Breakdown for conducted theory vs practical
-  let theoryConducted = theoryScheduledTillToday;
-  let practicalConducted = practicalScheduledTillToday;
-  if (hasConductedOverride && scheduledTillToday > 0) {
-    const ratio = conductedClasses / scheduledTillToday;
-    theoryConducted = Math.round(theoryScheduledTillToday * ratio);
-    practicalConducted = Math.max(0, conductedClasses - theoryConducted);
-  } else if (hasConductedOverride) {
-    theoryConducted = courseCategory === 'practical_only' ? 0 : conductedClasses;
-    practicalConducted = courseCategory === 'practical_only' ? conductedClasses : 0;
-  }
-
-  // Attended counts for theory and practical
-  const rawAttendedTotal = Math.max(0, Number(record.attendedClasses) || 0);
-  let theoryAttended = 0;
-  let practicalAttended = 0;
-  let attendedClasses = 0;
-
-  if (record.attendedTheory !== undefined || record.attendedPractical !== undefined) {
-    const rawTh = Math.max(0, Number(record.attendedTheory) || 0);
-    const rawPr = Math.max(0, Number(record.attendedPractical) || 0);
-    theoryAttended = theoryConducted > 0 ? Math.min(theoryConducted, rawTh) : rawTh;
-    practicalAttended = practicalConducted > 0 ? Math.min(practicalConducted, rawPr) : rawPr;
-    attendedClasses = theoryAttended + practicalAttended;
-  } else {
-    if (courseCategory === 'practical_only') {
-      practicalAttended = conductedClasses > 0 ? Math.min(conductedClasses, rawAttendedTotal) : rawAttendedTotal;
-      theoryAttended = 0;
-      attendedClasses = practicalAttended;
-    } else if (courseCategory === 'theory_only') {
-      theoryAttended = conductedClasses > 0 ? Math.min(conductedClasses, rawAttendedTotal) : rawAttendedTotal;
-      practicalAttended = 0;
-      attendedClasses = theoryAttended;
-    } else {
-      // Integrated: distribute proportionally
-      theoryAttended = Math.min(theoryConducted, rawAttendedTotal);
-      practicalAttended = Math.min(practicalConducted, Math.max(0, rawAttendedTotal - theoryAttended));
-      attendedClasses = theoryAttended + practicalAttended;
-    }
-  }
-
-  const theoryPercentage =
-    theoryConducted > 0 ? Number(((theoryAttended / theoryConducted) * 100).toFixed(1)) : 100.0;
-  const practicalPercentage =
-    practicalConducted > 0 ? Number(((practicalAttended / practicalConducted) * 100).toFixed(1)) : 100.0;
-
   let totalClassesInSemester: number;
   if (
     record.manualTotalPlannedOverride !== null &&
@@ -472,6 +408,8 @@ export function calculateSubjectAttendanceAnalysis(
     totalClassesInSemester = Math.max(conductedClasses, totalScheduledClasses - cancelledClasses);
   }
 
+  const rawAttended = Math.max(0, Number(record.attendedClasses) || 0);
+  const attendedClasses = conductedClasses > 0 ? Math.min(conductedClasses, rawAttended) : 0;
   const missedClasses = Math.max(0, conductedClasses - attendedClasses);
 
   const currentPercentage =
@@ -499,28 +437,31 @@ export function calculateSubjectAttendanceAnalysis(
     if (consecutiveClassesNeeded < 0) consecutiveClassesNeeded = 0;
   }
 
+  const sessionWord = effectiveComponent === 'practical' ? 'lab session' : 'class';
+  const sessionsWord = effectiveComponent === 'practical' ? 'lab sessions' : 'classes';
+
   let status: 'safe' | 'warning' | 'danger' | 'critical' = 'safe';
   let badgeLabel = 'Safe Margin';
   let badgeColor = 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30';
-  let badgeMessage = `You can bunk ${canBunkMore} more ${canBunkMore === 1 ? 'class' : 'classes'} and maintain ${targetPercentage}% attendance.`;
+  let badgeMessage = `You can bunk ${canBunkMore} more ${canBunkMore === 1 ? sessionWord : sessionsWord} and maintain ${targetPercentage}% attendance.`;
 
   if (isShortage) {
     if (currentPercentage < targetPercentage - 15) {
       status = 'critical';
-      badgeLabel = 'Critical Shortage';
+      badgeLabel = effectiveComponent === 'practical' ? 'Critical Lab Shortage' : 'Critical Shortage';
       badgeColor = 'text-rose-400 bg-rose-500/20 border-rose-500/40';
-      badgeMessage = `🚨 Severe attendance shortage! Must attend next ${consecutiveClassesNeeded} consecutive classes to reach ${targetPercentage}%.`;
+      badgeMessage = `🚨 Severe attendance shortage! Must attend next ${consecutiveClassesNeeded} consecutive ${sessionsWord} to reach ${targetPercentage}%.`;
     } else {
       status = 'danger';
-      badgeLabel = 'Attendance Deficit';
+      badgeLabel = effectiveComponent === 'practical' ? 'Lab Deficit' : 'Attendance Deficit';
       badgeColor = 'text-red-400 bg-red-500/15 border-red-500/30';
-      badgeMessage = `⚠️ Below ${targetPercentage}%! Attend next ${consecutiveClassesNeeded} classes continuously to recover.`;
+      badgeMessage = `⚠️ Below ${targetPercentage}%! Attend next ${consecutiveClassesNeeded} ${sessionsWord} continuously to recover.`;
     }
   } else if (canBunkMore === 0) {
     status = 'warning';
     badgeLabel = 'Zero Leaves Left';
     badgeColor = 'text-amber-300 bg-amber-500/15 border-amber-500/30';
-    badgeMessage = `You cannot afford any more leaves. Attend every class to stay at or above ${targetPercentage}%.`;
+    badgeMessage = `You cannot afford any more leaves. Attend every ${sessionWord} to stay at or above ${targetPercentage}%.`;
   } else if (canBunkMore <= 2) {
     status = 'warning';
     badgeLabel = 'Borderline Safe';
@@ -530,14 +471,26 @@ export function calculateSubjectAttendanceAnalysis(
     status = 'safe';
     badgeLabel = 'Untouchable Aura';
     badgeColor = 'text-cyan-300 bg-cyan-500/15 border-cyan-500/30';
-    badgeMessage = `Elite attendance! You can bunk ${canBunkMore} classes throughout the semester and stay safe.`;
+    badgeMessage = `Elite attendance! You can bunk ${canBunkMore} ${sessionsWord} throughout the semester and stay safe.`;
+  }
+
+  // Name formatting: If componentType was specified for integrated course
+  let displayName = subject.name || 'Subject';
+  let displayCode = subject.code || 'SUB';
+  if (componentType === 'theory') {
+    displayName = `${subject.name} (Theory)`;
+  } else if (componentType === 'practical') {
+    displayName = `${subject.name} (Lab / Practical)`;
+    displayCode = `${subject.code} (Lab)`;
   }
 
   return {
+    id: itemId,
     subjectId: subject.id,
-    subjectCode: subject.code || 'SUB',
-    subjectName: subject.name || 'Subject',
-    credits: subject.credits || 0,
+    subjectCode: displayCode,
+    subjectName: displayName,
+    credits: effectiveComponent === 'practical' ? (subject.credits === 4 ? 1 : subject.credits) : subject.credits,
+    componentType: effectiveComponent,
     totalScheduledClasses,
     scheduledTillToday,
     conductedClasses,
@@ -557,18 +510,52 @@ export function calculateSubjectAttendanceAnalysis(
       color: badgeColor,
       message: badgeMessage,
     },
-    courseCategory,
-    hasTheory,
-    hasPractical,
-    theoryScheduled,
-    theoryScheduledTillToday,
-    theoryConducted,
-    theoryAttended,
-    theoryPercentage,
-    practicalScheduled,
-    practicalScheduledTillToday,
-    practicalConducted,
-    practicalAttended,
-    practicalPercentage,
   };
+}
+
+/**
+ * Generates separate attendance analyses for each subject.
+ * If a course is integrated (has both Theory and Practical slots in timetable),
+ * it produces two distinct attendance subjects: one for Theory and one for Practical.
+ */
+export function calculateAllSemesterAttendanceAnalyses(
+  subjects: Subject[],
+  config?: SemesterAttendanceConfig | null,
+  customTarget?: number,
+  asOfDateStr?: string
+): SubjectAttendanceAnalysis[] {
+  const result: SubjectAttendanceAnalysis[] = [];
+  const safeSubjects = Array.isArray(subjects) ? subjects.filter(Boolean) : [];
+  const timetable = Array.isArray(config?.timetable) ? config!.timetable : [];
+
+  safeSubjects.forEach((sub) => {
+    const subSlots = timetable.filter((s) => s && s.subjectId === sub.id);
+    const hasTheorySlots = subSlots.some((s) => s.type !== 'practical');
+    const hasPracticalSlots = subSlots.some((s) => s.type === 'practical');
+
+    const isSubNameLab =
+      (sub.name || '').toLowerCase().includes('lab') ||
+      (sub.name || '').toLowerCase().includes('practical') ||
+      sub.credits === 2;
+
+    if (hasTheorySlots && hasPracticalSlots) {
+      // Integrated course: count Theory and Practical as different subjects in attendance!
+      result.push(
+        calculateSubjectAttendanceAnalysis(sub, config, customTarget, asOfDateStr, 'theory'),
+        calculateSubjectAttendanceAnalysis(sub, config, customTarget, asOfDateStr, 'practical')
+      );
+    } else if (hasPracticalSlots || isSubNameLab) {
+      // Pure lab subject
+      result.push(
+        calculateSubjectAttendanceAnalysis(sub, config, customTarget, asOfDateStr, 'practical')
+      );
+    } else {
+      // Pure theory subject
+      result.push(
+        calculateSubjectAttendanceAnalysis(sub, config, customTarget, asOfDateStr, 'theory')
+      );
+    }
+  });
+
+  return result;
 }
