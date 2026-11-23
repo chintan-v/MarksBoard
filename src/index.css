@@ -135,26 +135,27 @@
 
 /* ==========================================================================
    LIGHT THEME: Antique Gold (#B9A38B) & Deep Violet (#2C1F33) in 7:3 Ratio
-   70% Antique Gold / Warm Parchment Glass Canvas
-   30% Deep Violet Typography, Jewel Accents & High-Contrast CTAs
+   70% Rich Antique Gold Surfaces, Frosted Glass Panels & Warm Canvas
+   30% Deep Violet (#2C1F33) Typography, High-Contrast CTAs & Jewel Accents
    ========================================================================== */
 
 [data-theme="light"] {
   color-scheme: light;
+  color: #2C1F33;
 }
 
 [data-theme="light"] body {
-  background-color: #F8F4EE !important;
+  background-color: #EFE6D8 !important;
   color: #2C1F33 !important;
 }
 
-[data-theme="light"] h1,
-[data-theme="light"] h2,
-[data-theme="light"] h3,
-[data-theme="light"] h4,
-[data-theme="light"] h5,
-[data-theme="light"] h6,
-[data-theme="light"] .font-heading {
+/* Global Typography: All text elements inherit or default to Deep Violet */
+[data-theme="light"] :is(
+  h1, h2, h3, h4, h5, h6,
+  p, span, div, strong, b, em, label,
+  .font-heading, .font-mono,
+  input, select, textarea
+) {
   color: #2C1F33 !important;
 }
 
@@ -165,156 +166,204 @@
 
 /* Light Theme Scrollbars */
 [data-theme="light"] ::-webkit-scrollbar-track {
-  background: #EDE5D8 !important;
+  background: #E2D4BF !important;
 }
 [data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(44, 31, 51, 0.22) !important;
-  border: 1px solid rgba(185, 163, 139, 0.5) !important;
+  background: rgba(44, 31, 51, 0.3) !important;
+  border: 1px solid rgba(185, 163, 139, 0.7) !important;
 }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(44, 31, 51, 0.42) !important;
+  background: rgba(44, 31, 51, 0.5) !important;
 }
 
-/* Light Theme Root & Background Orbs */
+/* 70% Antique Gold: Warm Luminous Golden Canvas & Glow Orbs */
 [data-theme="light"] .theme-root-container {
-  background: linear-gradient(180deg, #FBF8F2 0%, #EFE8DC 50%, #E0D4C2 100%) !important;
+  background: linear-gradient(180deg, #EFE6D8 0%, #E2D4BF 45%, #D2BEA3 100%) !important;
   color: #2C1F33 !important;
 }
 
 [data-theme="light"] .theme-orb-primary {
-  background-color: rgba(185, 163, 139, 0.4) !important;
+  background-color: rgba(185, 163, 139, 0.55) !important;
 }
 [data-theme="light"] .theme-orb-secondary {
-  background-color: rgba(214, 197, 178, 0.5) !important;
+  background-color: rgba(205, 185, 160, 0.6) !important;
 }
 [data-theme="light"] .theme-orb-accent {
-  background-color: rgba(163, 140, 114, 0.35) !important;
+  background-color: rgba(165, 142, 115, 0.45) !important;
 }
 
-/* Light Theme Glassmorphism Panels (Frosted Antique Gold) */
+/* 70% Antique Gold: Frosted Glass Panels */
 [data-theme="light"] .glass-panel {
-  background: rgba(246, 240, 231, 0.85) !important;
+  background: rgba(228, 215, 196, 0.85) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border-color: rgba(185, 163, 139, 0.42) !important;
-  box-shadow: 0 12px 35px -8px rgba(44, 31, 51, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85) !important;
+  border: 1.5px solid rgba(185, 163, 139, 0.65) !important;
+  box-shadow: 0 14px 40px -8px rgba(44, 31, 51, 0.16), inset 0 1px 1px 0 rgba(255, 255, 255, 0.8) !important;
   color: #2C1F33 !important;
 }
 
 [data-theme="light"] .glass-panel-deep {
-  background: rgba(240, 233, 222, 0.95) !important;
+  background: rgba(220, 205, 185, 0.94) !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
-  border-color: rgba(185, 163, 139, 0.5) !important;
-  box-shadow: 0 16px 45px -10px rgba(44, 31, 51, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+  border: 1.5px solid rgba(185, 163, 139, 0.8) !important;
+  box-shadow: 0 18px 50px -10px rgba(44, 31, 51, 0.22), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85) !important;
   color: #2C1F33 !important;
 }
 
 [data-theme="light"] .glass-card {
-  background: rgba(250, 246, 240, 0.78) !important;
+  background: rgba(236, 226, 211, 0.86) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
-  border-color: rgba(185, 163, 139, 0.38) !important;
-  box-shadow: 0 8px 24px -6px rgba(44, 31, 51, 0.07), inset 0 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  border: 1.5px solid rgba(185, 163, 139, 0.55) !important;
+  box-shadow: 0 8px 28px -6px rgba(44, 31, 51, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.7) !important;
   color: #2C1F33 !important;
 }
 
 [data-theme="light"] .glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.94) !important;
+  background: rgba(246, 239, 228, 0.96) !important;
   border-color: #2C1F33 !important;
-  box-shadow: 0 16px 40px -10px rgba(44, 31, 51, 0.15), 0 0 25px -5px rgba(185, 163, 139, 0.4) !important;
+  box-shadow: 0 16px 45px -8px rgba(44, 31, 51, 0.22), 0 0 25px -4px rgba(185, 163, 139, 0.6) !important;
 }
 
 [data-theme="light"] .glass-inner {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border-color: rgba(185, 163, 139, 0.32) !important;
+  background: rgba(218, 203, 183, 0.65) !important;
+  border: 1px solid rgba(185, 163, 139, 0.5) !important;
   color: #2C1F33 !important;
 }
 
 [data-theme="light"] .glass-input {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(185, 163, 139, 0.45) !important;
+  background: rgba(255, 253, 250, 0.95) !important;
+  border: 1.5px solid rgba(185, 163, 139, 0.75) !important;
   color: #2C1F33 !important;
 }
 [data-theme="light"] .glass-input:focus {
   border-color: #2C1F33 !important;
-  box-shadow: 0 0 15px -3px rgba(44, 31, 51, 0.25) !important;
+  box-shadow: 0 0 16px -2px rgba(44, 31, 51, 0.3) !important;
 }
 
-/* Light Theme Header & Footer */
+/* Header & Footer in Antique Gold Glass */
 [data-theme="light"] header.glass-panel {
-  background: rgba(246, 240, 231, 0.88) !important;
-  border-bottom-color: rgba(185, 163, 139, 0.4) !important;
+  background: rgba(228, 215, 196, 0.92) !important;
+  border-bottom: 1.5px solid rgba(185, 163, 139, 0.6) !important;
 }
 
 [data-theme="light"] footer {
-  background: rgba(238, 230, 218, 0.9) !important;
-  border-top-color: rgba(185, 163, 139, 0.35) !important;
+  background: rgba(216, 202, 182, 0.94) !important;
+  border-top: 1.5px solid rgba(185, 163, 139, 0.55) !important;
+  color: #2C1F33 !important;
+}
+
+/* 30% Deep Violet: Bulletproof Typography Classes */
+[data-theme="light"] .text-\[\#F4EDE0\],
+[data-theme="light"] .text-\[\#F4EDE0\]\/90,
+[data-theme="light"] .text-\[\#F4EDE0\]\/85,
+[data-theme="light"] .text-\[\#F4EDE0\]\/80,
+[data-theme="light"] .text-\[\#F4EDE0\]\/75,
+[data-theme="light"] .text-\[\#F4EDE0\]\/70,
+[data-theme="light"] .text-\[\#F4EDE0\]\/65,
+[data-theme="light"] .text-\[\#F4EDE0\]\/60,
+[data-theme="light"] .text-white,
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-200 {
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] .text-\[\#F4EDE0\]\/50,
+[data-theme="light"] .text-\[\#F4EDE0\]\/45,
+[data-theme="light"] .text-\[\#F4EDE0\]\/40,
+[data-theme="light"] .text-\[\#F4EDE0\]\/35,
+[data-theme="light"] .text-\[\#F4EDE0\]\/30,
+[data-theme="light"] .text-slate-400 {
   color: rgba(44, 31, 51, 0.72) !important;
 }
 
-/* Light Theme Typography Mapping (Cream -> Deep Violet) */
-[data-theme="light"] [class*="text-[#F4EDE0]"] {
-  color: #2C1F33 !important;
+/* Lucide SVGs & Icons inherit Deep Violet */
+[data-theme="light"] svg {
+  stroke: currentColor;
 }
-[data-theme="light"] [class*="text-white"] {
-  color: #2C1F33 !important;
-}
-[data-theme="light"] [class*="text-[#F4EDE0]/8"],
-[data-theme="light"] [class*="text-[#F4EDE0]/7"],
-[data-theme="light"] [class*="text-[#F4EDE0]/9"] {
-  color: rgba(44, 31, 51, 0.85) !important;
-}
-[data-theme="light"] [class*="text-[#F4EDE0]/6"],
-[data-theme="light"] [class*="text-[#F4EDE0]/5"] {
-  color: rgba(44, 31, 51, 0.7) !important;
-}
-[data-theme="light"] [class*="text-[#F4EDE0]/4"],
-[data-theme="light"] [class*="text-[#F4EDE0]/3"] {
-  color: rgba(44, 31, 51, 0.52) !important;
+[data-theme="light"] button svg {
+  stroke: currentColor;
 }
 
-/* Deep Violet Primary Buttons (Active S1..S8, Overview, Sign In, CTAs) */
-[data-theme="light"] [class*="bg-[#F4EDE0]"]:not([class*="bg-[#F4EDE0]/"]) {
+/* 30% Deep Violet: Primary CTAs & Active Tabs (Overview, Active S1..S8, Done & Save, Sign In) */
+[data-theme="light"] .bg-\[\#F4EDE0\],
+[data-theme="light"] .bg-white {
   background-color: #2C1F33 !important;
   color: #FAF5EE !important;
-  box-shadow: 0 4px 14px -2px rgba(44, 31, 51, 0.3) !important;
+  box-shadow: 0 4px 16px -2px rgba(44, 31, 51, 0.35) !important;
 }
-[data-theme="light"] [class*="bg-[#F4EDE0]"]:not([class*="bg-[#F4EDE0]/"]):hover {
-  background-color: #3E2B48 !important;
+[data-theme="light"] .bg-\[\#F4EDE0\]:hover,
+[data-theme="light"] .bg-white:hover {
+  background-color: #422F4C !important;
   color: #FFFFFF !important;
 }
-[data-theme="light"] [class*="bg-[#F4EDE0]"]:not([class*="bg-[#F4EDE0]/"]) * {
+[data-theme="light"] .bg-\[\#F4EDE0\] *,
+[data-theme="light"] .bg-white * {
   color: #FAF5EE !important;
+  stroke: #FAF5EE !important;
 }
 
-/* Secondary Frosted Buttons (Nav items, action pills) */
-[data-theme="light"] [class*="bg-[#F4EDE0]/"] {
-  background-color: rgba(44, 31, 51, 0.07) !important;
-  border-color: rgba(44, 31, 51, 0.14) !important;
+/* Secondary Frosted Buttons & Nav Pills */
+[data-theme="light"] .bg-\[\#F4EDE0\]\/26,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/25,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/22,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/20,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/16,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/15,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/12,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/10,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/8,
+[data-theme="light"] .bg-\[\#F4EDE0\]\/5 {
+  background-color: rgba(44, 31, 51, 0.09) !important;
+  border-color: rgba(44, 31, 51, 0.22) !important;
   color: #2C1F33 !important;
 }
-[data-theme="light"] [class*="hover:bg-[#F4EDE0]/"]:hover {
-  background-color: rgba(44, 31, 51, 0.14) !important;
+[data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/26:hover,
+[data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/22:hover,
+[data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/20:hover,
+[data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/16:hover,
+[data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/10:hover {
+  background-color: rgba(44, 31, 51, 0.18) !important;
   color: #2C1F33 !important;
 }
 
-/* Border Overrides */
-[data-theme="light"] [class*="border-[#F4EDE0]"] {
-  border-color: rgba(185, 163, 139, 0.35) !important;
+/* Borders in Antique Gold */
+[data-theme="light"] .border-\[\#F4EDE0\],
+[data-theme="light"] .border-\[\#F4EDE0\]\/40,
+[data-theme="light"] .border-\[\#F4EDE0\]\/35,
+[data-theme="light"] .border-\[\#F4EDE0\]\/30,
+[data-theme="light"] .border-\[\#F4EDE0\]\/25,
+[data-theme="light"] .border-\[\#F4EDE0\]\/20,
+[data-theme="light"] .border-\[\#F4EDE0\]\/16,
+[data-theme="light"] .border-\[\#F4EDE0\]\/15,
+[data-theme="light"] .border-\[\#F4EDE0\]\/12,
+[data-theme="light"] .border-\[\#F4EDE0\]\/10 {
+  border-color: rgba(185, 163, 139, 0.55) !important;
 }
 
-/* Deep Navy Background Replacement for Cards & Wells */
-[data-theme="light"] [class*="bg-[#14213D]"]:not(header) {
-  background-color: rgba(237, 229, 217, 0.75) !important;
+/* Replace Dark Navy backgrounds with warm Antique Gold tones */
+[data-theme="light"] .bg-\[\#14213D\],
+[data-theme="light"] .bg-\[\#14213D\]\/90,
+[data-theme="light"] .bg-\[\#14213D\]\/80,
+[data-theme="light"] .bg-\[\#14213D\]\/65,
+[data-theme="light"] .bg-\[\#14213D\]\/50 {
+  background-color: rgba(212, 197, 178, 0.75) !important;
 }
-[data-theme="light"] [class*="bg-[#090e1a]"],
-[data-theme="light"] [class*="bg-[#0b1324]"],
-[data-theme="light"] [class*="bg-[#080d19]"] {
-  background-color: #F8F4EE !important;
+[data-theme="light"] .bg-\[\#090e1a\],
+[data-theme="light"] .bg-\[\#0b1324\],
+[data-theme="light"] .bg-\[\#080d19\],
+[data-theme="light"] .bg-\[\#0d1527\] {
+  background-color: #EFE6D8 !important;
 }
-[data-theme="light"] [class*="bg-[#0d1527]"] {
-  background-color: #EDE4D4 !important;
+
+/* Clear Dark Navy Gradients in Hero Cards */
+[data-theme="light"] .bg-gradient-to-br,
+[data-theme="light"] .bg-gradient-to-b {
+  background-image: none !important;
+}
+[data-theme="light"] .theme-root-container {
+  background: linear-gradient(180deg, #EFE6D8 0%, #E2D4BF 45%, #D2BEA3 100%) !important;
 }
 
 /* Light Theme Modal Backdrop */
@@ -328,29 +377,29 @@
 [data-theme="light"] input,
 [data-theme="light"] select,
 [data-theme="light"] textarea {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+  background-color: rgba(255, 253, 250, 0.95) !important;
   color: #2C1F33 !important;
-  border-color: rgba(185, 163, 139, 0.45) !important;
+  border-color: rgba(185, 163, 139, 0.65) !important;
 }
 [data-theme="light"] input::placeholder,
 [data-theme="light"] textarea::placeholder {
-  color: rgba(44, 31, 51, 0.45) !important;
+  color: rgba(44, 31, 51, 0.5) !important;
 }
 
-/* Status colors optimized for high contrast on light antique gold */
+/* High-Contrast Badges */
 [data-theme="light"] .text-emerald-400,
 [data-theme="light"] .text-emerald-300 {
-  color: #0d7a46 !important;
+  color: #0b7340 !important;
 }
 [data-theme="light"] .text-rose-400,
 [data-theme="light"] .text-rose-300 {
-  color: #b91c1c !important;
+  color: #b01a1a !important;
 }
 [data-theme="light"] .text-amber-400,
 [data-theme="light"] .text-amber-300 {
-  color: #92400e !important;
+  color: #8c3e08 !important;
 }
 [data-theme="light"] .text-cyan-400,
 [data-theme="light"] .text-cyan-300 {
-  color: #0e7490 !important;
+  color: #0b6782 !important;
 }
