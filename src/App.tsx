@@ -179,28 +179,29 @@ export function App() {
     : null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#070b14] text-slate-100 selection:bg-fuchsia-500 selection:text-white">
-      {/* Background Neon Orbs */}
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#090e1a] via-[#14213D] to-[#080d19] text-[#F4EDE0] selection:bg-[#F4EDE0] selection:text-[#14213D] relative">
+      {/* Background Frosted Glass Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[140px] animate-pulse-glow" />
-        <div className="absolute top-3/4 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[140px] animate-pulse-glow" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#14213D]/80 rounded-full blur-[140px] animate-pulse-glow" />
+        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#F4EDE0]/10 rounded-full blur-[160px] animate-pulse-glow" style={{ animationDelay: '2.5s' }} />
+        <div className="absolute bottom-1/4 left-1/3 w-[500px] h-[500px] bg-[#1d2f55]/60 rounded-full blur-[150px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* Guest Mode Notification Bar */}
       {profile.isGuest && (
-        <div className="bg-gradient-to-r from-purple-950/60 via-amber-950/40 to-slate-950/80 border-b border-amber-500/20 px-4 sm:px-8 lg:px-12 xl:px-14 py-2 text-xs flex flex-wrap items-center justify-between gap-2.5 text-amber-200 relative z-30 backdrop-blur-md">
+        <div className="glass-panel border-b border-[#F4EDE0]/15 px-4 sm:px-8 lg:px-12 xl:px-14 py-2 text-xs flex flex-wrap items-center justify-between gap-2.5 text-[#F4EDE0]/85 relative z-30">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-[#F4EDE0] animate-pulse shrink-0" />
             <span>
               Previewing as <strong className="text-white font-mono">{profile.name}</strong> ({profile.usn}) • Demo Account
             </span>
-            <span className="text-slate-400 hidden md:inline">
+            <span className="text-[#F4EDE0]/60 hidden md:inline">
               — Sample marks loaded for Semesters 1–6 (Year 4 is empty). Changes require an account.
             </span>
           </div>
           <button
             onClick={() => handleRequireAuth('create your personalized student ID')}
-            className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-[11px] transition-colors shrink-0 shadow-sm"
+            className="px-3 py-1 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-[11px] transition-all shrink-0 shadow-md shadow-black/20 hover:scale-[1.02]"
           >
             Sign In / Create Student ID
           </button>
@@ -250,39 +251,39 @@ export function App() {
         )}
       </main>
 
-      {/* Footer - Full Screen */}
-      <footer className="mt-auto border-t border-white/10 bg-slate-950/80 backdrop-blur-md py-8 text-xs text-slate-500 relative z-10">
+      {/* Footer - Full Width Glass Sheen */}
+      <footer className="mt-auto border-t border-[#F4EDE0]/10 bg-[#14213D]/65 backdrop-blur-xl py-8 text-xs text-[#F4EDE0]/60 relative z-10">
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-14 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-lg">⚡</span>
-            <span className="font-heading font-bold text-slate-300 text-sm">MarksBoard</span>
-            <span>— Engineering SGPA, MSE/CIA/SEE & Module Revision Suite</span>
+            <span className="font-heading font-bold text-[#F4EDE0] text-sm">MarksBoard</span>
+            <span className="text-[#F4EDE0]/70">— Engineering SGPA, MSE/CIA/SEE & Module Revision Suite</span>
           </div>
 
-          <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex items-center gap-4 text-[#F4EDE0]/70">
             <button
               onClick={() => setIsGradingScaleOpen(true)}
-              className="hover:text-purple-400 transition-colors"
+              className="hover:text-[#F4EDE0] transition-colors"
             >
               DSU 10-Point Scale
             </button>
             <span>•</span>
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="hover:text-cyan-400 transition-colors"
+              className="hover:text-[#F4EDE0] transition-colors"
             >
               Profile & Bio
             </button>
             <span>•</span>
             <button
               onClick={() => setIsGradeCardOpen(true)}
-              className="hover:text-fuchsia-400 transition-colors"
+              className="hover:text-[#F4EDE0] transition-colors"
             >
               Print Transcript
             </button>
           </div>
 
-          <div className="text-right text-[11px] text-slate-500 font-mono">
+          <div className="text-right text-[11px] text-[#F4EDE0]/60 font-mono">
             {profile.college} • {profile.branch}
           </div>
         </div>

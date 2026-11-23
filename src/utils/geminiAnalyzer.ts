@@ -83,17 +83,18 @@ function scoreModel(name: string): number {
   if (lower.includes('gemini')) score += 100;
 
   // Flash models are ideal for student multimodal document extraction (fast + generous limits)
-  if (lower.includes('flash')) score += 50;
+  if (lower.includes('flash')) score += 60;
 
-  // Newer generation preference
-  if (lower.includes('2.5')) score += 40;
-  else if (lower.includes('2.0')) score += 30;
+  // 2.0 series is current production standard for Google AI Studio / Gemini API
+  if (lower.includes('2.0')) score += 50;
+  else if (lower.includes('2.5')) score += 45;
   else if (lower.includes('1.5')) score += 20;
 
-  // Latest aliases are preferred
-  if (lower.includes('latest')) score += 15;
+  // Lite / stable preference
+  if (lower.includes('lite')) score += 15;
+  if (lower.includes('latest')) score += 10;
 
-  // Stable over preview/exp, though preview/exp are still scored
+  // Stable over preview/exp
   if (lower.includes('exp') || lower.includes('preview')) score -= 5;
 
   // Pro models are slower but capable
@@ -117,7 +118,11 @@ async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]
 
   for (const ver of versions) {
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/${ver}/models?key=${apiKey}`);
+      const res = await fetch(`https://generativelanguage.googleapis.com/${ver}/models?key=${apiKey}`, {
+        headers: {
+          'x-goog-api-key': apiKey,
+        },
+      });
       if (!res.ok) continue;
       const data = await res.json();
       if (Array.isArray(data?.models)) {
@@ -125,7 +130,7 @@ async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]
           const methods = m.supportedGenerationMethods;
           if (Array.isArray(methods) && methods.includes('generateContent')) {
             const cleanName = (m.name || '').replace(/^models\//, '');
-            if (cleanName && !discovered.some((d) => d.model === cleanName)) {
+            if (cleanName && !discovered.some((d) => d.model === cleanName && d.apiVersion === ver)) {
               discovered.push({ model: cleanName, apiVersion: ver });
             }
           }
@@ -145,18 +150,18 @@ async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]
  * Standard fallback candidate models to try in order if ListModels was unavailable
  */
 const FALLBACK_CANDIDATES: ModelCandidate[] = [
-  { model: 'gemini-2.5-flash', apiVersion: 'v1beta' },
   { model: 'gemini-2.0-flash', apiVersion: 'v1beta' },
-  { model: 'gemini-1.5-flash-latest', apiVersion: 'v1beta' },
-  { model: 'gemini-flash-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-2.0-flash-lite', apiVersion: 'v1beta' },
+  { model: 'gemini-2.0-flash-001', apiVersion: 'v1beta' },
   { model: 'gemini-2.0-flash-exp', apiVersion: 'v1beta' },
+  { model: 'gemini-2.5-flash', apiVersion: 'v1beta' },
   { model: 'gemini-1.5-flash', apiVersion: 'v1' },
-  { model: 'gemini-1.5-flash-002', apiVersion: 'v1beta' },
-  { model: 'gemini-1.5-flash-001', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash-8b', apiVersion: 'v1' },
+  { model: 'gemini-1.5-flash-8b', apiVersion: 'v1beta' },
   { model: 'gemini-1.5-flash', apiVersion: 'v1beta' },
-  { model: 'gemini-1.5-pro-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-pro', apiVersion: 'v1' },
+  { model: 'gemini-1.5-pro', apiVersion: 'v1beta' },
   { model: 'gemini-2.5-pro', apiVersion: 'v1beta' },
-  { model: 'gemini-pro', apiVersion: 'v1' },
 ];
 
 /**
@@ -482,22 +487,29 @@ Return ONLY a valid JSON object matching this exact schema:
     try {
       const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`;
 
+      const requestPayload: any = {
+        contents: [
+          {
+            parts,
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+        },
+      };
+
+      // Only v1beta officially supports responseMimeType: 'application/json'
+      if (apiVersion === 'v1beta') {
+        requestPayload.generationConfig.responseMimeType = 'application/json';
+      }
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
         },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts,
-            },
-          ],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.1,
-          },
-        }),
+        body: JSON.stringify(requestPayload),
       });
 
       if (!response.ok) {
@@ -516,17 +528,23 @@ Return ONLY a valid JSON object matching this exact schema:
         ) {
           const altVersion = apiVersion === 'v1beta' ? 'v1' : 'v1beta';
           const altUrl = `https://generativelanguage.googleapis.com/${altVersion}/models/${model}:generateContent?key=${apiKey}`;
+          const altPayload: any = {
+            contents: [{ parts }],
+            generationConfig: {
+              temperature: 0.1,
+            },
+          };
+          if (altVersion === 'v1beta') {
+            altPayload.generationConfig.responseMimeType = 'application/json';
+          }
           try {
             const altResponse = await fetch(altUrl, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts }],
-                generationConfig: {
-                  responseMimeType: 'application/json',
-                  temperature: 0.1,
-                },
-              }),
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey,
+              },
+              body: JSON.stringify(altPayload),
             });
             if (altResponse.ok) {
               const altData = await altResponse.json();

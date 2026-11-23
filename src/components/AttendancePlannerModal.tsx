@@ -769,24 +769,24 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
-      <div className="relative w-full max-w-5xl glass-panel rounded-3xl border border-cyan-500/30 shadow-2xl overflow-hidden bg-slate-900/95 max-h-[94vh] flex flex-col my-auto">
+      <div className="relative w-full max-w-5xl glass-panel-deep rounded-3xl border border-[#F4EDE0]/20 shadow-2xl overflow-hidden bg-[#090e1a]/95 max-h-[94vh] flex flex-col my-auto text-[#F4EDE0]">
         <AttendanceErrorBoundary onReset={handleResetToDefaults}>
           {/* Header */}
-          <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 shrink-0">
+          <div className="px-6 py-4 border-b border-[#F4EDE0]/10 flex items-center justify-between bg-gradient-to-r from-[#14213D]/90 via-[#0d172a] to-[#14213D]/90 shrink-0">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shadow-lg shadow-cyan-500/10">
+              <div className="w-11 h-11 rounded-2xl bg-[#F4EDE0]/10 border border-[#F4EDE0]/25 flex items-center justify-center text-[#F4EDE0] shadow-lg shadow-[#14213D]/40">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold font-heading text-white">
+                  <h3 className="text-xl font-bold font-heading text-[#F4EDE0]">
                     Attendance & Leave Allowance Forecaster
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F4EDE0]/15 text-[#F4EDE0] border border-[#F4EDE0]/25">
                     Sem {safeSemester.semNumber}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-[#F4EDE0]/70 mt-0.5">
                   AI reads your uploaded calendar & timetable, detects cancellations, and computes your safe leave margins!
                 </p>
               </div>
@@ -798,7 +798,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 type="button"
                 onClick={handleTriggerAiScan}
                 disabled={isAiScanning || !hasUploadedDocs}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs shadow-md shadow-[#14213D]/40 transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 title={
                   hasUploadedDocs
                     ? 'Let Gemini AI scan uploaded calendar & timetable'
@@ -812,7 +812,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   </>
                 ) : (
                   <>
-                    <Wand2 className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                    <Wand2 className="w-3.5 h-3.5 text-[#14213D] animate-pulse" />
                     <span>Scan with AI</span>
                   </>
                 )}
@@ -824,8 +824,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 onClick={() => setIsApiKeyModalOpen(true)}
                 className={`p-2 rounded-xl border text-xs transition-colors cursor-pointer ${
                   hasKey
-                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
-                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                    ? 'bg-[#F4EDE0]/20 border-[#F4EDE0]/30 text-[#F4EDE0] hover:bg-[#F4EDE0]/30'
+                    : 'bg-[#090e1a]/80 border-[#F4EDE0]/10 text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                 }`}
                 title={hasKey ? 'Gemini AI API Key active' : 'Configure Gemini API Key'}
               >
@@ -834,7 +834,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
               <button
                 onClick={onClose}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer ml-1"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-[#F4EDE0]/60 hover:text-[#F4EDE0] hover:bg-[#F4EDE0]/10 transition-colors cursor-pointer ml-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -843,13 +843,13 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
           {/* AI Status Banners */}
           {isAiScanning && (
-            <div className="mx-6 mt-4 p-4 rounded-2xl bg-gradient-to-r from-cyan-950/70 to-purple-950/70 border border-cyan-400/40 text-cyan-200 text-xs flex items-center gap-3.5 animate-pulse shadow-lg">
-              <Loader2 className="w-6 h-6 text-cyan-400 animate-spin shrink-0" />
+            <div className="mx-6 mt-4 p-4 rounded-2xl bg-[#14213D]/80 border border-[#F4EDE0]/30 text-[#F4EDE0] text-xs flex items-center gap-3.5 animate-pulse shadow-lg">
+              <Loader2 className="w-6 h-6 text-[#F4EDE0] animate-spin shrink-0" />
               <div>
-                <h5 className="font-bold text-sm text-white mb-0.5">
+                <h5 className="font-bold text-sm text-[#F4EDE0] mb-0.5">
                   🤖 Gemini AI is reading your uploaded documents...
                 </h5>
-                <p className="text-[11px] text-cyan-300/80">
+                <p className="text-[11px] text-[#F4EDE0]/80">
                   Extracting semester dates, identifying holiday lists, and matching timetable class periods to your course cards.
                 </p>
               </div>
@@ -865,7 +865,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setIsApiKeyModalOpen(true)}
-                  className="mt-2 text-[11px] underline text-rose-300 hover:text-white font-semibold"
+                  className="mt-2 text-[11px] underline text-[#F4EDE0] hover:text-white font-semibold"
                 >
                   Verify or update your Gemini API Key
                 </button>
@@ -882,55 +882,55 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
           {/* AI Result Review Card */}
           {aiResult && (
-            <div className="mx-6 mt-4 p-5 rounded-2xl bg-gradient-to-r from-purple-950/80 via-cyan-950/80 to-slate-900 border border-cyan-400/50 shadow-2xl animate-fadeIn space-y-4">
+            <div className="mx-6 mt-4 p-5 rounded-2xl bg-[#14213D]/70 border border-[#F4EDE0]/30 shadow-2xl animate-fadeIn space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] flex items-center justify-center">
                     <Wand2 className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                    <h4 className="font-bold text-sm text-[#F4EDE0] flex items-center gap-1.5">
                       <span>AI Document Analysis Complete</span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                         Ready to Apply
                       </span>
                     </h4>
-                    <p className="text-xs text-slate-300 mt-0.5">{aiResult.summary}</p>
+                    <p className="text-xs text-[#F4EDE0]/80 mt-0.5">{aiResult.summary}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setAiResult(null)}
-                  className="text-slate-400 hover:text-white p-1"
+                  className="text-[#F4EDE0]/60 hover:text-[#F4EDE0] p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-black/40 border border-white/10">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15">
+                  <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                     Detected Semester
                   </span>
-                  <strong className="text-cyan-300 font-mono text-sm block mt-0.5">
+                  <strong className="text-[#F4EDE0] font-mono text-sm block mt-0.5">
                     {aiResult.startDate} → {aiResult.endDate}
                   </strong>
                 </div>
-                <div className="p-3 rounded-xl bg-black/40 border border-white/10">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15">
+                  <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                     Holidays Found
                   </span>
-                  <strong className="text-amber-300 font-mono text-sm block mt-0.5">
+                  <strong className="text-[#F4EDE0] font-mono text-sm block mt-0.5">
                     {aiResult.holidays.length} Holidays Detected
                   </strong>
                 </div>
-                <div className="p-3 rounded-xl bg-black/40 border border-white/10">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15">
+                  <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                     Timetable Classes
                   </span>
-                  <strong className="text-purple-300 font-mono text-sm block mt-0.5">
+                  <strong className="text-[#F4EDE0] font-mono text-sm block mt-0.5">
                     {aiResult.timetable.length} Class Slots Mapped
                   </strong>
-                  <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                  <span className="text-[10px] text-[#F4EDE0]/60 block mt-0.5 font-medium">
                     {aiResult.theoryCount ?? aiResult.timetable.filter((s) => s.type !== 'practical').length} Theory •{' '}
                     {aiResult.practicalCount ?? aiResult.timetable.filter((s) => s.type === 'practical').length} Practical/Lab
                   </span>
@@ -938,7 +938,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               </div>
 
               {aiResult.calendarNotes && (
-                <div className="text-[11px] text-slate-300 bg-white/5 p-2.5 rounded-lg border border-white/5">
+                <div className="text-[11px] text-[#F4EDE0]/80 bg-[#090e1a]/60 p-2.5 rounded-xl border border-[#F4EDE0]/10">
                   💡 <strong>Detected Details:</strong> {aiResult.calendarNotes}
                 </div>
               )}
@@ -947,14 +947,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setAiResult(null)}
-                  className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs transition-colors cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#090e1a]/80 hover:bg-[#090e1a] text-[#F4EDE0]/70 text-xs transition-colors cursor-pointer border border-[#F4EDE0]/10"
                 >
                   Dismiss
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyAiResult}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs shadow-lg shadow-[#14213D]/50 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>Apply AI Extracted Schedule</span>
@@ -964,7 +964,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           )}
 
           {/* Global Summary Stats Bar */}
-          <div className="px-6 py-3 bg-slate-950/60 border-b border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
+          <div className="px-6 py-3 bg-[#14213D]/50 border-b border-[#F4EDE0]/10 grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
             <div className="flex items-center gap-2.5">
               <div
                 className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
@@ -976,12 +976,12 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 %
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                   Semester Attendance
                 </span>
                 <span
                   className={`text-base font-extrabold font-heading ${
-                    overallPercentage >= effectiveTarget ? 'text-emerald-300' : 'text-rose-300'
+                    overallPercentage >= effectiveTarget ? 'text-[#F4EDE0]' : 'text-rose-300'
                   }`}
                 >
                   {overallPercentage}%
@@ -990,28 +990,28 @@ export const AttendancePlannerModal: React.FC<Props> = ({
             </div>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] border border-[#F4EDE0]/20 flex items-center justify-center font-bold text-xs">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                   Target Criteria
                 </span>
-                <span className="text-base font-extrabold font-heading text-purple-200">
+                <span className="text-base font-extrabold font-heading text-[#F4EDE0]">
                   {effectiveTarget}% Minimum
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] border border-[#F4EDE0]/20 flex items-center justify-center font-bold text-xs">
                 <Clock className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                   Total Leaves Margin
                 </span>
-                <span className="text-base font-extrabold font-heading text-cyan-200">
+                <span className="text-base font-extrabold font-heading text-[#F4EDE0]">
                   {totalBunkableAcross} Classes Safe
                 </span>
               </div>
@@ -1028,14 +1028,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 <ShieldAlert className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                <span className="text-[10px] text-[#F4EDE0]/60 uppercase font-semibold block">
                   Shortage Alerts
                 </span>
                 <span
                   className={`text-base font-extrabold font-heading ${
                     shortageSubjectsCount === 0
-                      ? 'All Safe'
-                      : `${shortageSubjectsCount} Subjects Under ${effectiveTarget}%`
+                      ? 'text-[#F4EDE0]'
+                      : 'text-rose-300'
                   }`}
                 >
                   {shortageSubjectsCount === 0
@@ -1047,15 +1047,15 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           </div>
 
           {/* Tab Navigation */}
-          <div className="px-6 pt-3 border-b border-white/10 flex items-center justify-between gap-4 bg-slate-900/60 shrink-0">
+          <div className="px-6 pt-3 border-b border-[#F4EDE0]/10 flex items-center justify-between gap-4 bg-[#090e1a]/80 shrink-0">
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setActiveTab('tracker')}
                 className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
                   activeTab === 'tracker'
-                    ? 'border-cyan-400 text-cyan-300 bg-cyan-500/10'
-                    : 'border-transparent text-slate-400 hover:text-white'
+                    ? 'border-[#F4EDE0] text-[#F4EDE0] bg-[#F4EDE0]/10'
+                    : 'border-transparent text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -1067,14 +1067,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 onClick={() => setActiveTab('calendar')}
                 className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
                   activeTab === 'calendar'
-                    ? 'border-cyan-400 text-cyan-300 bg-cyan-500/10'
-                    : 'border-transparent text-slate-400 hover:text-white'
+                    ? 'border-[#F4EDE0] text-[#F4EDE0] bg-[#F4EDE0]/10'
+                    : 'border-transparent text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
                 <span>Academic Calendar & Holidays</span>
                 {config.calendarFileName && (
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#F4EDE0] animate-pulse" />
                 )}
               </button>
 
@@ -1083,28 +1083,28 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 onClick={() => setActiveTab('timetable')}
                 className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
                   activeTab === 'timetable'
-                    ? 'border-cyan-400 text-cyan-300 bg-cyan-500/10'
-                    : 'border-transparent text-slate-400 hover:text-white'
+                    ? 'border-[#F4EDE0] text-[#F4EDE0] bg-[#F4EDE0]/10'
+                    : 'border-transparent text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                 }`}
               >
                 <Clock className="w-4 h-4" />
                 <span>Weekly Timetable</span>
                 {config.timetableFileName && (
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#F4EDE0] animate-pulse" />
                 )}
               </button>
             </div>
 
             {/* Quick Target Attendance Criteria Switcher */}
             <div className="hidden sm:flex items-center gap-1.5 pb-2">
-              <span className="text-[11px] text-slate-400 font-semibold mr-1">Target %:</span>
+              <span className="text-[11px] text-[#F4EDE0]/70 font-semibold mr-1">Target %:</span>
               <button
                 type="button"
                 onClick={() => handleTargetChange('75')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   targetPreset === '75'
-                    ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40 shadow-sm'
-                    : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                    ? 'bg-[#F4EDE0] text-[#14213D] border border-[#F4EDE0] shadow-sm font-bold'
+                    : 'bg-[#090e1a]/80 text-[#F4EDE0]/70 hover:text-[#F4EDE0] border border-[#F4EDE0]/15'
                 }`}
                 title="Standard university mandatory minimum"
               >
@@ -1115,8 +1115,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 onClick={() => handleTargetChange('85')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   targetPreset === '85'
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                    : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                    ? 'bg-[#F4EDE0] text-[#14213D] border border-[#F4EDE0] shadow-sm font-bold'
+                    : 'bg-[#090e1a]/80 text-[#F4EDE0]/70 hover:text-[#F4EDE0] border border-[#F4EDE0]/15'
                 }`}
                 title="Safe distinction zone without medical certificates"
               >
@@ -1127,8 +1127,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 onClick={() => handleTargetChange('custom')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   targetPreset === 'custom'
-                    ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                    : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                    ? 'bg-[#F4EDE0] text-[#14213D] border border-[#F4EDE0] shadow-sm font-bold'
+                    : 'bg-[#090e1a]/80 text-[#F4EDE0]/70 hover:text-[#F4EDE0] border border-[#F4EDE0]/15'
                 }`}
                 title="Set custom n% target"
               >
@@ -1142,16 +1142,16 @@ export const AttendancePlannerModal: React.FC<Props> = ({
             <div className="p-6 overflow-y-auto space-y-5">
               {/* Target Percentage Slider (if custom) */}
               {targetPreset === 'custom' && (
-                <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
+                <div className="p-4 rounded-2xl bg-[#14213D]/60 border border-[#F4EDE0]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] flex items-center justify-center">
                       <Sliders className="w-4 h-4" />
                     </div>
                     <div>
-                      <strong className="text-sm text-cyan-200 block font-bold">
+                      <strong className="text-sm text-[#F4EDE0] block font-bold">
                         Custom Attendance Target: {customTarget}%
                       </strong>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-[#F4EDE0]/70">
                         Drag slider or type custom target percentage to recalculate safe leave margins for all subjects.
                       </span>
                     </div>
@@ -1165,9 +1165,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                       step={1}
                       value={customTarget}
                       onChange={(e) => handleTargetChange('custom', parseInt(e.target.value, 10))}
-                      className="w-40 accent-cyan-400 cursor-pointer"
+                      className="w-40 accent-[#F4EDE0] cursor-pointer"
                     />
-                    <div className="flex items-center gap-1 font-mono font-bold text-white bg-black/40 px-3 py-1.5 rounded-xl border border-white/10">
+                    <div className="flex items-center gap-1 font-mono font-bold text-[#F4EDE0] bg-[#090e1a] px-3 py-1.5 rounded-xl border border-[#F4EDE0]/15">
                       <input
                         type="number"
                         min={50}
@@ -1179,9 +1179,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             Math.max(50, Math.min(95, parseInt(e.target.value, 10) || 75))
                           )
                         }
-                        className="w-10 bg-transparent text-center focus:outline-none text-cyan-300"
+                        className="w-10 bg-transparent text-center focus:outline-none text-[#F4EDE0]"
                       />
-                      <span className="text-xs text-slate-400">%</span>
+                      <span className="text-xs text-[#F4EDE0]/60">%</span>
                     </div>
                   </div>
                 </div>
@@ -1203,33 +1203,33 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                       key={analysis.id}
                       className={`rounded-2xl border p-4 sm:p-5 transition-all glass-card ${
                         analysis.isShortage
-                          ? 'border-rose-500/40 bg-gradient-to-br from-slate-900/90 via-rose-950/20 to-slate-900/90'
+                          ? 'border-rose-500/40 bg-gradient-to-br from-[#090e1a]/95 via-rose-950/20 to-[#14213D]/90'
                           : analysis.canBunkMore <= 1
-                          ? 'border-amber-500/40 bg-gradient-to-br from-slate-900/90 via-amber-950/15 to-slate-900/90'
+                          ? 'border-amber-500/40 bg-gradient-to-br from-[#090e1a]/95 via-amber-950/15 to-[#14213D]/90'
                           : isLab
-                          ? 'border-amber-500/25 bg-gradient-to-br from-slate-900/90 via-amber-950/10 to-slate-900/90 hover:border-amber-400/40'
-                          : 'border-white/10 hover:border-cyan-500/30'
+                          ? 'border-[#F4EDE0]/20 bg-gradient-to-br from-[#090e1a]/90 via-[#14213D]/40 to-[#090e1a]/90 hover:border-[#F4EDE0]/35'
+                          : 'border-[#F4EDE0]/15 hover:border-[#F4EDE0]/35 bg-[#14213D]/40'
                       }`}
                     >
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         {/* Left: Subject Info & Badge */}
                         <div className="space-y-1.5 flex-1 min-w-[240px]">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono font-bold px-2.5 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-xs">
+                            <span className="font-mono font-bold px-2.5 py-0.5 rounded-lg bg-[#F4EDE0]/10 text-[#F4EDE0] border border-[#F4EDE0]/20 text-xs">
                               {analysis.subjectCode}
                             </span>
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-white/5 text-slate-400 border border-white/5">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#090e1a]/80 text-[#F4EDE0]/60 border border-[#F4EDE0]/10">
                               {analysis.credits} Credits
                             </span>
 
                             {/* Component Type Badge */}
                             {isLab ? (
-                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-amber-500/15 border-amber-500/30 text-amber-300 flex items-center gap-1">
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-[#F4EDE0]/20 border-[#F4EDE0]/30 text-[#F4EDE0] flex items-center gap-1">
                                 <FlaskConical className="w-3 h-3" />
                                 <span>Practical / Lab</span>
                               </span>
                             ) : (
-                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-cyan-500/15 border-cyan-500/30 text-cyan-300 flex items-center gap-1">
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-[#14213D] border-[#F4EDE0]/20 text-[#F4EDE0] flex items-center gap-1">
                                 <BookOpen className="w-3 h-3" />
                                 <span>Theory</span>
                               </span>
@@ -1241,13 +1241,13 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               {analysis.statusBadge.label}
                             </span>
                           </div>
-                          <h4 className="text-base font-bold text-white tracking-wide">
+                          <h4 className="text-base font-bold text-[#F4EDE0] tracking-wide">
                             {analysis.subjectName}
                           </h4>
-                          <p className="text-xs text-slate-400">
-                            Scheduled: <strong className="text-slate-200">{analysis.totalScheduledClasses}</strong> {isLab ? 'lab sessions' : 'classes'} in semester • Conducted so far: <strong className="text-slate-200">{analysis.conductedClasses}</strong>
+                          <p className="text-xs text-[#F4EDE0]/70">
+                            Scheduled: <strong className="text-[#F4EDE0]">{analysis.totalScheduledClasses}</strong> {isLab ? 'lab sessions' : 'classes'} in semester • Conducted so far: <strong className="text-[#F4EDE0]">{analysis.conductedClasses}</strong>
                             {analysis.cancelledClasses > 0 && (
-                              <span className="text-amber-400 font-semibold ml-1">
+                              <span className="text-[#F4EDE0] font-semibold ml-1">
                                 ({analysis.cancelledClasses} cancelled)
                               </span>
                             )}
@@ -1255,29 +1255,29 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                         </div>
 
                         {/* Middle: Attendance Progress & Attended Counter */}
-                        <div className="flex items-center gap-5 sm:gap-6 bg-slate-950/40 p-3 rounded-2xl border border-white/5 shrink-0">
+                        <div className="flex items-center gap-5 sm:gap-6 bg-[#090e1a]/80 p-3 rounded-2xl border border-[#F4EDE0]/10 shrink-0">
                           {/* Attendance Percentage Display */}
                           <div className="text-center min-w-[85px]">
-                            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                            <span className="text-[10px] uppercase font-bold text-[#F4EDE0]/60 block tracking-wider">
                               Attendance
                             </span>
                             <div
                               className={`text-2xl sm:text-3xl font-black font-heading ${
                                 analysis.currentPercentage >= effectiveTarget
-                                    ? 'text-emerald-300'
+                                    ? 'text-[#F4EDE0]'
                                     : 'text-rose-400'
                               }`}
                             >
                               {analysis.currentPercentage}%
                             </div>
-                            <span className="text-[10px] text-slate-400 block font-mono">
+                            <span className="text-[10px] text-[#F4EDE0]/60 block font-mono">
                               {analysis.attendedClasses} / {analysis.conductedClasses}
                             </span>
                           </div>
 
                           {/* Interactive Attended Stepper */}
                           <div className="space-y-1">
-                            <span className="text-[10px] text-slate-400 block font-semibold text-center">
+                            <span className="text-[10px] text-[#F4EDE0]/60 block font-semibold text-center">
                               {isLab ? 'Lab Sessions Present' : 'Classes Present'}
                             </span>
                             <div className="flex items-center gap-1.5">
@@ -1285,7 +1285,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 type="button"
                                 onClick={() => handleUpdateAttended(analysis.id, -1)}
                                 disabled={analysis.attendedClasses <= 0}
-                                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white text-base font-bold transition-all flex items-center justify-center border border-white/10 cursor-pointer"
+                                className="w-8 h-8 rounded-xl bg-[#090e1a]/80 hover:bg-[#14213D] active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-[#F4EDE0] text-base font-bold transition-all flex items-center justify-center border border-[#F4EDE0]/15 cursor-pointer"
                                 title={`Decrease 1 ${isLab ? 'lab session' : 'class'}`}
                               >
                                 -
@@ -1299,9 +1299,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 onChange={(e) =>
                                   handleSetAttendedDirect(analysis.id, e.target.value)
                                 }
-                                className={`w-14 h-8 text-center font-mono font-bold text-sm bg-black/60 rounded-xl border text-white focus:outline-none ${
-                                  isLab ? 'border-amber-500/30 focus:border-amber-400' : 'border-white/20 focus:border-cyan-400'
-                                }`}
+                                className="w-14 h-8 text-center font-mono font-bold text-sm bg-[#090e1a] rounded-xl border border-[#F4EDE0]/20 text-[#F4EDE0] focus:outline-none focus:border-[#F4EDE0]"
                                 title={`Directly enter attended ${isLab ? 'lab sessions' : 'classes'}`}
                               />
 
@@ -1309,14 +1307,10 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 type="button"
                                 onClick={() => handleUpdateAttended(analysis.id, 1)}
                                 disabled={
-                                  analysis.attendedClasses >= analysis.conductedClasses &&
-                                  analysis.conductedClasses > 0
+                                  analysis.conductedClasses > 0 &&
+                                  analysis.attendedClasses >= analysis.conductedClasses
                                 }
-                                className={`w-8 h-8 rounded-xl active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-base font-bold transition-all flex items-center justify-center border cursor-pointer ${
-                                  isLab
-                                    ? 'bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border-amber-500/40'
-                                    : 'bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 border-cyan-500/40'
-                                }`}
+                                className="w-8 h-8 rounded-xl active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-base font-bold transition-all flex items-center justify-center border cursor-pointer bg-[#F4EDE0] text-[#14213D] border-[#F4EDE0] hover:bg-white"
                                 title={`Present today (+1 ${isLab ? 'lab session' : 'class'})`}
                               >
                                 +
@@ -1326,28 +1320,28 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                         </div>
 
                         {/* Right: Leave Allowance Forecaster Box */}
-                        <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 min-w-[260px] flex flex-col justify-between">
+                        <div className="p-3.5 rounded-2xl bg-[#090e1a]/80 border border-[#F4EDE0]/10 min-w-[260px] flex flex-col justify-between">
                           <div>
-                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                            <span className="text-[10px] uppercase font-bold text-[#F4EDE0]/60 tracking-wider block">
                               Leave Allowance ({effectiveTarget}% Target)
                             </span>
 
                             {!analysis.isShortage ? (
                               <div className="mt-1 space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xl font-extrabold text-emerald-300 font-heading">
+                                  <span className="text-xl font-extrabold text-[#F4EDE0] font-heading">
                                     {analysis.canBunkMore} More {isLab ? (analysis.canBunkMore === 1 ? 'Lab' : 'Labs') : (analysis.canBunkMore === 1 ? 'Leave' : 'Leaves')}
                                   </span>
-                                  <span className="text-xs text-emerald-400/80 font-medium">Safe</span>
+                                  <span className="text-xs text-[#F4EDE0]/70 font-medium">Safe</span>
                                 </div>
-                                <p className="text-[11px] text-slate-400 leading-tight">
+                                <p className="text-[11px] text-[#F4EDE0]/70 leading-tight">
                                   You can safely take{' '}
-                                  <strong className="text-emerald-300">{analysis.canBunkMore}</strong>{' '}
+                                  <strong className="text-[#F4EDE0]">{analysis.canBunkMore}</strong>{' '}
                                   more {isLab ? (analysis.canBunkMore === 1 ? 'lab session' : 'lab sessions') : (analysis.canBunkMore === 1 ? 'leave' : 'leaves')} across the semester and finish at or above{' '}
                                   {effectiveTarget}%.
                                 </p>
                                 {analysis.immediateBunkSafe > 0 && (
-                                  <p className="text-[10px] text-cyan-300/90 font-medium pt-0.5">
+                                  <p className="text-[10px] text-[#F4EDE0]/80 font-medium pt-0.5">
                                     ⚡ Can skip next {analysis.immediateBunkSafe} {isLab ? 'lab sessions' : 'classes'} right now without falling below {effectiveTarget}% today.
                                   </p>
                                 )}
@@ -1370,7 +1364,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           </div>
 
                           {/* Adjust Conducted / Cancellation Toggle */}
-                          <div className="pt-2 mt-2 border-t border-white/5 flex items-center justify-between">
+                          <div className="pt-2 mt-2 border-t border-[#F4EDE0]/10 flex items-center justify-between">
                             <button
                               type="button"
                               onClick={() =>
@@ -1378,7 +1372,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                   isAdjustOpen ? null : analysis.id
                                 )
                               }
-                              className="text-[11px] text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                              className="text-[11px] text-[#F4EDE0]/80 hover:text-[#F4EDE0] font-medium flex items-center gap-1 transition-colors cursor-pointer"
                             >
                               <span>
                                 {hasConductedOverride
@@ -1392,7 +1386,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                               )}
                             </button>
 
-                            <span className="text-[10px] text-slate-500 font-mono">
+                            <span className="text-[10px] text-[#F4EDE0]/50 font-mono">
                               Total: {analysis.totalClassesInSemester} {isLab ? 'labs' : 'classes'}
                             </span>
                           </div>
@@ -1401,16 +1395,16 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
                       {/* Expandable Class Cancellation & Conducted Override Section */}
                       {isAdjustOpen && (
-                        <div className="mt-4 pt-4 border-t border-white/10 bg-slate-950/70 p-4 rounded-xl space-y-3 animate-fadeIn text-xs">
-                          <div className="flex items-center gap-2 text-cyan-300 font-bold">
+                        <div className="mt-4 pt-4 border-t border-[#F4EDE0]/10 bg-[#090e1a]/90 p-4 rounded-xl space-y-3 animate-fadeIn text-xs">
+                          <div className="flex items-center gap-2 text-[#F4EDE0] font-bold">
                             <Info className="w-4 h-4" />
                             <span>
                               {isLab ? 'Lab Session' : 'Class'} Cancellation & Actual Conducted Adjustment
                             </span>
                           </div>
-                          <p className="text-slate-400 text-[11px] leading-relaxed">
+                          <p className="text-[#F4EDE0]/70 text-[11px] leading-relaxed">
                             Timetable scheduled{' '}
-                            <strong className="text-slate-200">
+                            <strong className="text-[#F4EDE0]">
                               {analysis.scheduledTillToday} {isLab ? 'lab sessions' : 'classes'}
                             </strong>{' '}
                             up to today. If faculty was on leave or {isLab ? 'lab sessions were cancelled' : 'classes were cancelled'}, enter the actual conducted count below. The website will automatically update the total semester count accordingly!
@@ -1418,7 +1412,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                             <div>
-                              <label className="text-slate-400 block mb-1 font-semibold text-[11px]">
+                              <label className="text-[#F4EDE0]/70 block mb-1 font-semibold text-[11px]">
                                 Actual Conducted {isLab ? 'Lab Sessions' : 'Classes'} Till Date:
                               </label>
                               <div className="flex items-center gap-2">
@@ -1435,26 +1429,26 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                   onChange={(e) =>
                                     handleSetConductedOverride(analysis.id, e.target.value)
                                   }
-                                  className="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-white font-mono focus:outline-none focus:border-cyan-400"
+                                  className="w-full px-3 py-1.5 rounded-lg bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] font-mono focus:outline-none focus:border-[#F4EDE0]"
                                 />
                                 {hasConductedOverride && (
                                   <button
                                     type="button"
                                     onClick={() => handleSetConductedOverride(analysis.id, '')}
-                                    className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-[10px] cursor-pointer"
+                                    className="px-2 py-1.5 rounded-lg bg-[#14213D] hover:bg-[#14213D]/80 text-[#F4EDE0]/70 hover:text-[#F4EDE0] text-[10px] cursor-pointer"
                                     title="Reset to timetable scheduled"
                                   >
                                     Reset
                                   </button>
                                 )}
                               </div>
-                              <span className="text-[10px] text-slate-500 mt-1 block">
+                              <span className="text-[10px] text-[#F4EDE0]/50 mt-1 block">
                                 Leave empty to use automatic schedule count ({analysis.scheduledTillToday}).
                               </span>
                             </div>
 
                             <div>
-                              <label className="text-slate-400 block mb-1 font-semibold text-[11px]">
+                              <label className="text-[#F4EDE0]/70 block mb-1 font-semibold text-[11px]">
                                 Total Semester {isLab ? 'Lab Sessions' : 'Classes'} Override (Optional):
                               </label>
                               <input
@@ -1465,9 +1459,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 onChange={(e) =>
                                   handleSetTotalPlannedOverride(analysis.id, e.target.value)
                                 }
-                                className="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-white font-mono focus:outline-none focus:border-cyan-400"
+                                className="w-full px-3 py-1.5 rounded-lg bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] font-mono focus:outline-none focus:border-[#F4EDE0]"
                               />
-                              <span className="text-[10px] text-slate-500 mt-1 block">
+                              <span className="text-[10px] text-[#F4EDE0]/50 mt-1 block">
                                 Automatically computed as {analysis.totalClassesInSemester} {isLab ? 'sessions' : 'classes'} based on calendar working days minus cancellations.
                               </span>
                             </div>
@@ -1479,7 +1473,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 })}
 
                 {subjectAnalyses.length === 0 && (
-                  <div className="p-8 text-center text-slate-500 text-xs italic bg-black/30 rounded-2xl border border-white/5">
+                  <div className="p-8 text-center text-[#F4EDE0]/50 text-xs italic bg-[#090e1a]/60 rounded-2xl border border-[#F4EDE0]/10">
                     No subjects found in this semester. Add subjects in the semester dashboard to start tracking attendance.
                   </div>
                 )}
@@ -1491,16 +1485,16 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           {activeTab === 'calendar' && (
             <div className="p-6 overflow-y-auto space-y-6">
               {/* AI Assistant Banner */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 via-cyan-950/60 to-slate-900 border border-cyan-400/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-[#14213D]/60 border border-[#F4EDE0]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-[#F4EDE0]/10 text-[#F4EDE0] flex items-center justify-center shrink-0">
                     <Bot className="w-5 h-5" />
                   </div>
                   <div>
-                    <h5 className="font-bold text-sm text-white">
+                    <h5 className="font-bold text-sm text-[#F4EDE0]">
                       AI Academic Calendar Scanner
                     </h5>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-[#F4EDE0]/70">
                       Upload your college's official calendar circular below. Gemini AI will automatically extract the start date, end date, and all holidays!
                     </p>
                   </div>
@@ -1510,32 +1504,32 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   type="button"
                   onClick={handleTriggerAiScan}
                   disabled={isAiScanning || !config.calendarFileDataUrl}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs shadow-md shadow-[#14213D]/40 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
-                  <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                  <Wand2 className="w-3.5 h-3.5 text-[#14213D]" />
                   <span>Scan Calendar with AI</span>
                 </button>
               </div>
 
               {/* Academic Calendar Document Attachment / Upload */}
-              <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
+              <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/15 bg-[#14213D]/40 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                    <div className="w-9 h-9 rounded-xl bg-[#F4EDE0]/10 border border-[#F4EDE0]/25 flex items-center justify-center text-[#F4EDE0]">
                       <UploadCloud className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white">
+                      <h4 className="text-sm font-bold text-[#F4EDE0]">
                         Upload Academic Calendar Document
                       </h4>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-[#F4EDE0]/60">
                         Upload your official college PDF or image calendar for AI to read
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
+                    <label className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-[#14213D]/40">
                       <UploadCloud className="w-3.5 h-3.5" />
                       <span>{config.calendarFileName ? 'Replace File' : 'Upload File (PDF/Image)'}</span>
                       <input
@@ -1559,11 +1553,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
 
                 {config.calendarFileName && (
-                  <div className="p-3.5 rounded-xl bg-black/40 border border-cyan-500/30 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/20 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <FileText className="w-5 h-5 text-cyan-400" />
+                      <FileText className="w-5 h-5 text-[#F4EDE0]" />
                       <div>
-                        <span className="text-xs font-semibold text-white block">
+                        <span className="text-xs font-semibold text-[#F4EDE0] block">
                           {config.calendarFileName}
                         </span>
                         <span className="text-[10px] text-emerald-400 font-mono">
@@ -1576,9 +1570,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                         type="button"
                         onClick={handleTriggerAiScan}
                         disabled={isAiScanning}
-                        className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-[#F4EDE0] hover:bg-white text-[#14213D] text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <Sparkles className="w-3.5 h-3.5 text-[#14213D]" />
                         <span>AI Scan</span>
                       </button>
                       {config.calendarFileDataUrl && (
@@ -1586,7 +1580,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           href={config.calendarFileDataUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-[#14213D] hover:bg-[#14213D]/80 text-[#F4EDE0] border border-[#F4EDE0]/20 text-xs font-semibold flex items-center gap-1 transition-colors"
                         >
                           <span>Preview</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -1600,54 +1594,54 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               {/* Calendar Dates & Working Days Configuration */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Semester Date Range */}
-                <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
-                  <div className="flex items-center gap-2.5 text-white font-bold text-sm">
-                    <Calendar className="w-4 h-4 text-cyan-400" />
+                <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/15 bg-[#14213D]/40 space-y-4">
+                  <div className="flex items-center gap-2.5 text-[#F4EDE0] font-bold text-sm">
+                    <Calendar className="w-4 h-4 text-[#F4EDE0]" />
                     <span>Semester Working Period</span>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-[#F4EDE0]/70 leading-relaxed">
                     Start and end dates extracted by AI or entered manually. All working days between these dates are computed automatically.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 text-xs font-semibold block mb-1">
+                      <label className="text-[#F4EDE0]/70 text-xs font-semibold block mb-1">
                         Semester Start Date
                       </label>
                       <input
                         type="date"
                         value={config.startDate}
                         onChange={(e) => handleDateChange('startDate', e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                        className="w-full px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] font-mono text-xs focus:outline-none focus:border-[#F4EDE0]"
                       />
                     </div>
 
                     <div>
-                      <label className="text-slate-400 text-xs font-semibold block mb-1">
+                      <label className="text-[#F4EDE0]/70 text-xs font-semibold block mb-1">
                         Semester End Date
                       </label>
                       <input
                         type="date"
                         value={config.endDate}
                         onChange={(e) => handleDateChange('endDate', e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                        className="w-full px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] font-mono text-xs focus:outline-none focus:border-[#F4EDE0]"
                       />
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300 flex items-center justify-between">
+                  <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15 text-xs text-[#F4EDE0] flex items-center justify-between">
                     <span>Total Calculated Working Days in Semester:</span>
                     <strong className="font-mono text-sm">{totalWorkingDays} Days</strong>
                   </div>
                 </div>
 
                 {/* Working Days of Week Toggle */}
-                <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
-                  <div className="flex items-center gap-2.5 text-white font-bold text-sm">
-                    <Clock className="w-4 h-4 text-purple-400" />
+                <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/15 bg-[#14213D]/40 space-y-4">
+                  <div className="flex items-center gap-2.5 text-[#F4EDE0] font-bold text-sm">
+                    <Clock className="w-4 h-4 text-[#F4EDE0]" />
                     <span>Weekly Working Days</span>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-[#F4EDE0]/70 leading-relaxed">
                     Select active days on which classes are conducted (e.g., Mon–Fri or including Saturdays).
                   </p>
 
@@ -1661,12 +1655,12 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           onClick={() => handleToggleWorkingDay(day)}
                           className={`p-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-between cursor-pointer ${
                             isSelected
-                              ? 'bg-purple-600/25 text-purple-200 border-purple-500/40 shadow-sm'
-                              : 'bg-white/5 text-slate-500 border-white/5 hover:text-white'
+                              ? 'bg-[#F4EDE0] text-[#14213D] border-[#F4EDE0] shadow-sm font-bold'
+                              : 'bg-[#090e1a]/80 text-[#F4EDE0]/60 border-[#F4EDE0]/10 hover:text-[#F4EDE0]'
                           }`}
                         >
                           <span>{day}</span>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-purple-300" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#14213D]" />}
                         </button>
                       );
                     })}
@@ -1675,14 +1669,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               </div>
 
               {/* University Holidays / Non-Instructional Days List */}
-              <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
+              <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/15 bg-[#14213D]/40 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
+                    <h4 className="text-sm font-bold text-[#F4EDE0] flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#F4EDE0]" />
                       <span>Holidays & University Vacations ({(config.holidays || []).length})</span>
                     </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-[#F4EDE0]/70 mt-0.5">
                       Classes falling on holidays are automatically deducted from the total semester class count.
                     </p>
                   </div>
@@ -1690,7 +1684,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={handleImportSuggestedHolidays}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#14213D] hover:bg-[#14213D]/80 text-[#F4EDE0] border border-[#F4EDE0]/20 text-xs font-semibold transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
                     title="Import known university & festival holidays"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -1705,7 +1699,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                     required
                     value={newHolidayDate}
                     onChange={(e) => setNewHolidayDate(e.target.value)}
-                    className="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] font-mono text-xs focus:outline-none focus:border-[#F4EDE0]"
                   />
                   <input
                     type="text"
@@ -1713,11 +1707,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                     placeholder="Holiday title (e.g. Gandhi Jayanti, Sports Day)..."
                     value={newHolidayTitle}
                     onChange={(e) => setNewHolidayTitle(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="flex-1 px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] text-xs focus:outline-none focus:border-[#F4EDE0]"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition-all shadow-md shrink-0 flex items-center justify-center gap-1 cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] text-xs font-bold transition-all shadow-md shrink-0 flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Add Holiday
                   </button>
@@ -1728,18 +1722,18 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   {(config.holidays || []).map((h) => (
                     <div
                       key={h.id}
-                      className="p-2.5 rounded-xl bg-slate-950/50 border border-white/10 flex items-center justify-between text-xs"
+                      className="p-2.5 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/10 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-semibold text-white block truncate max-w-[180px]">
+                        <span className="font-semibold text-[#F4EDE0] block truncate max-w-[180px]">
                           {h.title}
                         </span>
-                        <span className="text-[10px] text-amber-300 font-mono">{h.date}</span>
+                        <span className="text-[10px] text-[#F4EDE0]/60 font-mono">{h.date}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleDeleteHoliday(h.id)}
-                        className="text-slate-500 hover:text-rose-400 p-1 transition-colors cursor-pointer"
+                        className="text-[#F4EDE0]/50 hover:text-rose-400 p-1 transition-colors cursor-pointer"
                         title="Remove holiday"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1755,16 +1749,16 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           {activeTab === 'timetable' && (
             <div className="p-6 overflow-y-auto space-y-6">
               {/* AI Timetable Assistant Banner */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 via-fuchsia-950/60 to-slate-900 border border-purple-400/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-[#14213D]/60 border border-[#F4EDE0]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-[#F4EDE0]/10 text-[#F4EDE0] flex items-center justify-center shrink-0">
                     <Bot className="w-5 h-5" />
                   </div>
                   <div>
-                    <h5 className="font-bold text-sm text-white">
+                    <h5 className="font-bold text-sm text-[#F4EDE0]">
                       AI Timetable Scanner & Subject Mapper
                     </h5>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-[#F4EDE0]/70">
                       Upload a photo or PDF of your weekly timetable. Gemini AI will read every period and automatically assign classes to your registered subjects!
                     </p>
                   </div>
@@ -1774,32 +1768,32 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   type="button"
                   onClick={handleTriggerAiScan}
                   disabled={isAiScanning || !config.timetableFileDataUrl}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs shadow-md shadow-[#14213D]/40 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
-                  <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                  <Wand2 className="w-3.5 h-3.5 text-[#14213D]" />
                   <span>Scan Timetable with AI</span>
                 </button>
               </div>
 
               {/* Timetable Document Attachment */}
-              <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-4">
+              <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/15 bg-[#14213D]/40 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                    <div className="w-9 h-9 rounded-xl bg-[#F4EDE0]/10 border border-[#F4EDE0]/25 flex items-center justify-center text-[#F4EDE0]">
                       <Clock className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white">
+                      <h4 className="text-sm font-bold text-[#F4EDE0]">
                         Upload Weekly Timetable Document
                       </h4>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-[#F4EDE0]/60">
                         Upload your section timetable PDF or image for AI parsing
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-purple-600/20">
+                    <label className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-[#14213D]/40">
                       <UploadCloud className="w-3.5 h-3.5" />
                       <span>{config.timetableFileName ? 'Replace File' : 'Upload File (PDF/Image)'}</span>
                       <input
@@ -1823,14 +1817,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
 
                 {config.timetableFileName && (
-                  <div className="p-3.5 rounded-xl bg-black/40 border border-purple-500/30 flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/20 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <FileText className="w-5 h-5 text-purple-400" />
+                      <FileText className="w-5 h-5 text-[#F4EDE0]" />
                       <div>
-                        <span className="text-xs font-semibold text-white block">
+                        <span className="text-xs font-semibold text-[#F4EDE0] block">
                           {config.timetableFileName}
                         </span>
-                        <span className="text-[10px] text-purple-300 font-mono">
+                        <span className="text-[10px] text-[#F4EDE0]/80 font-mono">
                           Ready for AI scanning & period mapping
                         </span>
                       </div>
@@ -1840,9 +1834,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                         type="button"
                         onClick={handleTriggerAiScan}
                         disabled={isAiScanning}
-                        className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-[#F4EDE0] hover:bg-white text-[#14213D] text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <Sparkles className="w-3.5 h-3.5 text-[#14213D]" />
                         <span>AI Scan</span>
                       </button>
                       {config.timetableFileDataUrl && (
@@ -1850,7 +1844,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           href={config.timetableFileDataUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-[#14213D] hover:bg-[#14213D]/80 text-[#F4EDE0] border border-[#F4EDE0]/20 text-xs font-semibold flex items-center gap-1 transition-colors"
                         >
                           <span>Preview</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -1862,10 +1856,10 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               </div>
 
               {/* Quick Actions Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl glass-card border border-white/10">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl glass-card border border-[#F4EDE0]/15 bg-[#14213D]/40">
                 <div>
-                  <h4 className="text-sm font-bold text-white">Weekly Timetable Matrix</h4>
-                  <p className="text-xs text-slate-400">
+                  <h4 className="text-sm font-bold text-[#F4EDE0]">Weekly Timetable Matrix</h4>
+                  <p className="text-xs text-[#F4EDE0]/70">
                     Auto-populated by AI from your uploaded timetable or customizable below.
                   </p>
                 </div>
@@ -1874,7 +1868,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={handleAutoFillTimetable}
-                    className="px-3.5 py-1.5 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 border border-cyan-500/40 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                     title="Auto assign weekly class frequency based on subject credits"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -1883,7 +1877,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={handleClearTimetable}
-                    className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/5 text-xs font-medium transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl bg-[#090e1a]/80 hover:bg-[#090e1a] text-[#F4EDE0]/70 hover:text-[#F4EDE0] border border-[#F4EDE0]/10 text-xs font-medium transition-colors cursor-pointer"
                   >
                     Clear All
                   </button>
@@ -1891,13 +1885,13 @@ export const AttendancePlannerModal: React.FC<Props> = ({
               </div>
 
               {/* Add Class Period Form */}
-              <form onSubmit={handleAddSlot} className="p-4 rounded-2xl bg-black/40 border border-white/10 grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
+              <form onSubmit={handleAddSlot} className="p-4 rounded-2xl bg-[#090e1a]/80 border border-[#F4EDE0]/15 grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
                 <div>
-                  <label className="text-slate-400 block mb-1 font-semibold">Day of Week</label>
+                  <label className="text-[#F4EDE0]/70 block mb-1 font-semibold">Day of Week</label>
                   <select
                     value={slotDay}
                     onChange={(e) => setSlotDay(e.target.value as DayOfWeek)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] focus:outline-none focus:border-[#F4EDE0]"
                   >
                     {(config.workingDays || []).map((d) => (
                       <option key={d} value={d}>
@@ -1908,11 +1902,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1 font-semibold">Subject (From Cards)</label>
+                  <label className="text-[#F4EDE0]/70 block mb-1 font-semibold">Subject (From Cards)</label>
                   <select
                     value={slotSubjectId}
                     onChange={(e) => setSlotSubjectId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-cyan-400 truncate"
+                    className="w-full px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] focus:outline-none focus:border-[#F4EDE0] truncate"
                   >
                     {safeSemester.subjects.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -1923,8 +1917,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1 font-semibold">Class Type</label>
-                  <div className="flex rounded-xl bg-slate-900 border border-white/10 p-0.5">
+                  <label className="text-[#F4EDE0]/70 block mb-1 font-semibold">Class Type</label>
+                  <div className="flex rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 p-0.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -1933,8 +1927,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                       }}
                       className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
                         slotType === 'theory'
-                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-[#F4EDE0] text-[#14213D] shadow'
+                          : 'text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                       }`}
                     >
                       <BookOpen className="w-3 h-3" />
@@ -1948,8 +1942,8 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                       }}
                       className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
                         slotType === 'practical'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-[#F4EDE0] text-[#14213D] shadow'
+                          : 'text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                       }`}
                     >
                       <FlaskConical className="w-3 h-3" />
@@ -1959,11 +1953,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1 font-semibold">Time Slot</label>
+                  <label className="text-[#F4EDE0]/70 block mb-1 font-semibold">Time Slot</label>
                   <select
                     value={slotTime}
                     onChange={(e) => setSlotTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] focus:outline-none focus:border-[#F4EDE0]"
                   >
                     <optgroup label={slotType === 'practical' ? '🧪 Lab Sessions (2-3 Hours)' : '📖 Standard Class Hours'}>
                       {(slotType === 'practical' ? PRACTICAL_TIME_SLOTS : STANDARD_TIME_SLOTS).map((t) => (
@@ -1985,7 +1979,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                 <div className="flex items-end">
                   <button
                     type="submit"
-                    className="w-full py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add Slot</span>
@@ -2000,14 +1994,14 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   return (
                     <div
                       key={day}
-                      className="p-3.5 rounded-2xl bg-slate-950/60 border border-white/10 space-y-3 min-h-[160px] flex flex-col justify-between"
+                      className="p-3.5 rounded-2xl bg-[#090e1a]/80 border border-[#F4EDE0]/15 space-y-3 min-h-[160px] flex flex-col justify-between"
                     >
                       <div>
-                        <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                          <span className="font-heading font-extrabold text-sm text-cyan-300">
+                        <div className="flex items-center justify-between pb-2 border-b border-[#F4EDE0]/10">
+                          <span className="font-heading font-extrabold text-sm text-[#F4EDE0]">
                             {day}
                           </span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#14213D] text-[#F4EDE0]/80">
                             {daySlots.length} {daySlots.length === 1 ? 'class' : 'classes'}
                           </span>
                         </div>
@@ -2019,25 +2013,17 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                             return (
                               <div
                                 key={slot.id}
-                                className={`p-2.5 rounded-xl border transition-all group flex items-start justify-between gap-1.5 ${
-                                  isLab
-                                    ? 'bg-amber-950/20 border-amber-500/30 hover:border-amber-400/50'
-                                    : 'bg-slate-900 border-white/10 hover:border-cyan-500/40'
-                                }`}
+                                className="p-2.5 rounded-xl border transition-all group flex items-start justify-between gap-1.5 bg-[#14213D]/50 border-[#F4EDE0]/15 hover:border-[#F4EDE0]/35"
                               >
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="font-mono font-bold text-xs text-white block truncate">
+                                    <span className="font-mono font-bold text-xs text-[#F4EDE0] block truncate">
                                       {sub?.code || 'SUB'}
                                     </span>
                                     <button
                                       type="button"
                                       onClick={() => handleToggleSlotType(slot.id)}
-                                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors ${
-                                        isLab
-                                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30'
-                                          : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/25'
-                                      }`}
+                                      className="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors bg-[#F4EDE0]/15 text-[#F4EDE0] border border-[#F4EDE0]/25 hover:bg-[#F4EDE0]/25"
                                       title="Click to toggle Theory ↔ Practical/Lab"
                                     >
                                       {isLab ? (
@@ -2053,15 +2039,11 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                       )}
                                     </button>
                                   </div>
-                                  <span className="text-[10px] text-slate-400 block truncate mt-0.5">
+                                  <span className="text-[10px] text-[#F4EDE0]/70 block truncate mt-0.5">
                                     {sub?.name || 'Subject'}
                                   </span>
                                   {slot.slotTime && (
-                                    <span
-                                      className={`text-[9px] font-mono block mt-0.5 ${
-                                        isLab ? 'text-amber-400/90' : 'text-cyan-400/90'
-                                      }`}
-                                    >
+                                    <span className="text-[9px] font-mono block mt-0.5 text-[#F4EDE0]/80">
                                       {slot.slotTime}
                                     </span>
                                   )}
@@ -2069,7 +2051,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteSlot(slot.id)}
-                                  className="text-slate-600 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0"
+                                  className="text-[#F4EDE0]/40 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0"
                                   title="Remove slot"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -2079,7 +2061,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                           })}
 
                           {daySlots.length === 0 && (
-                            <div className="text-center py-6 text-slate-600 text-[11px] italic">
+                            <div className="text-center py-6 text-[#F4EDE0]/40 text-[11px] italic">
                               No classes
                             </div>
                           )}
@@ -2091,7 +2073,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                         onClick={() => {
                           setSlotDay(day);
                         }}
-                        className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                        className="w-full py-1.5 rounded-lg bg-[#14213D] hover:bg-[#14213D]/80 text-[#F4EDE0]/80 hover:text-[#F4EDE0] text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer border border-[#F4EDE0]/10"
                       >
                         <Plus className="w-3 h-3" /> Add Slot
                       </button>
@@ -2103,15 +2085,15 @@ export const AttendancePlannerModal: React.FC<Props> = ({
           )}
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between bg-slate-950/80 shrink-0">
+          <div className="px-6 py-4 border-t border-[#F4EDE0]/10 flex items-center justify-between bg-[#090e1a] shrink-0">
             <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-400 hidden sm:inline">
+              <span className="text-xs text-[#F4EDE0]/60 hidden sm:inline">
                 All timetable and attendance data auto-saved to your student profile!
               </span>
               <button
                 type="button"
                 onClick={() => setIsApiKeyModalOpen(true)}
-                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-medium cursor-pointer"
+                className="text-xs text-[#F4EDE0]/80 hover:text-[#F4EDE0] flex items-center gap-1 font-medium cursor-pointer"
               >
                 <Key className="w-3.5 h-3.5" />
                 <span>{hasKey ? 'Gemini AI Configured' : 'Set Gemini AI Key'}</span>
@@ -2121,7 +2103,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs transition-all shadow-lg shadow-cyan-600/20 ml-auto cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs transition-all shadow-lg shadow-[#14213D]/50 ml-auto cursor-pointer"
             >
               Done & Save
             </button>
@@ -2131,42 +2113,42 @@ export const AttendancePlannerModal: React.FC<Props> = ({
         {/* Gemini API Key Dialog Modal */}
         {isApiKeyModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-            <div className="w-full max-w-md glass-panel rounded-3xl border border-cyan-500/40 p-6 bg-slate-900 shadow-2xl space-y-4">
+            <div className="w-full max-w-md glass-panel-deep rounded-3xl border border-[#F4EDE0]/20 p-6 bg-[#090e1a]/95 text-[#F4EDE0] shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] flex items-center justify-center">
                     <Key className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-white">Google Gemini AI Setup</h4>
+                    <h4 className="text-base font-bold text-[#F4EDE0]">Google Gemini AI Setup</h4>
                     <span className="text-[11px] text-emerald-400 font-semibold">
-                      100% Free • Powered by Gemini Vision
+                      100% Free • Powered by Gemini 2.0 Flash
                     </span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsApiKeyModalOpen(false)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-[#F4EDE0]/60 hover:text-[#F4EDE0]"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-[#F4EDE0]/80 leading-relaxed">
                 MarksBoard uses Google Gemini to read your uploaded Academic Calendar & Timetable photos or PDFs, detect semester dates, find holidays, and automatically map class periods to your course cards.
               </p>
 
-              <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/20 text-xs text-cyan-200 space-y-1.5">
+              <div className="p-3 rounded-xl bg-[#14213D]/60 border border-[#F4EDE0]/15 text-xs text-[#F4EDE0] space-y-1.5">
                 <span className="font-bold block">Don't have a free key yet?</span>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-[#F4EDE0]/70">
                   You can generate a free Gemini API key in 30 seconds with any Google account:
                 </p>
                 <a
                   href="https://aistudio.google.com/app/apikey"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] shadow-sm transition-all"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-[11px] shadow-sm transition-all"
                 >
                   <span>Get Free Key at Google AI Studio</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -2175,7 +2157,7 @@ export const AttendancePlannerModal: React.FC<Props> = ({
 
               <form onSubmit={handleSaveApiKey} className="space-y-3 pt-1">
                 <div>
-                  <label className="text-xs text-slate-400 block mb-1 font-semibold">
+                  <label className="text-xs text-[#F4EDE0]/70 block mb-1 font-semibold">
                     Paste Gemini API Key:
                   </label>
                   <input
@@ -2184,9 +2166,9 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                     placeholder="AIzaSy..."
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-full px-3 py-2 rounded-xl bg-[#090e1a] border border-[#F4EDE0]/15 text-[#F4EDE0] font-mono text-xs focus:outline-none focus:border-[#F4EDE0]"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">
+                  <span className="text-[10px] text-[#F4EDE0]/50 mt-1 block">
                     Your key is saved locally in this browser and never uploaded anywhere else.
                   </span>
                 </div>
@@ -2195,13 +2177,13 @@ export const AttendancePlannerModal: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => setIsApiKeyModalOpen(false)}
-                    className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#14213D] hover:bg-[#14213D]/80 text-[#F4EDE0]/70 text-xs"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md"
+                    className="px-4 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs shadow-md shadow-[#14213D]/50"
                   >
                     Save & Activate AI
                   </button>

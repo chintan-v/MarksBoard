@@ -138,96 +138,96 @@ export const SemesterPredictorModal: React.FC<Props> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
-      <div className="relative w-full max-w-4xl glass-panel rounded-2xl border border-purple-500/30 shadow-2xl overflow-hidden bg-slate-900/95 max-h-[92vh] flex flex-col my-auto">
+      <div className="relative w-full max-w-4xl glass-panel-deep rounded-3xl border border-[#F4EDE0]/20 shadow-2xl overflow-hidden bg-[#090e1a]/95 max-h-[92vh] flex flex-col my-auto text-[#F4EDE0]">
         {/* Header - Compact */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 shrink-0">
+        <div className="px-6 py-4 border-b border-[#F4EDE0]/10 flex items-center justify-between bg-gradient-to-r from-[#14213D]/90 via-[#0d172a] to-[#14213D]/90 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400">
+            <div className="w-9 h-9 rounded-xl bg-[#F4EDE0]/10 border border-[#F4EDE0]/25 flex items-center justify-center text-[#F4EDE0]">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#F4EDE0]/15 text-[#F4EDE0] border border-[#F4EDE0]/25">
                   Semester {semNumber}
                 </span>
-                <span className="text-[11px] text-slate-400">Interactive "What-If" Engine</span>
+                <span className="text-[11px] text-[#F4EDE0]/70">Interactive "What-If" Engine</span>
               </div>
-              <h3 className="text-lg font-bold font-heading text-white">
+              <h3 className="text-lg font-bold font-heading text-[#F4EDE0]">
                 Semester Result Predictor (SEE Simulator)
               </h3>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#F4EDE0]/60 hover:text-[#F4EDE0] hover:bg-[#F4EDE0]/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Live Projected Stats Banner - Tracker Cards Pattern */}
-        <div className="p-4 sm:p-5 border-b border-white/10 bg-slate-950/60 space-y-3 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-[#F4EDE0]/10 bg-[#14213D]/50 space-y-3 shrink-0">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Card 1: Projected SGPA */}
-            <div className="p-3 rounded-xl bg-slate-900/70 border border-purple-500/20 space-y-1.5">
+            <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15 space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-medium">Projected SGPA</span>
-                <span className="font-extrabold font-mono text-sm text-purple-300">
-                  {simResult.sgpa} <span className="text-[10px] text-slate-500 font-normal">/ 10</span>
+                <span className="text-[#F4EDE0]/70 font-medium">Projected SGPA</span>
+                <span className="font-extrabold font-mono text-sm text-[#F4EDE0]">
+                  {simResult.sgpa} <span className="text-[10px] text-[#F4EDE0]/50 font-normal">/ 10</span>
                 </span>
               </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#14213D] rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-purple-500 to-fuchsia-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-[#F4EDE0]/60 to-[#F4EDE0] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, Math.max(0, simResult.sgpa * 10))}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-slate-500 pt-0.5">
+              <div className="flex justify-between items-center text-[10px] text-[#F4EDE0]/60 pt-0.5">
                 <span>{simResult.totalCredits} Total Credits</span>
-                <span className="text-purple-300/80 font-medium">{simResult.statusBadge.label}</span>
+                <span className="text-[#F4EDE0] font-medium">{simResult.statusBadge.label}</span>
               </div>
             </div>
 
             {/* Card 2: Percentage */}
-            <div className="p-3 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-1.5">
+            <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15 space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-medium">Equivalent Percentage</span>
-                <span className="font-extrabold font-mono text-sm text-cyan-300">
+                <span className="text-[#F4EDE0]/70 font-medium">Equivalent Percentage</span>
+                <span className="font-extrabold font-mono text-sm text-[#F4EDE0]">
                   {simResult.percentage}%
                 </span>
               </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#14213D] rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-[#F4EDE0]/60 to-[#F4EDE0] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, Math.max(0, simResult.percentage))}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-slate-500 pt-0.5">
+              <div className="flex justify-between items-center text-[10px] text-[#F4EDE0]/60 pt-0.5">
                 <span>{simResult.totalGradePoints} Total Points</span>
-                <span className="text-cyan-300/80 font-medium">CBCS Scale</span>
+                <span className="text-[#F4EDE0] font-medium">CBCS Scale</span>
               </div>
             </div>
 
             {/* Card 3: Clearance Status */}
-            <div className="p-3 rounded-xl bg-slate-900/70 border border-white/5 space-y-1.5">
+            <div className="p-3 rounded-xl bg-[#090e1a]/80 border border-[#F4EDE0]/15 space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-medium">Clearance Status</span>
+                <span className="text-[#F4EDE0]/70 font-medium">Clearance Status</span>
                 <span
                   className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
                     simResult.hasBacklogs
-                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                   }`}
                 >
                   {simResult.hasBacklogs ? 'Backlog Alert 🚨' : 'All Cleared ✅'}
                 </span>
               </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#14213D] rounded-full h-2 overflow-hidden">
                 <div
                   className={`h-2 rounded-full transition-all duration-300 ${
                     simResult.hasBacklogs
                       ? 'bg-gradient-to-r from-rose-500 to-red-400'
-                      : 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                      : 'bg-gradient-to-r from-[#F4EDE0]/60 to-[#F4EDE0]'
                   }`}
                   style={{
                     width: `${
@@ -238,9 +238,9 @@ export const SemesterPredictorModal: React.FC<Props> = ({
                   }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-slate-500 pt-0.5">
+              <div className="flex justify-between items-center text-[10px] text-[#F4EDE0]/60 pt-0.5">
                 <span>{simResult.passedSubjects} of {simResult.totalSubjects} Passed</span>
-                <span className={simResult.hasBacklogs ? 'text-rose-400' : 'text-emerald-400'}>
+                <span className={simResult.hasBacklogs ? 'text-rose-400' : 'text-[#F4EDE0]'}>
                   {simResult.hasBacklogs ? 'Min 28 in SEE required' : 'All Passing'}
                 </span>
               </div>
@@ -248,39 +248,39 @@ export const SemesterPredictorModal: React.FC<Props> = ({
           </div>
 
           {/* Quick Scenario Buttons - Slim Single-Line Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#F4EDE0]/10">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] text-slate-400 font-medium mr-1">Quick Presets:</span>
+              <span className="text-[11px] text-[#F4EDE0]/70 font-medium mr-1">Quick Presets:</span>
               <button
                 type="button"
                 onClick={handleExtrapolateFromMSE}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 transition-colors flex items-center gap-1"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-[#14213D] text-[#F4EDE0] hover:bg-[#F4EDE0] hover:text-[#14213D] border border-[#F4EDE0]/20 transition-colors flex items-center gap-1 font-medium"
               >
                 <Sparkles className="w-3 h-3" /> Extrapolate MSE
               </button>
               <button
                 type="button"
                 onClick={handleAllMax}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 transition-colors flex items-center gap-1"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-[#14213D] text-[#F4EDE0] hover:bg-[#F4EDE0] hover:text-[#14213D] border border-[#F4EDE0]/20 transition-colors flex items-center gap-1 font-medium"
               >
                 <Zap className="w-3 h-3" /> All 80/80 (Max)
               </button>
               <button
                 type="button"
                 onClick={handleRealistic80}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/30 transition-colors flex items-center gap-1"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-[#14213D] text-[#F4EDE0] hover:bg-[#F4EDE0] hover:text-[#14213D] border border-[#F4EDE0]/20 transition-colors flex items-center gap-1 font-medium"
               >
                 <TrendingUp className="w-3 h-3" /> Target 70/80
               </button>
               <button
                 type="button"
                 onClick={handleMinimumPassing}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition-colors flex items-center gap-1"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-[#14213D] text-[#F4EDE0] hover:bg-[#F4EDE0] hover:text-[#14213D] border border-[#F4EDE0]/20 transition-colors flex items-center gap-1 font-medium"
               >
                 <RotateCcw className="w-3 h-3" /> Passing Only (28/80)
               </button>
             </div>
-            <span className="text-[10px] text-fuchsia-400/90 hidden md:inline">
+            <span className="text-[10px] text-[#F4EDE0]/60 hidden md:inline">
               Drag sliders below to simulate marks
             </span>
           </div>
@@ -288,7 +288,6 @@ export const SemesterPredictorModal: React.FC<Props> = ({
 
         {/* Sliders List - Majority Height Available */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
-
           <div className="space-y-3">
             {simulatedSubjects.map((sub) => {
               const calc = calculateSubjectMarks(sub);
@@ -298,28 +297,27 @@ export const SemesterPredictorModal: React.FC<Props> = ({
               return (
                 <div
                   key={sub.id}
-                  className="p-4 rounded-xl glass-card border border-white/10 hover:border-purple-500/30 transition-all space-y-2"
+                  className="p-4 rounded-xl glass-card border border-[#F4EDE0]/15 hover:border-[#F4EDE0]/35 bg-[#14213D]/40 transition-all space-y-2"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-cyan-300">
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#F4EDE0]/10 border border-[#F4EDE0]/20 text-[#F4EDE0]">
                         {sub.code}
                       </span>
-                      <span className="font-semibold text-slate-200 text-sm">{sub.name}</span>
-                      <span className="text-xs text-slate-500">({sub.credits} Credits)</span>
+                      <span className="font-semibold text-[#F4EDE0] text-sm">{sub.name}</span>
+                      <span className="text-xs text-[#F4EDE0]/60">({sub.credits} Credits)</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">Total:</span>
-                      <span className="font-black font-mono text-sm text-white">
+                      <span className="text-xs text-[#F4EDE0]/70">Total:</span>
+                      <span className="font-black font-mono text-sm text-[#F4EDE0]">
                         {calc.totalMarks}/100
                       </span>
                       <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded border ${
-                        calc.grade === 'O' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
-                        calc.grade === 'A+' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' :
-                        calc.grade === 'A' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' :
+                        calc.grade === 'O' ? 'bg-[#F4EDE0] text-[#14213D] border-[#F4EDE0]' :
+                        calc.grade === 'A+' ? 'bg-[#F4EDE0]/20 text-[#F4EDE0] border-[#F4EDE0]/40' :
                         calc.grade === 'F' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' :
-                        'bg-violet-500/20 text-violet-300 border-violet-500/40'
+                        'bg-[#14213D] text-[#F4EDE0] border-[#F4EDE0]/30'
                       }`}>
                         Grade: {calc.grade} ({calc.gradePoint} GP)
                       </span>
@@ -329,13 +327,13 @@ export const SemesterPredictorModal: React.FC<Props> = ({
                   {hasExternal ? (
                     <div className="pt-2">
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-slate-400">
-                          Expected SEE: <strong className="text-purple-300">{currentVal} / 80 Marks</strong>
-                          <span className="text-slate-500 text-[11px] ml-2">
+                        <span className="text-[#F4EDE0]/80">
+                          Expected SEE: <strong className="text-[#F4EDE0]">{currentVal} / 80 Marks</strong>
+                          <span className="text-[#F4EDE0]/60 text-[11px] ml-2">
                             (Converted: {(currentVal / 2).toFixed(1)} / 40)
                           </span>
                         </span>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-[#F4EDE0]/60">
                           {currentVal < 28 ? '⚠️ Below 28 passing mark' : '✅ Clear'}
                         </span>
                       </div>
@@ -346,11 +344,11 @@ export const SemesterPredictorModal: React.FC<Props> = ({
                         step="1"
                         value={currentVal}
                         onChange={(e) => handleSliderChange(sub.id, Number(e.target.value))}
-                        className="w-full accent-purple-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                        className="w-full accent-[#F4EDE0] h-2 bg-[#090e1a] rounded-lg cursor-pointer"
                       />
                     </div>
                   ) : (
-                    <div className="text-xs text-slate-400 italic pt-1">
+                    <div className="text-xs text-[#F4EDE0]/60 italic pt-1">
                       No SEE exam for this course (100% Internals).
                     </div>
                   )}
@@ -361,20 +359,20 @@ export const SemesterPredictorModal: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/10 bg-slate-950 flex items-center justify-between">
-          <div className="text-xs text-slate-400">
-            Projected SGPA: <strong className="text-purple-300 font-mono text-sm">{simResult.sgpa}</strong>
+        <div className="px-6 py-4 border-t border-[#F4EDE0]/10 bg-[#090e1a] flex items-center justify-between">
+          <div className="text-xs text-[#F4EDE0]/80">
+            Projected SGPA: <strong className="text-[#F4EDE0] font-mono text-sm">{simResult.sgpa}</strong>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs text-[#F4EDE0]/70 hover:text-[#F4EDE0] hover:bg-[#F4EDE0]/10 transition-colors"
             >
               Close Simulation
             </button>
             <button
               onClick={handleApplyToRealData}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium text-xs transition-all shadow-lg shadow-purple-600/30 flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs transition-all shadow-lg shadow-[#14213D]/50 flex items-center gap-1.5"
             >
               <CheckCircle className="w-4 h-4" /> Save Expected Marks to Semester
             </button>

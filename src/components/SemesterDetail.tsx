@@ -153,7 +153,7 @@ export const SemesterDetail: React.FC<Props> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <button
           onClick={onBackToOverview}
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
+          className="inline-flex items-center gap-2 text-sm text-[#F4EDE0]/70 hover:text-[#F4EDE0] transition-colors group cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Back to All Semesters Overview</span>
@@ -165,10 +165,10 @@ export const SemesterDetail: React.FC<Props> = ({
             <button
               key={s.semNumber}
               onClick={() => onSelectSemester(s.semNumber)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 s.semNumber === semester.semNumber
-                  ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                  ? 'bg-[#F4EDE0] text-[#14213D] font-bold shadow-md shadow-black/30'
+                  : 'bg-[#F4EDE0]/8 text-[#F4EDE0]/70 hover:bg-[#F4EDE0]/16 hover:text-[#F4EDE0] border border-[#F4EDE0]/10'
               }`}
             >
               Sem {s.semNumber}
@@ -179,26 +179,18 @@ export const SemesterDetail: React.FC<Props> = ({
 
       {/* Previous Semester Context Banner */}
       {semester.semNumber < profile.currentSemester && (
-        <div className={`p-4 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg border transition-all duration-300 ${
-          semester.isCompleted
-            ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200 shadow-emerald-500/5'
-            : 'bg-amber-500/10 border-amber-500/30 text-amber-200'
-        }`}>
+        <div className="p-4 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg border transition-all duration-300 glass-panel border-[#F4EDE0]/20 bg-gradient-to-r from-[#14213D]/95 via-[#182747]/85 to-[#14213D]/95 text-[#F4EDE0]">
           <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold border ${
-              semester.isCompleted
-                ? 'bg-emerald-500/25 border-emerald-500/40 text-emerald-300'
-                : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-            }`}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold border bg-[#F4EDE0]/15 border-[#F4EDE0]/30 text-[#F4EDE0]">
               S{semester.semNumber}
             </div>
             <div>
-              <strong className={`font-bold block text-sm ${semester.isCompleted ? 'text-emerald-300' : 'text-amber-300'}`}>
+              <strong className="font-bold block text-sm text-[#F4EDE0]">
                 {semester.isCompleted
                   ? `Semester ${semester.semNumber} Marked as Complete ✅`
                   : `Past Semester Marks Entry (Active Semester is S${profile.currentSemester})`}
               </strong>
-              <span className={`text-[11px] ${semester.isCompleted ? 'text-emerald-300/80' : 'text-amber-200/90'}`}>
+              <span className="text-[11px] text-[#F4EDE0]/70">
                 {semester.isCompleted
                   ? 'All course marks and SGPA for this semester are recorded into your degree calculation.'
                   : 'Enter your MSE, CIA & SEE scores below to accurately compute your historic SGPA and cumulative CGPA.'}
@@ -216,8 +208,8 @@ export const SemesterDetail: React.FC<Props> = ({
             }}
             className={`px-3.5 py-1.5 rounded-xl font-bold text-xs shrink-0 transition-all border cursor-pointer ${
               semester.isCompleted
-                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/35'
-                : 'bg-amber-500 hover:bg-amber-400 text-black border-amber-400'
+                ? 'bg-[#F4EDE0]/20 text-[#F4EDE0] border-[#F4EDE0]/35 hover:bg-[#F4EDE0]/30'
+                : 'bg-[#F4EDE0] hover:bg-white text-[#14213D] border-[#F4EDE0] shadow-md'
             }`}
           >
             {semester.isCompleted ? 'Marked Complete ✅' : 'Mark Semester as Done'}
@@ -226,22 +218,16 @@ export const SemesterDetail: React.FC<Props> = ({
       )}
 
       {/* Main Top Card - Full Width, High-Impact & Spacious */}
-      <div className={`w-full glass-panel rounded-3xl border p-6 sm:p-8 relative overflow-hidden shadow-2xl space-y-6 transition-all duration-300 ${
-        semester.isCompleted
-          ? 'border-emerald-500/35 bg-gradient-to-br from-slate-900/95 via-emerald-950/20 to-slate-900/95 shadow-emerald-500/10'
-          : 'border-purple-500/25 bg-gradient-to-br from-slate-900/95 via-purple-950/20 to-slate-900/95'
-      }`}>
-        {/* Ambient Neon Glows */}
-        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none ${
-          semester.isCompleted ? 'bg-emerald-500/15' : 'bg-purple-600/10'
-        }`} />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="w-full glass-panel rounded-3xl border border-[#F4EDE0]/16 p-6 sm:p-8 relative overflow-hidden shadow-2xl space-y-6 transition-all duration-300 bg-gradient-to-br from-[#14213D]/90 via-[#1a2b4f]/75 to-[#14213D]/90">
+        {/* Ambient Glows */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none bg-[#F4EDE0]/8" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#14213D]/80 rounded-full blur-[120px] pointer-events-none" />
 
         {/* Top Header Row: Greeting & Bio with dedicated breathing space */}
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-white/10 pb-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-[#F4EDE0]/12 pb-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3.5">
-              <span className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 shadow-sm shrink-0 flex items-center justify-center text-3xl overflow-hidden">
+              <span className="w-12 h-12 rounded-2xl bg-[#F4EDE0]/10 border border-[#F4EDE0]/15 shadow-sm shrink-0 flex items-center justify-center text-3xl overflow-hidden">
                 {profile.avatar?.startsWith('http') ? (
                   <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -249,7 +235,7 @@ export const SemesterDetail: React.FC<Props> = ({
                 )}
               </span>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-[#F4EDE0] tracking-tight">
                   {(() => {
                     const hour = new Date().getHours();
                     if (hour >= 5 && hour < 12) return `Rise & grind, ${profile.name.split(' ')[0]} ☕`;
@@ -258,16 +244,16 @@ export const SemesterDetail: React.FC<Props> = ({
                     return `Midnight oil burning, ${profile.name.split(' ')[0]} 🌙`;
                   })()}
                 </h1>
-                <div className="text-xs text-slate-400 font-medium mt-1">
-                  {profile.branch} • <span className="font-mono text-cyan-300 font-bold">{profile.usn}</span> • {profile.college}
+                <div className="text-xs text-[#F4EDE0]/65 font-medium mt-1">
+                  {profile.branch} • <span className="font-mono text-[#F4EDE0] font-bold">{profile.usn}</span> • {profile.college}
                 </div>
               </div>
             </div>
 
-            {/* Dedicated Bio Banner with roomy spacing (no sticky-sticky!) */}
+            {/* Dedicated Bio Banner with roomy spacing */}
             {profile.bio && (
               <div className="pt-0.5">
-                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-500/15 text-purple-200 border border-purple-500/30 text-xs font-medium shadow-sm">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#F4EDE0]/12 text-[#F4EDE0] border border-[#F4EDE0]/25 text-xs font-medium shadow-xs backdrop-blur-sm">
                   <span>{profile.bio}</span>
                 </span>
               </div>
@@ -277,10 +263,10 @@ export const SemesterDetail: React.FC<Props> = ({
           {/* Semester Badge & Scheme */}
           <div className="flex flex-col sm:items-end gap-1.5 self-start md:self-auto">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono font-bold px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs">
+              <span className="font-mono font-bold px-3 py-1 rounded-full bg-[#F4EDE0]/15 text-[#F4EDE0] border border-[#F4EDE0]/30 text-xs">
                 {semester.academicYear}
               </span>
-              <span className="font-heading font-extrabold text-white text-lg">
+              <span className="font-heading font-extrabold text-[#F4EDE0] text-lg">
                 {semester.title} Dashboard
               </span>
               <button
@@ -294,16 +280,16 @@ export const SemesterDetail: React.FC<Props> = ({
                 }}
                 className={`px-3 py-1 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all border cursor-pointer ${
                   semester.isCompleted
-                    ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/35'
-                    : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white'
+                    ? 'bg-[#F4EDE0]/20 text-[#F4EDE0] border-[#F4EDE0]/35 hover:bg-[#F4EDE0]/30'
+                    : 'bg-[#F4EDE0]/8 text-[#F4EDE0]/70 border-[#F4EDE0]/15 hover:bg-[#F4EDE0]/15 hover:text-[#F4EDE0]'
                 }`}
                 title={semester.isCompleted ? 'Click to unmark semester' : 'Click to mark semester as done'}
               >
-                <CheckCircle2 className={`w-3.5 h-3.5 ${semester.isCompleted ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <CheckCircle2 className={`w-3.5 h-3.5 ${semester.isCompleted ? 'text-[#F4EDE0]' : 'text-[#F4EDE0]/50'}`} />
                 <span>{semester.isCompleted ? 'Done ✅' : 'Mark as Done'}</span>
               </button>
             </div>
-            <span className="text-slate-400 text-xs">
+            <span className="text-[#F4EDE0]/65 text-xs">
               CBCS Scheme: Standard 30 MSE + 30 CIA (or 20+40) + 40 SEE (100 Max)
             </span>
           </div>
@@ -312,65 +298,55 @@ export const SemesterDetail: React.FC<Props> = ({
         {/* Bottom Metrics: Full-Width 4-Box Grid Spanning Edge-to-Edge */}
         <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
           {/* Card 1: SGPA */}
-          <div className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-purple-500/30 transition-all text-center backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 transition-all text-center flex flex-col justify-between shadow-lg">
+            <span className="text-[11px] font-semibold text-[#F4EDE0]/70 uppercase tracking-wider block">
               Semester SGPA
             </span>
-            <div className="text-3xl sm:text-4xl font-black font-heading text-purple-300 my-1.5">
+            <div className="text-3xl sm:text-4xl font-black font-heading text-[#F4EDE0] my-1.5">
               {semResult.sgpa}
             </div>
-            <span className="text-[11px] text-slate-400 block font-medium">
+            <span className="text-[11px] text-[#F4EDE0]/65 block font-medium">
               {semResult.totalGradePoints} Total Credit Points
             </span>
           </div>
 
           {/* Card 2: Percentage */}
-          <div className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/30 transition-all text-center backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 transition-all text-center flex flex-col justify-between shadow-lg">
+            <span className="text-[11px] font-semibold text-[#F4EDE0]/70 uppercase tracking-wider block">
               Equivalent Percentage
             </span>
-            <div className="text-3xl sm:text-4xl font-black font-heading text-cyan-300 my-1.5">
+            <div className="text-3xl sm:text-4xl font-black font-heading text-[#F4EDE0] my-1.5">
               {semResult.percentage}%
             </div>
-            <span className="text-[11px] text-slate-400 block font-medium">
+            <span className="text-[11px] text-[#F4EDE0]/65 block font-medium">
               Standard University CBCS
             </span>
           </div>
 
           {/* Card 3: Credits */}
-          <div className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-emerald-500/30 transition-all text-center backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 transition-all text-center flex flex-col justify-between shadow-lg">
+            <span className="text-[11px] font-semibold text-[#F4EDE0]/70 uppercase tracking-wider block">
               Credits Cleared
             </span>
-            <div className="text-3xl sm:text-4xl font-black font-heading text-emerald-300 my-1.5">
-              {semResult.earnedCredits} <span className="text-base font-normal text-slate-400">/ {semResult.totalCredits}</span>
+            <div className="text-3xl sm:text-4xl font-black font-heading text-[#F4EDE0] my-1.5">
+              {semResult.earnedCredits} <span className="text-base font-normal text-[#F4EDE0]/65">/ {semResult.totalCredits}</span>
             </div>
-            <span className="text-[11px] text-slate-400 block font-medium">
+            <span className="text-[11px] text-[#F4EDE0]/65 block font-medium">
               {semester.subjects.length} Registered Courses
             </span>
           </div>
 
           {/* Card 4: Academic Vibe */}
-          <div className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-amber-500/30 transition-all text-center backdrop-blur-md shadow-lg flex flex-col justify-between">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <div className="p-5 rounded-2xl glass-card border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 transition-all text-center flex flex-col justify-between shadow-lg">
+            <span className="text-[11px] font-semibold text-[#F4EDE0]/70 uppercase tracking-wider block">
               Academic Standing
             </span>
             <div className="my-1.5">
-              <span className={`inline-flex items-center text-xs font-bold font-heading px-3 py-1 rounded-lg border ${
-                semResult.sgpa >= 10.0
-                  ? 'bg-gradient-to-r from-amber-500/25 via-rose-500/25 to-purple-500/25 text-amber-200 border-amber-400/40 shadow-sm'
-                  : semResult.sgpa >= 9.0
-                  ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30'
-                  : semResult.sgpa >= 8.0
-                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                  : semResult.sgpa >= 7.0
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                  : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-              }`}>
+              <span className="inline-flex items-center text-xs font-bold font-heading px-3 py-1 rounded-lg border bg-[#F4EDE0]/15 text-[#F4EDE0] border-[#F4EDE0]/30 shadow-xs">
                 {semResult.statusBadge.label}
               </span>
             </div>
-            <span className="text-[11px] text-slate-400 truncate block font-medium">
+            <span className="text-[11px] text-[#F4EDE0]/65 truncate block font-medium">
               {semResult.statusBadge.tagline}
             </span>
           </div>
@@ -378,15 +354,15 @@ export const SemesterDetail: React.FC<Props> = ({
       </div>
 
       {/* Control Bar: Search, Add Subject, Reset, Simulate */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl glass-card border border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl glass-card border border-[#F4EDE0]/12">
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#F4EDE0]/50 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search subjects by name or code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl glass-input placeholder:text-[#F4EDE0]/40"
           />
         </div>
 
@@ -394,17 +370,17 @@ export const SemesterDetail: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => setIsAttendanceModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium transition-all shadow-lg shadow-cyan-600/30 flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-[#F4EDE0]/15 hover:bg-[#F4EDE0]/25 text-[#F4EDE0] text-xs font-medium transition-all border border-[#F4EDE0]/30 flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
-            <Calendar className="w-3.5 h-3.5" /> Attendance & Leaves
+            <Calendar className="w-3.5 h-3.5 text-[#F4EDE0]" /> Attendance & Leaves
           </button>
 
           <button
             type="button"
             onClick={() => setIsSimulateModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-xs font-medium transition-all shadow-lg shadow-purple-600/30 flex items-center gap-1.5"
+            className="px-3.5 py-2 rounded-xl bg-[#F4EDE0]/15 hover:bg-[#F4EDE0]/25 text-[#F4EDE0] text-xs font-medium transition-all border border-[#F4EDE0]/30 flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Predict Sem Result
+            <Sparkles className="w-3.5 h-3.5 text-[#F4EDE0]" /> Predict Sem Result
           </button>
 
           <button
@@ -416,15 +392,15 @@ export const SemesterDetail: React.FC<Props> = ({
               }
               setIsAddModalOpen(true);
             }}
-            className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition-all shadow-lg shadow-cyan-600/30 flex items-center gap-1.5"
+            className="px-3.5 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold text-xs transition-all shadow-md shadow-black/25 flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" /> Add Subject
+            <Plus className="w-3.5 h-3.5 text-[#14213D]" /> Add Subject
           </button>
 
           <button
             type="button"
             onClick={handleResetToDefault}
-            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-xs font-medium transition-colors border border-white/5 flex items-center gap-1.5"
+            className="px-3 py-2 rounded-xl bg-[#F4EDE0]/8 hover:bg-[#F4EDE0]/16 text-[#F4EDE0]/70 hover:text-[#F4EDE0] text-xs font-medium transition-colors border border-[#F4EDE0]/12 flex items-center gap-1.5 cursor-pointer"
             title="Reset to 8 default engineering subjects matching credit scheme"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Reset Default Scheme
@@ -449,10 +425,10 @@ export const SemesterDetail: React.FC<Props> = ({
       </div>
 
       {filteredSubjects.length === 0 && (
-        <div className="text-center py-12 glass-card rounded-2xl border border-white/10 space-y-3">
-          <BookOpen className="w-8 h-8 text-slate-500 mx-auto" />
-          <h4 className="text-sm font-semibold text-slate-300">No Subjects Found</h4>
-          <p className="text-xs text-slate-500">
+        <div className="text-center py-12 glass-card rounded-2xl border border-[#F4EDE0]/12 space-y-3">
+          <BookOpen className="w-8 h-8 text-[#F4EDE0]/40 mx-auto" />
+          <h4 className="text-sm font-semibold text-[#F4EDE0]">No Subjects Found</h4>
+          <p className="text-xs text-[#F4EDE0]/60">
             {searchQuery ? 'Try clearing your search term.' : 'Click "Add Subject" or "Reset Default Scheme" to populate subjects.'}
           </p>
         </div>
@@ -461,42 +437,42 @@ export const SemesterDetail: React.FC<Props> = ({
       {/* Add Subject Modal */}
       {isAddModalOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
-            <div className="relative w-full max-w-md glass-panel rounded-2xl border border-cyan-500/30 shadow-2xl overflow-hidden bg-slate-900/95 p-6 space-y-4 my-auto">
-              <h3 className="text-lg font-bold font-heading text-white">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn overflow-y-auto">
+            <div className="relative w-full max-w-md glass-panel-deep rounded-3xl border border-[#F4EDE0]/20 shadow-2xl overflow-hidden bg-[#14213D]/95 p-6 space-y-4 my-auto">
+              <h3 className="text-lg font-bold font-heading text-[#F4EDE0]">
                 Add New Engineering Subject
               </h3>
 
               <form onSubmit={handleAddSubject} className="space-y-3 text-xs">
                 <div>
-                  <label className="text-slate-400 block mb-1">Subject Code</label>
+                  <label className="text-[#F4EDE0]/70 block mb-1">Subject Code</label>
                   <input
                     type="text"
                     placeholder={`e.g. SUB ${semester.subjects.length + 1} or Course Code`}
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 uppercase font-mono"
+                    className="w-full px-3 py-2 rounded-xl glass-input uppercase font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Subject Title / Course Name *</label>
+                  <label className="text-[#F4EDE0]/70 block mb-1">Subject Title / Course Name *</label>
                   <input
                     type="text"
                     placeholder={`e.g. Subject ${semester.subjects.length + 1} or Course Title`}
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3 py-2 rounded-xl glass-input"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Credits Assigned</label>
+                  <label className="text-[#F4EDE0]/70 block mb-1">Credits Assigned</label>
                   <select
                     value={newCredits}
                     onChange={(e) => setNewCredits(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3 py-2 rounded-xl glass-input bg-[#090e1a]"
                   >
                     <option value={4}>4 Credits</option>
                     <option value={3}>3 Credits</option>
@@ -506,22 +482,22 @@ export const SemesterDetail: React.FC<Props> = ({
                   </select>
                 </div>
 
-                <div className="p-3 rounded-lg bg-black/20 border border-white/5 space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                <div className="p-3 rounded-xl bg-[#090e1a]/60 border border-[#F4EDE0]/10 space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-[#F4EDE0]/80">
                     <input
                       type="checkbox"
                       checked={newHasSEE}
                       onChange={(e) => setNewHasSEE(e.target.checked)}
-                      className="accent-cyan-500"
+                      className="accent-[#F4EDE0]"
                     />
                     Has Semester End Exam (SEE - 80 M)?
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                  <label className="flex items-center gap-2 cursor-pointer text-[#F4EDE0]/80">
                     <input
                       type="checkbox"
                       checked={newHasMSE}
                       onChange={(e) => setNewHasMSE(e.target.checked)}
-                      className="accent-cyan-500"
+                      className="accent-[#F4EDE0]"
                     />
                     Has Mid Semester Exam (MSE - 40 M)?
                   </label>
@@ -529,22 +505,22 @@ export const SemesterDetail: React.FC<Props> = ({
 
                 {/* MSE Conversion Scale Scheme in Add Modal */}
                 {newHasMSE && (
-                  <div className="p-3 rounded-xl bg-black/30 border border-white/10 space-y-1.5">
-                    <label className="text-slate-300 block font-semibold text-[11px]">
+                  <div className="p-3 rounded-xl bg-[#090e1a]/60 border border-[#F4EDE0]/10 space-y-1.5">
+                    <label className="text-[#F4EDE0]/80 block font-semibold text-[11px]">
                       MSE Conversion Scale Scheme:
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setNewMseMaxScale(30)}
-                        className={`p-2.5 rounded-xl text-left border text-xs transition-all ${
+                        className={`p-2.5 rounded-xl text-left border text-xs transition-all cursor-pointer ${
                           newMseMaxScale === 30
-                            ? 'bg-purple-600/30 border-purple-400 text-white shadow-md'
-                            : 'bg-slate-900/60 border-white/10 text-slate-400 hover:text-white'
+                            ? 'bg-[#F4EDE0]/20 border-[#F4EDE0]/50 text-[#F4EDE0] shadow-md'
+                            : 'bg-[#090e1a]/70 border-[#F4EDE0]/10 text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                         }`}
                       >
                         <div className="font-bold text-[11px]">Convert to 30 M</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="text-[10px] text-[#F4EDE0]/60 mt-0.5">
                           {newHasSEE ? '30 MSE + 30 CIA (Standard)' : '30 MSE + 70 CIA (100% CIE)'}
                         </div>
                       </button>
@@ -552,14 +528,14 @@ export const SemesterDetail: React.FC<Props> = ({
                       <button
                         type="button"
                         onClick={() => setNewMseMaxScale(20)}
-                        className={`p-2.5 rounded-xl text-left border text-xs transition-all ${
+                        className={`p-2.5 rounded-xl text-left border text-xs transition-all cursor-pointer ${
                           newMseMaxScale === 20
-                            ? 'bg-amber-600/30 border-amber-400 text-amber-200 shadow-md'
-                            : 'bg-slate-900/60 border-white/10 text-slate-400 hover:text-white'
+                            ? 'bg-[#F4EDE0]/20 border-[#F4EDE0]/50 text-[#F4EDE0] shadow-md'
+                            : 'bg-[#090e1a]/70 border-[#F4EDE0]/10 text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                         }`}
                       >
-                        <div className="font-bold text-[11px] text-amber-300">Convert to 20 M</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="font-bold text-[11px] text-[#F4EDE0]">Convert to 20 M</div>
+                        <div className="text-[10px] text-[#F4EDE0]/60 mt-0.5">
                           {newHasSEE ? '20 MSE + 40 CIA (Special)' : '20 MSE + 80 CIA (100% CIE)'}
                         </div>
                       </button>
@@ -571,13 +547,13 @@ export const SemesterDetail: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-4 py-2 rounded-lg text-slate-400 hover:text-white"
+                    className="px-4 py-2 rounded-xl text-[#F4EDE0]/70 hover:text-[#F4EDE0] cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium shadow-lg shadow-cyan-600/30"
+                    className="px-5 py-2 rounded-xl bg-[#F4EDE0] hover:bg-white text-[#14213D] font-bold shadow-lg shadow-black/30 cursor-pointer"
                   >
                     Add Course
                   </button>

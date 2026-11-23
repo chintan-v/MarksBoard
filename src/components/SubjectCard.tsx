@@ -129,30 +129,18 @@ export const SubjectCard: React.FC<Props> = ({
   };
 
   return (
-    <div className="glass-card rounded-2xl border border-white/10 hover:border-purple-500/35 transition-all p-5 sm:p-6 flex flex-col justify-between group shadow-xl bg-slate-900/80 hover:bg-slate-900/90 relative">
+    <div className="glass-card glass-card-hover rounded-3xl border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 transition-all p-5 sm:p-6 flex flex-col justify-between group shadow-xl bg-gradient-to-br from-[#14213D]/80 via-[#182747]/65 to-[#14213D]/80 relative">
       <div>
         {/* Top Header Row: Badges & Action Buttons */}
         <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
             {/* Subject Code */}
-            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 shrink-0">
+            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-[#F4EDE0]/15 border border-[#F4EDE0]/25 text-[#F4EDE0] shrink-0 shadow-xs">
               {subject.code}
             </span>
 
             {/* Credit Badge */}
-            <span
-              className={`text-xs font-semibold px-2.5 py-1 rounded-lg border shrink-0 ${
-                subject.credits === 4
-                  ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
-                  : subject.credits === 3
-                  ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
-                  : subject.credits === 2
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                  : subject.credits === 1
-                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                  : 'bg-slate-700/50 text-slate-300 border-white/10'
-              }`}
-            >
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-xl border shrink-0 bg-[#F4EDE0]/10 text-[#F4EDE0] border-[#F4EDE0]/20 shadow-xs">
               {subject.credits} {subject.credits === 1 ? 'Credit' : 'Credits'}
             </span>
 
@@ -166,36 +154,32 @@ export const SubjectCard: React.FC<Props> = ({
                     ? 'Max 30 = 30+30 CIA, Max 20 = 20+40 CIA.'
                     : 'Max 30 = 30+70 CIA, Max 20 = 20+80 CIA.'
                 }`}
-                className={`text-xs font-semibold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                  currentMseScale === 20
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/35 hover:bg-amber-500/25 hover:border-amber-400'
-                    : 'bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25 hover:border-purple-400'
-                }`}
+                className="text-xs font-semibold px-2.5 py-1 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shrink-0 bg-[#F4EDE0]/12 text-[#F4EDE0] border-[#F4EDE0]/25 hover:bg-[#F4EDE0]/22 hover:border-[#F4EDE0]/40 shadow-xs"
               >
-                <SlidersHorizontal className="w-3 h-3 text-purple-400 shrink-0" />
+                <SlidersHorizontal className="w-3 h-3 text-[#F4EDE0] shrink-0" />
                 <span>MSE: {currentMseScale}M</span>
               </button>
             )}
 
             {!subject.hasSEE && (
-              <span className="text-[11px] font-medium px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0">
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] border border-[#F4EDE0]/20 shrink-0">
                 100% CIE
               </span>
             )}
 
             {!subject.hasMSE && (
-              <span className="text-[11px] font-medium px-2 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shrink-0">
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-xl bg-[#F4EDE0]/10 text-[#F4EDE0] border border-[#F4EDE0]/20 shrink-0">
                 No MSE
               </span>
             )}
           </div>
 
           {/* Action Icons */}
-          <div className="flex items-center gap-1 text-slate-400 shrink-0">
+          <div className="flex items-center gap-1 text-[#F4EDE0]/60 shrink-0">
             <button
               type="button"
               onClick={handleStartEditMeta}
-              className="p-1.5 hover:bg-white/10 rounded-lg hover:text-white transition-colors"
+              className="p-1.5 hover:bg-[#F4EDE0]/15 rounded-lg hover:text-[#F4EDE0] transition-colors cursor-pointer"
               title="Edit Subject Course Details"
             >
               <Edit2 className="w-3.5 h-3.5" />
@@ -203,7 +187,7 @@ export const SubjectCard: React.FC<Props> = ({
             <button
               type="button"
               onClick={handleDeleteClick}
-              className="p-1.5 hover:bg-rose-500/20 hover:text-rose-400 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-rose-500/20 hover:text-rose-300 rounded-lg transition-colors cursor-pointer"
               title="Delete Subject"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -213,27 +197,27 @@ export const SubjectCard: React.FC<Props> = ({
 
         {/* Edit Subject Meta Modal/Panel */}
         {isEditingMeta ? (
-          <div className="space-y-3 my-3 p-4 bg-slate-950/90 rounded-2xl border border-purple-500/30 shadow-xl animate-fadeIn">
-            <div className="font-semibold text-xs text-white border-b border-white/10 pb-2">
+          <div className="space-y-3 my-3 p-4 bg-[#14213D]/95 rounded-2xl border border-[#F4EDE0]/25 shadow-xl glass-panel animate-fadeIn">
+            <div className="font-semibold text-xs text-[#F4EDE0] border-b border-[#F4EDE0]/12 pb-2">
               Edit Subject Configuration
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-slate-400 block mb-1">Subject Code</label>
+                <label className="text-[10px] text-[#F4EDE0]/70 block mb-1">Subject Code</label>
                 <input
                   type="text"
                   value={editCode}
                   onChange={(e) => setEditCode(e.target.value)}
                   placeholder="e.g. 22CS701"
-                  className="w-full text-xs font-mono uppercase px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full text-xs font-mono uppercase px-2.5 py-1.5 rounded-xl glass-input"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-400 block mb-1">Credits</label>
+                <label className="text-[10px] text-[#F4EDE0]/70 block mb-1">Credits</label>
                 <select
                   value={editCredits}
                   onChange={(e) => setEditCredits(Number(e.target.value))}
-                  className="w-full text-xs px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full text-xs px-2.5 py-1.5 rounded-xl glass-input bg-[#090e1a]"
                 >
                   <option value={4}>4 Credits</option>
                   <option value={3}>3 Credits</option>
@@ -245,32 +229,32 @@ export const SubjectCard: React.FC<Props> = ({
             </div>
 
             <div>
-              <label className="text-[10px] text-slate-400 block mb-1">Subject Title</label>
+              <label className="text-[10px] text-[#F4EDE0]/70 block mb-1">Subject Title</label>
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Subject Name"
-                className="w-full text-xs px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-purple-500"
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl glass-input"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-1 text-xs text-slate-300">
-              <label className="flex items-center gap-1.5 cursor-pointer bg-slate-900/60 p-2 rounded-lg border border-white/5">
+            <div className="grid grid-cols-2 gap-2 pt-1 text-xs text-[#F4EDE0]/80">
+              <label className="flex items-center gap-1.5 cursor-pointer bg-[#090e1a]/60 p-2 rounded-xl border border-[#F4EDE0]/10">
                 <input
                   type="checkbox"
                   checked={hasMSE}
                   onChange={(e) => setHasMSE(e.target.checked)}
-                  className="accent-purple-500"
+                  className="accent-[#F4EDE0]"
                 />
                 <span className="text-[11px]">Has MSE Exam (40 M)</span>
               </label>
-              <label className="flex items-center gap-1.5 cursor-pointer bg-slate-900/60 p-2 rounded-lg border border-white/5">
+              <label className="flex items-center gap-1.5 cursor-pointer bg-[#090e1a]/60 p-2 rounded-xl border border-[#F4EDE0]/10">
                 <input
                   type="checkbox"
                   checked={hasSEE}
                   onChange={(e) => setHasSEE(e.target.checked)}
-                  className="accent-purple-500"
+                  className="accent-[#F4EDE0]"
                 />
                 <span className="text-[11px]">Has SEE Exam</span>
               </label>
@@ -279,21 +263,21 @@ export const SubjectCard: React.FC<Props> = ({
             {/* MSE Conversion Target Selector */}
             {hasMSE && (
               <div className="pt-1">
-                <label className="text-[11px] font-semibold text-slate-300 block mb-1.5">
+                <label className="text-[11px] font-semibold text-[#F4EDE0]/80 block mb-1.5">
                   MSE Conversion Scale Scheme:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setEditMseMaxScale(30)}
-                    className={`p-2 rounded-xl text-left border text-xs transition-all ${
+                    className={`p-2 rounded-xl text-left border text-xs transition-all cursor-pointer ${
                       editMseMaxScale === 30
-                        ? 'bg-purple-600/25 border-purple-400 text-white shadow-md'
-                        : 'bg-slate-900/60 border-white/10 text-slate-400 hover:text-white'
+                        ? 'bg-[#F4EDE0]/20 border-[#F4EDE0]/50 text-[#F4EDE0] shadow-md'
+                        : 'bg-[#090e1a]/60 border-[#F4EDE0]/10 text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                     }`}
                   >
                     <div className="font-bold text-[11px]">Convert to 30 Marks</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-[10px] text-[#F4EDE0]/60 mt-0.5">
                       {hasSEE ? '30 MSE + 30 CIA' : '30 MSE + 70 CIA'}
                     </div>
                   </button>
@@ -301,14 +285,14 @@ export const SubjectCard: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => setEditMseMaxScale(20)}
-                    className={`p-2 rounded-xl text-left border text-xs transition-all ${
+                    className={`p-2 rounded-xl text-left border text-xs transition-all cursor-pointer ${
                       editMseMaxScale === 20
-                        ? 'bg-amber-600/25 border-amber-400 text-amber-200 shadow-md'
-                        : 'bg-slate-900/60 border-white/10 text-slate-400 hover:text-white'
+                        ? 'bg-[#F4EDE0]/20 border-[#F4EDE0]/50 text-[#F4EDE0] shadow-md'
+                        : 'bg-[#090e1a]/60 border-[#F4EDE0]/10 text-[#F4EDE0]/60 hover:text-[#F4EDE0]'
                     }`}
                   >
-                    <div className="font-bold text-[11px] text-amber-300">Convert to 20 Marks</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="font-bold text-[11px] text-[#F4EDE0]">Convert to 20 Marks</div>
+                    <div className="text-[10px] text-[#F4EDE0]/60 mt-0.5">
                       {hasSEE ? '20 MSE + 40 CIA' : '20 MSE + 80 CIA'}
                     </div>
                   </button>
@@ -316,35 +300,35 @@ export const SubjectCard: React.FC<Props> = ({
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[#F4EDE0]/12">
               <button
                 type="button"
                 onClick={() => setIsEditingMeta(false)}
-                className="text-xs px-3 py-1.5 text-slate-400 hover:text-white"
+                className="text-xs px-3 py-1.5 text-[#F4EDE0]/70 hover:text-[#F4EDE0] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveMeta}
-                className="text-xs px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium flex items-center gap-1"
+                className="text-xs px-4 py-1.5 bg-[#F4EDE0] hover:bg-white text-[#14213D] rounded-xl font-bold flex items-center gap-1 cursor-pointer shadow-md"
               >
                 <Check className="w-3.5 h-3.5" /> Save
               </button>
             </div>
           </div>
         ) : (
-          /* Subject Title - Beautifully Aligned with 2-Line Height */
+          /* Subject Title */
           <div
             onClick={handleStartEditMeta}
             className="cursor-pointer group/title flex items-start justify-between gap-2 min-h-[2.85rem] mb-3 select-none"
             title="Click to rename subject, edit code or credits"
           >
-            <h3 className="font-bold text-base sm:text-lg text-white leading-snug line-clamp-2 group-hover/title:text-purple-300 transition-colors">
+            <h3 className="font-bold text-base sm:text-lg text-[#F4EDE0] leading-snug line-clamp-2 group-hover/title:text-white transition-colors">
               {subject.name}
             </h3>
             {subject.name.toLowerCase().startsWith('subject') && (
-              <span className="shrink-0 text-[10px] font-medium text-purple-300 bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 rounded-lg flex items-center gap-1 mt-0.5 group-hover/title:bg-purple-500/25">
+              <span className="shrink-0 text-[10px] font-medium text-[#F4EDE0] bg-[#F4EDE0]/15 border border-[#F4EDE0]/30 px-2 py-0.5 rounded-lg flex items-center gap-1 mt-0.5 group-hover/title:bg-[#F4EDE0]/25">
                 <Edit2 className="w-2.5 h-2.5" /> Rename
               </span>
             )}
@@ -355,10 +339,10 @@ export const SubjectCard: React.FC<Props> = ({
         <div className="grid grid-cols-3 gap-2 sm:gap-2.5 my-3.5">
           {/* MSE Input Column */}
           {subject.hasMSE ? (
-            <div className="p-3 rounded-2xl bg-slate-950/70 border border-purple-500/20 hover:border-purple-500/40 flex flex-col justify-between transition-colors shadow-sm">
+            <div className="p-3 rounded-2xl bg-[#090e1a]/70 border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 flex flex-col justify-between transition-colors shadow-sm">
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="font-bold text-purple-300">MSE</span>
-                <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+                <span className="font-bold text-[#F4EDE0]">MSE</span>
+                <span className="text-[10px] font-mono text-[#F4EDE0]/60 bg-[#F4EDE0]/10 px-1.5 py-0.5 rounded">
                   /40
                 </span>
               </div>
@@ -373,29 +357,29 @@ export const SubjectCard: React.FC<Props> = ({
                   }}
                   onChange={(e) => handleMSEChange(e.target.value)}
                   placeholder="0 - 40"
-                  className="w-full text-center text-base sm:text-lg font-bold font-mono py-1 rounded-xl bg-slate-900 border border-white/10 text-white placeholder:text-slate-600 focus:border-purple-400 focus:outline-none"
+                  className="w-full text-center text-base sm:text-lg font-bold font-mono py-1 rounded-xl glass-input text-[#F4EDE0] placeholder:text-[#F4EDE0]/30"
                 />
               </div>
-              <div className="mt-2 pt-1.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono whitespace-nowrap">
-                <span className="text-slate-400 text-[10px]">Scaled:</span>
-                <span className="font-bold text-purple-300">
+              <div className="mt-2 pt-1.5 border-t border-[#F4EDE0]/10 flex items-center justify-between text-[11px] font-mono whitespace-nowrap">
+                <span className="text-[#F4EDE0]/60 text-[10px]">Scaled:</span>
+                <span className="font-bold text-[#F4EDE0]">
                   {calc.mseScaled}
-                  <span className="text-slate-500 text-[10px]">/{currentMseScale}</span>
+                  <span className="text-[#F4EDE0]/50 text-[10px]">/{currentMseScale}</span>
                 </span>
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-2xl bg-slate-950/40 border border-white/5 flex flex-col items-center justify-center text-center">
-              <span className="text-xs font-bold text-slate-400">MSE</span>
-              <span className="text-[10px] text-slate-500 mt-1">No Exam</span>
+            <div className="p-3 rounded-2xl bg-[#090e1a]/40 border border-[#F4EDE0]/8 flex flex-col items-center justify-center text-center">
+              <span className="text-xs font-bold text-[#F4EDE0]/60">MSE</span>
+              <span className="text-[10px] text-[#F4EDE0]/40 mt-1">No Exam</span>
             </div>
           )}
 
           {/* CIA Input Column */}
-          <div className="p-3 rounded-2xl bg-slate-950/70 border border-cyan-500/20 hover:border-cyan-500/40 flex flex-col justify-between transition-colors shadow-sm">
+          <div className="p-3 rounded-2xl bg-[#090e1a]/70 border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 flex flex-col justify-between transition-colors shadow-sm">
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-bold text-cyan-300">CIA</span>
-              <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+              <span className="font-bold text-[#F4EDE0]">CIA</span>
+              <span className="text-[10px] font-mono text-[#F4EDE0]/60 bg-[#F4EDE0]/10 px-1.5 py-0.5 rounded">
                 /{calc.ciaMax}
               </span>
             </div>
@@ -411,24 +395,24 @@ export const SubjectCard: React.FC<Props> = ({
                 }}
                 onChange={(e) => handleCIAChange(e.target.value)}
                 placeholder={`0 - ${calc.ciaMax}`}
-                className="w-full text-center text-base sm:text-lg font-bold font-mono py-1 rounded-xl bg-slate-900 border border-white/10 text-white placeholder:text-slate-600 focus:border-cyan-400 focus:outline-none"
+                className="w-full text-center text-base sm:text-lg font-bold font-mono py-1 rounded-xl glass-input text-[#F4EDE0] placeholder:text-[#F4EDE0]/30"
               />
             </div>
-            <div className="mt-2 pt-1.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono whitespace-nowrap">
-              <span className="text-slate-400 text-[10px]">Score:</span>
-              <span className="font-bold text-cyan-300">
+            <div className="mt-2 pt-1.5 border-t border-[#F4EDE0]/10 flex items-center justify-between text-[11px] font-mono whitespace-nowrap">
+              <span className="text-[#F4EDE0]/60 text-[10px]">Score:</span>
+              <span className="font-bold text-[#F4EDE0]">
                 {calc.ciaScaled}
-                <span className="text-slate-500 text-[10px]">/{calc.ciaMax}</span>
+                <span className="text-[#F4EDE0]/50 text-[10px]">/{calc.ciaMax}</span>
               </span>
             </div>
           </div>
 
           {/* SEE Input Column */}
           {subject.hasSEE ? (
-            <div className="p-3 rounded-2xl bg-slate-950/70 border border-amber-500/20 hover:border-amber-500/40 flex flex-col justify-between transition-colors shadow-sm">
+            <div className="p-3 rounded-2xl bg-[#090e1a]/70 border border-[#F4EDE0]/12 hover:border-[#F4EDE0]/35 flex flex-col justify-between transition-colors shadow-sm">
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="font-bold text-amber-300">SEE</span>
-                <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+                <span className="font-bold text-[#F4EDE0]">SEE</span>
+                <span className="text-[10px] font-mono text-[#F4EDE0]/60 bg-[#F4EDE0]/10 px-1.5 py-0.5 rounded">
                   /80
                 </span>
               </div>
@@ -444,78 +428,66 @@ export const SubjectCard: React.FC<Props> = ({
                   }}
                   onChange={(e) => handleSEEChange(e.target.value)}
                   placeholder="0 - 80"
-                  className="w-full text-center text-base sm:text-lg font-bold font-mono py-1 rounded-xl bg-slate-900 border border-white/10 text-white placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
+                  className="w-full text-center text-base sm:text-lg font-bold font-mono py-1 rounded-xl glass-input text-[#F4EDE0] placeholder:text-[#F4EDE0]/30"
                 />
               </div>
-              <div className="mt-2 pt-1.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono whitespace-nowrap">
-                <span className="text-slate-400 text-[10px]">Scaled:</span>
-                <span className="font-bold text-amber-300">
+              <div className="mt-2 pt-1.5 border-t border-[#F4EDE0]/10 flex items-center justify-between text-[11px] font-mono whitespace-nowrap">
+                <span className="text-[#F4EDE0]/60 text-[10px]">Scaled:</span>
+                <span className="font-bold text-[#F4EDE0]">
                   {calc.seeScaled}
-                  <span className="text-slate-500 text-[10px]">/40</span>
+                  <span className="text-[#F4EDE0]/50 text-[10px]">/40</span>
                 </span>
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-2xl bg-slate-950/40 border border-white/5 flex flex-col items-center justify-center text-center">
-              <span className="text-xs font-bold text-slate-400">SEE</span>
-              <span className="text-[10px] text-slate-500 mt-1">100% CIE</span>
+            <div className="p-3 rounded-2xl bg-[#090e1a]/40 border border-[#F4EDE0]/8 flex flex-col items-center justify-center text-center">
+              <span className="text-xs font-bold text-[#F4EDE0]/60">SEE</span>
+              <span className="text-[10px] text-[#F4EDE0]/40 mt-1">100% CIE</span>
             </div>
           )}
         </div>
 
         {/* Unified Internals Summary Strip */}
-        <div className="px-3.5 py-2 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-xs mb-3.5">
-          <div className="flex items-center gap-1.5 text-slate-400">
+        <div className="px-3.5 py-2 rounded-xl bg-[#090e1a]/55 border border-[#F4EDE0]/10 flex items-center justify-between text-xs mb-3.5">
+          <div className="flex items-center gap-1.5 text-[#F4EDE0]/70">
             <span className="text-[11px]">Total Internals (CIE):</span>
           </div>
-          <div className="font-mono font-bold text-cyan-300">
+          <div className="font-mono font-bold text-[#F4EDE0]">
             {calc.totalInternals}{' '}
-            <span className="text-slate-500 text-[11px]">
+            <span className="text-[#F4EDE0]/50 text-[11px]">
               / {subject.hasSEE ? 60 : 100} Marks
             </span>
           </div>
         </div>
 
         {/* Score & CBCS Grade Result Card */}
-        <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-white/10 flex items-center justify-between gap-3 shadow-inner">
+        <div className="p-3.5 rounded-2xl bg-[#090e1a]/85 border border-[#F4EDE0]/14 flex items-center justify-between gap-3 shadow-inner">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#F4EDE0]/60">
               Total Score
             </div>
             <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-2xl sm:text-3xl font-black font-heading text-white">
+              <span className="text-2xl sm:text-3xl font-black font-heading text-[#F4EDE0]">
                 {calc.totalMarks}
               </span>
-              <span className="text-xs font-mono text-slate-500">/ 100</span>
+              <span className="text-xs font-mono text-[#F4EDE0]/50">/ 100</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
             <div className="text-right">
-              <div className="text-xs font-bold text-white font-mono">
+              <div className="text-xs font-bold text-[#F4EDE0] font-mono">
                 {calc.gradePoint} GP
               </div>
-              <div className="text-[10px] font-mono text-slate-400">
+              <div className="text-[10px] font-mono text-[#F4EDE0]/60">
                 {calc.creditPoints} CP
               </div>
             </div>
             <div
               className={`w-11 h-11 rounded-xl flex items-center justify-center font-black font-heading text-base border shadow-md ${
-                calc.grade === 'O'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                  : calc.grade === 'A+'
-                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                  : calc.grade === 'A'
-                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                  : calc.grade === 'B+'
-                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
-                  : calc.grade === 'B'
-                  ? 'bg-violet-500/20 text-violet-300 border-violet-500/40'
-                  : calc.grade === 'C'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  : calc.grade === 'P' || calc.grade === 'AP'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                  : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                calc.grade === 'F'
+                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                  : 'bg-[#F4EDE0]/20 text-[#F4EDE0] border-[#F4EDE0]/35'
               }`}
             >
               {calc.grade}
@@ -523,7 +495,7 @@ export const SubjectCard: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* SEE Pass Alert (if external exam marks are below passing threshold of 28/80) */}
+        {/* SEE Pass Alert */}
         {subject.hasSEE && subject.seeRawMarks !== null && subject.seeRawMarks < 28 && (
           <div className="mt-2.5 px-3 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[11px] flex items-center gap-1.5">
             <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
@@ -533,19 +505,19 @@ export const SubjectCard: React.FC<Props> = ({
       </div>
 
       {/* Action Buttons & Module Mini Progress */}
-      <div className="mt-4 pt-3 border-t border-white/5 space-y-2">
+      <div className="mt-4 pt-3 border-t border-[#F4EDE0]/10 space-y-2">
         <div className="grid grid-cols-2 gap-2">
           {/* Module Tracker Button */}
           <button
             type="button"
             onClick={() => onOpenModuleTracker(subject)}
-            className="px-3 py-2 rounded-xl bg-cyan-950/30 hover:bg-cyan-900/40 text-cyan-300 border border-cyan-500/20 hover:border-cyan-500/40 transition-all text-xs font-medium flex items-center justify-between"
+            className="px-3 py-2 rounded-xl bg-[#F4EDE0]/10 hover:bg-[#F4EDE0]/20 text-[#F4EDE0] border border-[#F4EDE0]/15 hover:border-[#F4EDE0]/35 transition-all text-xs font-semibold flex items-center justify-between cursor-pointer shadow-xs"
           >
             <div className="flex items-center gap-1.5 truncate">
-              <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <Layers className="w-3.5 h-3.5 text-[#F4EDE0] shrink-0" />
               <span className="truncate">5 Modules</span>
             </div>
-            <span className="text-[10px] font-mono bg-cyan-500/20 px-1.5 py-0.5 rounded text-cyan-200 shrink-0 ml-1">
+            <span className="text-[10px] font-mono bg-[#F4EDE0]/20 px-1.5 py-0.5 rounded text-[#F4EDE0] shrink-0 ml-1">
               {completedModules}/5{revisedModules > 0 ? ` (${revisedModules}r)` : ''}
             </span>
           </button>
@@ -554,13 +526,13 @@ export const SubjectCard: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => onOpenTargetPredictor(subject)}
-            className="px-3 py-2 rounded-xl bg-fuchsia-950/30 hover:bg-fuchsia-900/40 text-fuchsia-300 border border-fuchsia-500/20 hover:border-fuchsia-500/40 transition-all text-xs font-medium flex items-center justify-between"
+            className="px-3 py-2 rounded-xl bg-[#F4EDE0]/10 hover:bg-[#F4EDE0]/20 text-[#F4EDE0] border border-[#F4EDE0]/15 hover:border-[#F4EDE0]/35 transition-all text-xs font-semibold flex items-center justify-between cursor-pointer shadow-xs"
           >
             <div className="flex items-center gap-1.5 truncate">
-              <Shield className="w-3.5 h-3.5 text-fuchsia-400 shrink-0" />
+              <Shield className="w-3.5 h-3.5 text-[#F4EDE0] shrink-0" />
               <span className="truncate">Afford to Lose</span>
             </div>
-            <Sparkles className="w-3 h-3 text-fuchsia-400 animate-pulse shrink-0 ml-1" />
+            <Sparkles className="w-3 h-3 text-[#F4EDE0] animate-pulse shrink-0 ml-1" />
           </button>
         </div>
       </div>

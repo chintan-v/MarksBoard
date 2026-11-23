@@ -28,34 +28,34 @@ const ToastItem: React.FC<{ toast: ToastMessage; onDismiss: (id: string) => void
 
   return (
     <div
-      className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl animate-fadeIn transition-all ${
+      className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl animate-fadeIn transition-all glass-panel-deep bg-[#090e1a]/95 text-[#F4EDE0] ${
         toast.type === 'success'
-          ? 'bg-slate-900/95 border-emerald-500/40 text-emerald-100 shadow-emerald-500/10'
+          ? 'border-[#F4EDE0]/30 shadow-[#14213D]/60'
           : toast.type === 'error'
-          ? 'bg-slate-900/95 border-rose-500/40 text-rose-100 shadow-rose-500/10'
-          : 'bg-slate-900/95 border-cyan-500/40 text-cyan-100 shadow-cyan-500/10'
+          ? 'border-rose-500/40 text-rose-100 shadow-rose-950/40'
+          : 'border-[#F4EDE0]/25 shadow-[#14213D]/40'
       }`}
     >
       {toast.type === 'success' && (
-        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+        <CheckCircle2 className="w-5 h-5 text-[#F4EDE0] shrink-0 mt-0.5" />
       )}
       {toast.type === 'error' && (
         <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
       )}
       {toast.type === 'info' && (
-        <Info className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+        <Info className="w-5 h-5 text-[#F4EDE0] shrink-0 mt-0.5" />
       )}
 
       <div className="flex-1 text-xs">
         {toast.title && (
-          <h5 className="font-bold text-white mb-0.5 text-sm">{toast.title}</h5>
+          <h5 className="font-bold text-[#F4EDE0] mb-0.5 text-sm">{toast.title}</h5>
         )}
-        <p className="leading-relaxed text-slate-200">{toast.message}</p>
+        <p className="leading-relaxed text-[#F4EDE0]/90">{toast.message}</p>
       </div>
 
       <button
         onClick={() => onDismiss(toast.id)}
-        className="text-slate-400 hover:text-white transition-colors p-1 -mr-1 -mt-1"
+        className="text-[#F4EDE0]/60 hover:text-[#F4EDE0] transition-colors p-1 -mr-1 -mt-1"
       >
         <X className="w-4 h-4" />
       </button>

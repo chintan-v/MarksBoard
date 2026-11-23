@@ -41,51 +41,51 @@ export const Navbar: React.FC<Props> = ({
   onManualSync,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-[#F4EDE0]/15 bg-[#14213D]/80 backdrop-blur-2xl">
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-14 h-20 flex items-center justify-between gap-4">
         {/* Left: Brand & Institution */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={onSelectOverview}
-            className="flex items-center gap-2.5 text-left group"
+            className="flex items-center gap-2.5 text-left group cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 via-purple-600 to-cyan-500 p-0.5 shadow-lg shadow-purple-600/30 group-hover:scale-105 transition-transform shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 font-heading">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#14213D] via-[#243864] to-[#F4EDE0]/40 p-0.5 shadow-lg shadow-black/40 group-hover:scale-105 transition-transform shrink-0 border border-[#F4EDE0]/20">
+              <div className="w-full h-full bg-[#14213D] rounded-[14px] flex items-center justify-center font-bold text-lg text-[#F4EDE0] font-heading shadow-inner">
                 ⚡
               </div>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-lg tracking-tight font-heading text-white group-hover:text-purple-300 transition-colors">
+                <span className="font-extrabold text-lg tracking-tight font-heading text-[#F4EDE0] group-hover:text-white transition-colors">
                   MarksBoard
                 </span>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#F4EDE0]/15 text-[#F4EDE0] border border-[#F4EDE0]/30 shadow-xs">
                   ENGG
                 </span>
               </div>
-              <div className="text-[11px] text-slate-400 truncate max-w-[180px] sm:max-w-none font-medium">
+              <div className="text-[11px] text-[#F4EDE0]/65 truncate max-w-[180px] sm:max-w-none font-medium">
                 {profile.college}
               </div>
             </div>
           </button>
         </div>
 
-        {/* Center: Interactive Semester Quick-Jump Navigation (No greetings clutter!) */}
-        <div className="hidden md:flex items-center gap-1 p-1 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md overflow-x-auto">
+        {/* Center: Interactive Semester Quick-Jump Navigation */}
+        <div className="hidden md:flex items-center gap-1 p-1 rounded-2xl bg-[#090e1a]/70 border border-[#F4EDE0]/12 backdrop-blur-md overflow-x-auto shadow-inner">
           <button
             type="button"
             onClick={onSelectOverview}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               isOverviewActive
-                ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-md shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                ? 'bg-[#F4EDE0] text-[#14213D] font-bold shadow-md shadow-black/30'
+                : 'text-[#F4EDE0]/70 hover:text-[#F4EDE0] hover:bg-[#F4EDE0]/10'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Overview</span>
           </button>
 
-          <div className="h-4 w-px bg-white/10 mx-1" />
+          <div className="h-4 w-px bg-[#F4EDE0]/15 mx-1" />
 
           {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => {
             const isActive = !isOverviewActive && activeSemesterNum === num;
@@ -94,10 +94,10 @@ export const Navbar: React.FC<Props> = ({
                 key={num}
                 type="button"
                 onClick={() => onSelectSemester(num)}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-md shadow-purple-600/30 scale-105'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-[#F4EDE0] text-[#14213D] shadow-md shadow-black/30 scale-105'
+                    : 'text-[#F4EDE0]/70 hover:text-[#F4EDE0] hover:bg-[#F4EDE0]/10'
                 }`}
               >
                 S{num}
@@ -112,10 +112,10 @@ export const Navbar: React.FC<Props> = ({
           <button
             type="button"
             onClick={onOpenGradingScale}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all border border-white/5"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#F4EDE0]/8 hover:bg-[#F4EDE0]/16 text-[#F4EDE0] transition-all border border-[#F4EDE0]/15 cursor-pointer backdrop-blur-sm shadow-xs"
             title="View DSU 10-Point CBCS Grading Scale"
           >
-            <Award className="w-3.5 h-3.5 text-cyan-400" />
+            <Award className="w-3.5 h-3.5 text-[#F4EDE0]" />
             <span className="hidden sm:inline">Grading Scale</span>
           </button>
 
@@ -123,10 +123,10 @@ export const Navbar: React.FC<Props> = ({
           <button
             type="button"
             onClick={onOpenGradeCard}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all border border-white/5"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#F4EDE0]/8 hover:bg-[#F4EDE0]/16 text-[#F4EDE0] transition-all border border-[#F4EDE0]/15 cursor-pointer backdrop-blur-sm shadow-xs"
             title="Print Official Grade Card & Summary"
           >
-            <FileText className="w-3.5 h-3.5 text-fuchsia-400" />
+            <FileText className="w-3.5 h-3.5 text-[#F4EDE0]" />
             <span className="hidden sm:inline">Grade Sheet</span>
           </button>
 
@@ -134,50 +134,50 @@ export const Navbar: React.FC<Props> = ({
           <button
             type="button"
             onClick={onOpenAttendance}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 transition-all border border-cyan-500/25 cursor-pointer shadow-sm shadow-cyan-500/10"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-[#F4EDE0]/16 hover:bg-[#F4EDE0]/26 text-[#F4EDE0] transition-all border border-[#F4EDE0]/30 cursor-pointer shadow-sm shadow-black/20"
             title="Attendance, Weekly Timetable & Leave Forecaster"
           >
-            <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+            <Calendar className="w-3.5 h-3.5 text-[#F4EDE0]" />
             <span className="hidden sm:inline">Attendance</span>
           </button>
 
           {/* Cloud Database Sync Status */}
           {syncStatus === 'syncing' ? (
             <div
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 animate-pulse"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-[#F4EDE0]/15 text-[#F4EDE0] border border-[#F4EDE0]/30 animate-pulse"
               title="Syncing latest marks & semester changes to Supabase Cloud..."
             >
-              <RefreshCw className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+              <RefreshCw className="w-3.5 h-3.5 text-[#F4EDE0] animate-spin" />
               <span className="hidden md:inline">Syncing...</span>
             </div>
           ) : syncStatus === 'synced' ? (
             <button
               type="button"
               onClick={onManualSync}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-[#F4EDE0]/12 hover:bg-[#F4EDE0]/22 text-[#F4EDE0] border border-[#F4EDE0]/25 transition-all cursor-pointer shadow-xs"
               title="All semester marks saved to Supabase Cloud database! Click to re-check latest data."
             >
-              <Cloud className="w-3.5 h-3.5 text-emerald-400" />
+              <Cloud className="w-3.5 h-3.5 text-[#F4EDE0]" />
               <span className="hidden md:inline">Cloud Synced</span>
             </button>
           ) : syncStatus === 'offline' ? (
             <button
               type="button"
               onClick={onManualSync}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/35 transition-all cursor-pointer"
               title="Cloud sync unreachable. Click to retry connecting to Supabase."
             >
-              <CloudOff className="w-3.5 h-3.5 text-amber-400" />
+              <CloudOff className="w-3.5 h-3.5 text-amber-300" />
               <span className="hidden md:inline">Retry Sync</span>
             </button>
           ) : (
             <button
               type="button"
               onClick={onOpenAuth}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-[#F4EDE0]/8 hover:bg-[#F4EDE0]/16 text-[#F4EDE0]/70 hover:text-[#F4EDE0] border border-[#F4EDE0]/15 transition-all cursor-pointer"
               title="Guest Mode: Saved on this device only. Sign in to sync across other devices!"
             >
-              <CloudOff className="w-3.5 h-3.5 text-slate-400" />
+              <CloudOff className="w-3.5 h-3.5 text-[#F4EDE0]/70" />
               <span className="hidden md:inline">Local Only</span>
             </button>
           )}
@@ -186,9 +186,9 @@ export const Navbar: React.FC<Props> = ({
           <button
             type="button"
             onClick={onOpenProfile}
-            className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition-all group"
+            className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl bg-[#F4EDE0]/8 hover:bg-[#F4EDE0]/16 border border-[#F4EDE0]/15 hover:border-[#F4EDE0]/35 transition-all group cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-xl bg-purple-950/80 border border-purple-500/30 flex items-center justify-center text-lg overflow-hidden shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#14213D] border border-[#F4EDE0]/25 flex items-center justify-center text-lg overflow-hidden shrink-0 shadow-inner">
               {profile.avatar.startsWith('http') ? (
                 <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
               ) : (
@@ -196,10 +196,10 @@ export const Navbar: React.FC<Props> = ({
               )}
             </div>
             <div className="text-left hidden lg:block">
-              <div className="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition-colors leading-tight">
+              <div className="text-xs font-bold text-[#F4EDE0] group-hover:text-white transition-colors leading-tight">
                 {profile.name}
               </div>
-              <div className="text-[10px] font-mono text-slate-400 leading-tight">
+              <div className="text-[10px] font-mono text-[#F4EDE0]/60 leading-tight">
                 {profile.usn}
               </div>
             </div>
@@ -209,7 +209,7 @@ export const Navbar: React.FC<Props> = ({
           <button
             type="button"
             onClick={onOpenAuth}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#F4EDE0]/8 hover:bg-[#F4EDE0]/16 text-[#F4EDE0]/70 hover:text-[#F4EDE0] border border-[#F4EDE0]/15 transition-colors cursor-pointer"
             title="Switch Account / Sign In with USN"
           >
             <Lock className="w-4 h-4" />
