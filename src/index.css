@@ -262,24 +262,41 @@
   box-shadow: 0 0 18px -2px rgba(44, 31, 51, 0.28), inset 0 1px 2px 0 rgba(44, 31, 51, 0.05) !important;
 }
 
-/* Fading Glassmorphic Hero & Card Gradients */
-[data-theme="light"] .bg-gradient-to-br {
-  background-image: linear-gradient(
+/* Frosted Cream Glassmorphism for Banners, Cards & Modal Headers */
+[data-theme="light"] :is(
+  .glass-panel,
+  .glass-card,
+  div[class*="bg-gradient-to-r"][class*="from-[#14213D]"],
+  div[class*="bg-gradient-to-br"][class*="from-[#14213D]"]
+) {
+  background: linear-gradient(
     135deg,
-    rgba(255, 252, 247, 0.82) 0%,
-    rgba(240, 226, 208, 0.6) 45%,
-    rgba(224, 205, 181, 0.72) 100%
+    rgba(255, 253, 249, 0.78) 0%,
+    rgba(242, 230, 215, 0.58) 100%
   ) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-color: rgba(185, 163, 139, 0.45) !important;
+  box-shadow: 0 12px 36px -10px rgba(44, 31, 51, 0.1), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Fading Progress Bar: Antique Gold -> Deep Violet */
-[data-theme="light"] .bg-gradient-to-r {
-  background-image: linear-gradient(
+/* Progress Bar Track Wells & Meter Fills */
+[data-theme="light"] div[class*="rounded-full"][class*="bg-[#090e1a]"] {
+  background-color: rgba(220, 206, 186, 0.5) !important;
+  border-color: rgba(185, 163, 139, 0.4) !important;
+  box-shadow: inset 0 1.5px 3px 0 rgba(44, 31, 51, 0.08) !important;
+}
+
+[data-theme="light"] div[class*="h-full"][class*="bg-gradient-to-r"],
+[data-theme="light"] div[class*="h-2"][class*="bg-gradient-to-r"],
+[data-theme="light"] div[class*="h-3"][class*="bg-gradient-to-r"] {
+  background: linear-gradient(
     90deg,
-    rgba(185, 163, 139, 0.75) 0%,
-    rgba(110, 78, 126, 0.85) 55%,
+    #B9A38B 0%,
+    #5D3D69 55%,
     #2C1F33 100%
   ) !important;
+  box-shadow: 0 1px 4px 0 rgba(44, 31, 51, 0.2) !important;
 }
 
 /* Internal Card Ambient Glow Circles */
