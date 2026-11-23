@@ -28,6 +28,26 @@ export function App() {
     profile.isGuest ? 'guest' : 'synced'
   );
 
+  // Theme State: 'dark' (Navy & Cream) or 'light' (Antique Gold & Deep Violet in 7:3 ratio)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('marksboard_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {}
+    return 'dark';
+  });
+
+  useEffect(() => {
+    try {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('marksboard_theme', theme);
+    } catch {}
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   const isInitialMount = useRef(true);
 
   // Toast Notifications
@@ -179,12 +199,12 @@ export function App() {
     : null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#090e1a] via-[#14213D] to-[#080d19] text-[#F4EDE0] selection:bg-[#F4EDE0] selection:text-[#14213D] relative">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#090e1a] via-[#14213D] to-[#080d19] text-[#F4EDE0] selection:bg-[#F4EDE0] selection:text-[#14213D] relative theme-root-container">
       {/* Background Frosted Glass Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#14213D]/80 rounded-full blur-[140px] animate-pulse-glow" />
-        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#F4EDE0]/10 rounded-full blur-[160px] animate-pulse-glow" style={{ animationDelay: '2.5s' }} />
-        <div className="absolute bottom-1/4 left-1/3 w-[500px] h-[500px] bg-[#1d2f55]/60 rounded-full blur-[150px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#14213D]/80 rounded-full blur-[140px] animate-pulse-glow theme-orb-primary" />
+        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#F4EDE0]/10 rounded-full blur-[160px] animate-pulse-glow theme-orb-secondary" style={{ animationDelay: '2.5s' }} />
+        <div className="absolute bottom-1/4 left-1/3 w-[500px] h-[500px] bg-[#1d2f55]/60 rounded-full blur-[150px] animate-pulse-glow theme-orb-accent" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* Guest Mode Notification Bar */}
@@ -225,6 +245,8 @@ export function App() {
         onOpenAttendance={() => setIsAttendanceModalOpen(true)}
         syncStatus={syncStatus}
         onManualSync={handleManualSync}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main App Container - Utilizing Full Screen */}

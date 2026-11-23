@@ -8,6 +8,8 @@ import {
   Cloud,
   CloudOff,
   RefreshCw,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import type { StudentProfile } from '../types';
 
@@ -24,6 +26,8 @@ interface Props {
   onOpenAttendance?: () => void;
   syncStatus?: 'synced' | 'syncing' | 'offline' | 'guest';
   onManualSync?: () => void;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 export const Navbar: React.FC<Props> = ({
@@ -39,6 +43,8 @@ export const Navbar: React.FC<Props> = ({
   onOpenAttendance,
   syncStatus = 'synced',
   onManualSync,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-[#F4EDE0]/15 bg-[#14213D]/80 backdrop-blur-2xl">
@@ -181,6 +187,30 @@ export const Navbar: React.FC<Props> = ({
               <span className="hidden md:inline">Local Only</span>
             </button>
           )}
+
+          {/* Theme Switcher: Dark (Navy & Cream) <-> Light (Antique Gold & Deep Violet 7:3) */}
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium bg-[#F4EDE0]/12 hover:bg-[#F4EDE0]/22 text-[#F4EDE0] border border-[#F4EDE0]/25 transition-all cursor-pointer shadow-xs hover:scale-[1.03] active:scale-[0.97]"
+            title={
+              theme === 'light'
+                ? 'Switch to Dark Theme (Navy #14213D & Cream #F4EDE0)'
+                : 'Switch to Light Theme (Antique Gold #B9A38B & Deep Violet #2C1F33)'
+            }
+          >
+            {theme === 'light' ? (
+              <>
+                <Moon className="w-3.5 h-3.5 text-[#2C1F33]" />
+                <span className="hidden sm:inline font-bold">Dark Mode</span>
+              </>
+            ) : (
+              <>
+                <Sun className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline font-bold">Light Mode</span>
+              </>
+            )}
+          </button>
 
           {/* Profile & Avatar */}
           <button

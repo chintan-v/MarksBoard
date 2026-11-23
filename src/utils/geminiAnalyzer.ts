@@ -92,7 +92,9 @@ function scoreModel(name: string): number {
 
   // Lite / stable preference
   if (lower.includes('lite')) score += 15;
-  if (lower.includes('latest')) score += 10;
+  if (lower.includes('latest')) score += 12;
+  if (lower.includes('002')) score += 10;
+  if (lower.includes('001')) score += 8;
 
   // Stable over preview/exp
   if (lower.includes('exp') || lower.includes('preview')) score -= 5;
@@ -112,9 +114,10 @@ interface ModelCandidate {
  * Dynamically queries Google AI Studio's ListModels endpoint to get the exact list of
  * available models supported for generateContent with the user's specific API key.
  */
-async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]> {
+async function discoverSupportedModels(apiKey: string, hasPdf: boolean = false): Promise<ModelCandidate[]> {
   const discovered: ModelCandidate[] = [];
-  const versions: Array<'v1beta' | 'v1'> = ['v1beta', 'v1'];
+  // Note: v1 does not support application/pdf inlineData, so only query v1beta if PDF is present
+  const versions: Array<'v1beta' | 'v1'> = hasPdf ? ['v1beta'] : ['v1beta', 'v1'];
 
   for (const ver of versions) {
     try {
@@ -130,6 +133,10 @@ async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]
           const methods = m.supportedGenerationMethods;
           if (Array.isArray(methods) && methods.includes('generateContent')) {
             const cleanName = (m.name || '').replace(/^models\//, '');
+            // Filter out bare gemini-1.5-flash on v1beta which Google AI Studio returns 404 for
+            if (cleanName === 'gemini-1.5-flash' && ver === 'v1beta') {
+              continue;
+            }
             if (cleanName && !discovered.some((d) => d.model === cleanName && d.apiVersion === ver)) {
               discovered.push({ model: cleanName, apiVersion: ver });
             }
@@ -152,14 +159,14 @@ async function discoverSupportedModels(apiKey: string): Promise<ModelCandidate[]
 const FALLBACK_CANDIDATES: ModelCandidate[] = [
   { model: 'gemini-2.0-flash', apiVersion: 'v1beta' },
   { model: 'gemini-2.0-flash-lite', apiVersion: 'v1beta' },
-  { model: 'gemini-2.0-flash-001', apiVersion: 'v1beta' },
-  { model: 'gemini-2.0-flash-exp', apiVersion: 'v1beta' },
   { model: 'gemini-2.5-flash', apiVersion: 'v1beta' },
-  { model: 'gemini-1.5-flash', apiVersion: 'v1' },
-  { model: 'gemini-1.5-flash-8b', apiVersion: 'v1' },
+  { model: 'gemini-1.5-flash-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash-002', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-flash-001', apiVersion: 'v1beta' },
+  { model: 'gemini-2.0-flash-exp', apiVersion: 'v1beta' },
   { model: 'gemini-1.5-flash-8b', apiVersion: 'v1beta' },
-  { model: 'gemini-1.5-flash', apiVersion: 'v1beta' },
-  { model: 'gemini-1.5-pro', apiVersion: 'v1' },
+  { model: 'gemini-1.5-pro-latest', apiVersion: 'v1beta' },
+  { model: 'gemini-1.5-pro-002', apiVersion: 'v1beta' },
   { model: 'gemini-1.5-pro', apiVersion: 'v1beta' },
   { model: 'gemini-2.5-pro', apiVersion: 'v1beta' },
 ];
@@ -464,15 +471,23 @@ Return ONLY a valid JSON object matching this exact schema:
     );
   }
 
+  const hasPdf = parts.some(
+    (p) => p.inlineData && p.inlineData.mimeType === 'application/pdf'
+  );
+
   // 1. Discover dynamically supported models for this user's key
-  let candidates = await discoverSupportedModels(apiKey);
+  let candidates = await discoverSupportedModels(apiKey, hasPdf);
 
   // If dynamic discovery returned nothing (e.g. network or permissions), use comprehensive fallbacks
+  const availableFallbacks = hasPdf
+    ? FALLBACK_CANDIDATES.filter((c) => c.apiVersion === 'v1beta')
+    : FALLBACK_CANDIDATES;
+
   if (candidates.length === 0) {
-    candidates = FALLBACK_CANDIDATES;
+    candidates = availableFallbacks;
   } else {
     // Append any fallback models not already discovered to be maximally resilient
-    for (const fb of FALLBACK_CANDIDATES) {
+    for (const fb of availableFallbacks) {
       if (!candidates.some((c) => c.model === fb.model)) {
         candidates.push(fb);
       }
@@ -520,11 +535,12 @@ Return ONLY a valid JSON object matching this exact schema:
           errMsg = parsed.error?.message || errMsg;
         } catch {}
 
-        // If the model was not found for this apiVersion, try alternate version (v1 <-> v1beta)
+        // If the model was not found for this apiVersion and it's not a PDF, try alternate version
         if (
-          response.status === 404 ||
-          errMsg.includes('not found') ||
-          errMsg.includes('not supported')
+          !hasPdf &&
+          (response.status === 404 ||
+            errMsg.includes('not found') ||
+            errMsg.includes('not supported'))
         ) {
           const altVersion = apiVersion === 'v1beta' ? 'v1' : 'v1beta';
           const altUrl = `https://generativelanguage.googleapis.com/${altVersion}/models/${model}:generateContent?key=${apiKey}`;
@@ -576,6 +592,17 @@ Return ONLY a valid JSON object matching this exact schema:
       );
       // Continue to next candidate
     }
+  }
+
+  const rawErrMsg = lastError?.message || '';
+  if (
+    rawErrMsg.includes('not found') ||
+    rawErrMsg.includes('not supported') ||
+    rawErrMsg.includes('ModelService')
+  ) {
+    throw new Error(
+      'Gemini model service unavailable with this key. Please verify your Gemini API key at https://aistudio.google.com/app/apikey (free keys support gemini-2.0-flash).'
+    );
   }
 
   throw (

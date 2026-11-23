@@ -132,3 +132,225 @@
 .animate-pulse-glow {
   animation: pulseGlow 5s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   LIGHT THEME: Antique Gold (#B9A38B) & Deep Violet (#2C1F33) in 7:3 Ratio
+   70% Antique Gold / Warm Parchment Glass Canvas
+   30% Deep Violet Typography, Jewel Accents & High-Contrast CTAs
+   ========================================================================== */
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background-color: #F8F4EE !important;
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+[data-theme="light"] .font-heading {
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] ::selection {
+  background-color: #2C1F33 !important;
+  color: #FAF5EE !important;
+}
+
+/* Light Theme Scrollbars */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #EDE5D8 !important;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(44, 31, 51, 0.22) !important;
+  border: 1px solid rgba(185, 163, 139, 0.5) !important;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(44, 31, 51, 0.42) !important;
+}
+
+/* Light Theme Root & Background Orbs */
+[data-theme="light"] .theme-root-container {
+  background: linear-gradient(180deg, #FBF8F2 0%, #EFE8DC 50%, #E0D4C2 100%) !important;
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] .theme-orb-primary {
+  background-color: rgba(185, 163, 139, 0.4) !important;
+}
+[data-theme="light"] .theme-orb-secondary {
+  background-color: rgba(214, 197, 178, 0.5) !important;
+}
+[data-theme="light"] .theme-orb-accent {
+  background-color: rgba(163, 140, 114, 0.35) !important;
+}
+
+/* Light Theme Glassmorphism Panels (Frosted Antique Gold) */
+[data-theme="light"] .glass-panel {
+  background: rgba(246, 240, 231, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-color: rgba(185, 163, 139, 0.42) !important;
+  box-shadow: 0 12px 35px -8px rgba(44, 31, 51, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85) !important;
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] .glass-panel-deep {
+  background: rgba(240, 233, 222, 0.95) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-color: rgba(185, 163, 139, 0.5) !important;
+  box-shadow: 0 16px 45px -10px rgba(44, 31, 51, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(250, 246, 240, 0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-color: rgba(185, 163, 139, 0.38) !important;
+  box-shadow: 0 8px 24px -6px rgba(44, 31, 51, 0.07), inset 0 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] .glass-card-hover:hover {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: #2C1F33 !important;
+  box-shadow: 0 16px 40px -10px rgba(44, 31, 51, 0.15), 0 0 25px -5px rgba(185, 163, 139, 0.4) !important;
+}
+
+[data-theme="light"] .glass-inner {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(185, 163, 139, 0.32) !important;
+  color: #2C1F33 !important;
+}
+
+[data-theme="light"] .glass-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(185, 163, 139, 0.45) !important;
+  color: #2C1F33 !important;
+}
+[data-theme="light"] .glass-input:focus {
+  border-color: #2C1F33 !important;
+  box-shadow: 0 0 15px -3px rgba(44, 31, 51, 0.25) !important;
+}
+
+/* Light Theme Header & Footer */
+[data-theme="light"] header.glass-panel {
+  background: rgba(246, 240, 231, 0.88) !important;
+  border-bottom-color: rgba(185, 163, 139, 0.4) !important;
+}
+
+[data-theme="light"] footer {
+  background: rgba(238, 230, 218, 0.9) !important;
+  border-top-color: rgba(185, 163, 139, 0.35) !important;
+  color: rgba(44, 31, 51, 0.72) !important;
+}
+
+/* Light Theme Typography Mapping (Cream -> Deep Violet) */
+[data-theme="light"] [class*="text-[#F4EDE0]"] {
+  color: #2C1F33 !important;
+}
+[data-theme="light"] [class*="text-white"] {
+  color: #2C1F33 !important;
+}
+[data-theme="light"] [class*="text-[#F4EDE0]/8"],
+[data-theme="light"] [class*="text-[#F4EDE0]/7"],
+[data-theme="light"] [class*="text-[#F4EDE0]/9"] {
+  color: rgba(44, 31, 51, 0.85) !important;
+}
+[data-theme="light"] [class*="text-[#F4EDE0]/6"],
+[data-theme="light"] [class*="text-[#F4EDE0]/5"] {
+  color: rgba(44, 31, 51, 0.7) !important;
+}
+[data-theme="light"] [class*="text-[#F4EDE0]/4"],
+[data-theme="light"] [class*="text-[#F4EDE0]/3"] {
+  color: rgba(44, 31, 51, 0.52) !important;
+}
+
+/* Deep Violet Primary Buttons (Active S1..S8, Overview, Sign In, CTAs) */
+[data-theme="light"] [class*="bg-[#F4EDE0]"]:not([class*="bg-[#F4EDE0]/"]) {
+  background-color: #2C1F33 !important;
+  color: #FAF5EE !important;
+  box-shadow: 0 4px 14px -2px rgba(44, 31, 51, 0.3) !important;
+}
+[data-theme="light"] [class*="bg-[#F4EDE0]"]:not([class*="bg-[#F4EDE0]/"]):hover {
+  background-color: #3E2B48 !important;
+  color: #FFFFFF !important;
+}
+[data-theme="light"] [class*="bg-[#F4EDE0]"]:not([class*="bg-[#F4EDE0]/"]) * {
+  color: #FAF5EE !important;
+}
+
+/* Secondary Frosted Buttons (Nav items, action pills) */
+[data-theme="light"] [class*="bg-[#F4EDE0]/"] {
+  background-color: rgba(44, 31, 51, 0.07) !important;
+  border-color: rgba(44, 31, 51, 0.14) !important;
+  color: #2C1F33 !important;
+}
+[data-theme="light"] [class*="hover:bg-[#F4EDE0]/"]:hover {
+  background-color: rgba(44, 31, 51, 0.14) !important;
+  color: #2C1F33 !important;
+}
+
+/* Border Overrides */
+[data-theme="light"] [class*="border-[#F4EDE0]"] {
+  border-color: rgba(185, 163, 139, 0.35) !important;
+}
+
+/* Deep Navy Background Replacement for Cards & Wells */
+[data-theme="light"] [class*="bg-[#14213D]"]:not(header) {
+  background-color: rgba(237, 229, 217, 0.75) !important;
+}
+[data-theme="light"] [class*="bg-[#090e1a]"],
+[data-theme="light"] [class*="bg-[#0b1324]"],
+[data-theme="light"] [class*="bg-[#080d19]"] {
+  background-color: #F8F4EE !important;
+}
+[data-theme="light"] [class*="bg-[#0d1527]"] {
+  background-color: #EDE4D4 !important;
+}
+
+/* Light Theme Modal Backdrop */
+[data-theme="light"] .fixed.inset-0.bg-black\/80,
+[data-theme="light"] [class*="bg-black/80"] {
+  background-color: rgba(44, 31, 51, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Form Controls & Inputs */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  color: #2C1F33 !important;
+  border-color: rgba(185, 163, 139, 0.45) !important;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: rgba(44, 31, 51, 0.45) !important;
+}
+
+/* Status colors optimized for high contrast on light antique gold */
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-300 {
+  color: #0d7a46 !important;
+}
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-rose-300 {
+  color: #b91c1c !important;
+}
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-300 {
+  color: #92400e !important;
+}
+[data-theme="light"] .text-cyan-400,
+[data-theme="light"] .text-cyan-300 {
+  color: #0e7490 !important;
+}
