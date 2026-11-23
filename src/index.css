@@ -135,8 +135,8 @@
 
 /* ==========================================================================
    LIGHT THEME: Antique Gold (#B9A38B) & Deep Violet (#2C1F33) in 7:3 Ratio
-   70% Rich Antique Gold Surfaces, Frosted Glass Panels & Warm Canvas
-   30% Deep Violet (#2C1F33) Typography, High-Contrast CTAs & Jewel Accents
+   70% Rich Antique Gold Glassmorphism, Fading Ambient Orbs & Translucent Panes
+   30% Deep Violet (#2C1F33) Typography, Jewel Accents & High-Contrast CTAs
    ========================================================================== */
 
 [data-theme="light"] {
@@ -145,7 +145,7 @@
 }
 
 [data-theme="light"] body {
-  background-color: #EFE6D8 !important;
+  background-color: #EFE4D3 !important;
   color: #2C1F33 !important;
 }
 
@@ -176,81 +176,136 @@
   background: rgba(44, 31, 51, 0.5) !important;
 }
 
-/* 70% Antique Gold: Warm Luminous Golden Canvas & Glow Orbs */
+/* 70% Antique Gold: Luminous Golden Canvas with Rich Diagonal Fading Gradient */
 [data-theme="light"] .theme-root-container {
-  background: linear-gradient(180deg, #EFE6D8 0%, #E2D4BF 45%, #D2BEA3 100%) !important;
+  background: linear-gradient(160deg, #FAF4EB 0%, #EDE1D0 30%, #DFCEB8 65%, #CBB397 100%) !important;
   color: #2C1F33 !important;
 }
 
+/* Fading Ambient Glow Orbs: Soft Antique Gold & Deep Violet Jewel Light Pools */
 [data-theme="light"] .theme-orb-primary {
-  background-color: rgba(185, 163, 139, 0.55) !important;
+  background: radial-gradient(circle, rgba(185, 163, 139, 0.75) 0%, rgba(185, 163, 139, 0.25) 55%, transparent 75%) !important;
+  filter: blur(120px) !important;
 }
 [data-theme="light"] .theme-orb-secondary {
-  background-color: rgba(205, 185, 160, 0.6) !important;
+  background: radial-gradient(circle, rgba(44, 31, 51, 0.42) 0%, rgba(44, 31, 51, 0.15) 55%, transparent 75%) !important;
+  filter: blur(130px) !important;
 }
 [data-theme="light"] .theme-orb-accent {
-  background-color: rgba(165, 142, 115, 0.45) !important;
+  background: radial-gradient(circle, rgba(214, 186, 150, 0.7) 0%, rgba(214, 186, 150, 0.2) 55%, transparent 75%) !important;
+  filter: blur(120px) !important;
 }
 
-/* 70% Antique Gold: Frosted Glass Panels */
+/* Translucent Glassmorphism Panels with Fading Gradient Surface */
 [data-theme="light"] .glass-panel {
-  background: rgba(228, 215, 196, 0.85) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1.5px solid rgba(185, 163, 139, 0.65) !important;
-  box-shadow: 0 14px 40px -8px rgba(44, 31, 51, 0.16), inset 0 1px 1px 0 rgba(255, 255, 255, 0.8) !important;
+  background: linear-gradient(135deg, rgba(252, 248, 241, 0.76) 0%, rgba(236, 223, 205, 0.62) 100%) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1.5px solid rgba(185, 163, 139, 0.55) !important;
+  border-right: 1.5px solid rgba(185, 163, 139, 0.45) !important;
+  box-shadow: 0 16px 45px -10px rgba(44, 31, 51, 0.15), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 1px 0 rgba(185, 163, 139, 0.25) !important;
   color: #2C1F33 !important;
 }
 
+/* Deep Frosted Glass Panels for Modals & Drawers */
 [data-theme="light"] .glass-panel-deep {
-  background: rgba(220, 205, 185, 0.94) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border: 1.5px solid rgba(185, 163, 139, 0.8) !important;
-  box-shadow: 0 18px 50px -10px rgba(44, 31, 51, 0.22), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85) !important;
+  background: linear-gradient(145deg, rgba(252, 248, 241, 0.92) 0%, rgba(234, 220, 201, 0.85) 100%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1.5px solid rgba(185, 163, 139, 0.65) !important;
+  box-shadow: 0 24px 60px -12px rgba(44, 31, 51, 0.25), inset 0 2px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
   color: #2C1F33 !important;
 }
 
+/* Translucent Glassmorphic Cards with Specular Rim Highlight */
 [data-theme="light"] .glass-card {
-  background: rgba(236, 226, 211, 0.86) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border: 1.5px solid rgba(185, 163, 139, 0.55) !important;
-  box-shadow: 0 8px 28px -6px rgba(44, 31, 51, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.7) !important;
+  background: linear-gradient(135deg, rgba(255, 253, 249, 0.72) 0%, rgba(240, 227, 211, 0.5) 100%) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1.5px solid rgba(185, 163, 139, 0.45) !important;
+  box-shadow: 0 10px 30px -8px rgba(44, 31, 51, 0.1), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
   color: #2C1F33 !important;
 }
 
+/* Glass Card Interactive Lift & Specular Bloom */
 [data-theme="light"] .glass-card-hover:hover {
-  background: rgba(246, 239, 228, 0.96) !important;
-  border-color: #2C1F33 !important;
-  box-shadow: 0 16px 45px -8px rgba(44, 31, 51, 0.22), 0 0 25px -4px rgba(185, 163, 139, 0.6) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 240, 229, 0.75) 100%) !important;
+  border-color: rgba(44, 31, 51, 0.4) !important;
+  box-shadow: 0 20px 48px -10px rgba(44, 31, 51, 0.22), 0 0 28px -4px rgba(185, 163, 139, 0.55), inset 0 1.5px 1px 0 #FFFFFF !important;
+  transform: translateY(-3px) scale(1.008) !important;
 }
 
+/* Glass Inner Wells (Sub-metrics & detail containers) */
 [data-theme="light"] .glass-inner {
-  background: rgba(218, 203, 183, 0.65) !important;
-  border: 1px solid rgba(185, 163, 139, 0.5) !important;
+  background: rgba(224, 210, 191, 0.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(185, 163, 139, 0.4) !important;
+  box-shadow: inset 0 2px 4px 0 rgba(44, 31, 51, 0.08) !important;
   color: #2C1F33 !important;
 }
 
+/* Frosted Glass Inputs */
 [data-theme="light"] .glass-input {
-  background: rgba(255, 253, 250, 0.95) !important;
-  border: 1.5px solid rgba(185, 163, 139, 0.75) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1.5px solid rgba(185, 163, 139, 0.6) !important;
+  box-shadow: inset 0 1px 2px 0 rgba(44, 31, 51, 0.05) !important;
   color: #2C1F33 !important;
 }
 [data-theme="light"] .glass-input:focus {
   border-color: #2C1F33 !important;
-  box-shadow: 0 0 16px -2px rgba(44, 31, 51, 0.3) !important;
+  box-shadow: 0 0 18px -2px rgba(44, 31, 51, 0.28), inset 0 1px 2px 0 rgba(44, 31, 51, 0.05) !important;
 }
 
-/* Header & Footer in Antique Gold Glass */
+/* Fading Glassmorphic Hero & Card Gradients */
+[data-theme="light"] .bg-gradient-to-br {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 252, 247, 0.82) 0%,
+    rgba(240, 226, 208, 0.6) 45%,
+    rgba(224, 205, 181, 0.72) 100%
+  ) !important;
+}
+
+/* Fading Progress Bar: Antique Gold -> Deep Violet */
+[data-theme="light"] .bg-gradient-to-r {
+  background-image: linear-gradient(
+    90deg,
+    rgba(185, 163, 139, 0.75) 0%,
+    rgba(110, 78, 126, 0.85) 55%,
+    #2C1F33 100%
+  ) !important;
+}
+
+/* Internal Card Ambient Glow Circles */
+[data-theme="light"] div[class*="blur-[140px]"],
+[data-theme="light"] div[class*="blur-2xl"] {
+  background: radial-gradient(circle, rgba(44, 31, 51, 0.18) 0%, transparent 70%) !important;
+}
+[data-theme="light"] div[class*="blur-[120px]"] {
+  background: radial-gradient(circle, rgba(185, 163, 139, 0.5) 0%, transparent 70%) !important;
+}
+
+/* Header Navbar: Frosted Glass Sheen */
 [data-theme="light"] header.glass-panel {
-  background: rgba(228, 215, 196, 0.92) !important;
-  border-bottom: 1.5px solid rgba(185, 163, 139, 0.6) !important;
+  background: linear-gradient(180deg, rgba(252, 248, 242, 0.85) 0%, rgba(237, 225, 208, 0.72) 100%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 8px 30px -6px rgba(44, 31, 51, 0.1), inset 0 -1px 0 0 rgba(185, 163, 139, 0.3) !important;
 }
 
+/* Footer: Warm Glass Sheen */
 [data-theme="light"] footer {
-  background: rgba(216, 202, 182, 0.94) !important;
-  border-top: 1.5px solid rgba(185, 163, 139, 0.55) !important;
+  background: linear-gradient(180deg, rgba(232, 219, 201, 0.85) 0%, rgba(220, 204, 183, 0.92) 100%) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-top: 1px solid rgba(185, 163, 139, 0.45) !important;
   color: #2C1F33 !important;
 }
 
@@ -315,7 +370,7 @@
 [data-theme="light"] .bg-\[\#F4EDE0\]\/10,
 [data-theme="light"] .bg-\[\#F4EDE0\]\/8,
 [data-theme="light"] .bg-\[\#F4EDE0\]\/5 {
-  background-color: rgba(44, 31, 51, 0.09) !important;
+  background-color: rgba(44, 31, 51, 0.08) !important;
   border-color: rgba(44, 31, 51, 0.22) !important;
   color: #2C1F33 !important;
 }
@@ -324,11 +379,11 @@
 [data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/20:hover,
 [data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/16:hover,
 [data-theme="light"] .hover\:bg-\[\#F4EDE0\]\/10:hover {
-  background-color: rgba(44, 31, 51, 0.18) !important;
+  background-color: rgba(44, 31, 51, 0.16) !important;
   color: #2C1F33 !important;
 }
 
-/* Borders in Antique Gold */
+/* Borders in Antique Gold & Specular Highlight */
 [data-theme="light"] .border-\[\#F4EDE0\],
 [data-theme="light"] .border-\[\#F4EDE0\]\/40,
 [data-theme="light"] .border-\[\#F4EDE0\]\/35,
@@ -339,38 +394,38 @@
 [data-theme="light"] .border-\[\#F4EDE0\]\/15,
 [data-theme="light"] .border-\[\#F4EDE0\]\/12,
 [data-theme="light"] .border-\[\#F4EDE0\]\/10 {
-  border-color: rgba(185, 163, 139, 0.55) !important;
+  border-color: rgba(185, 163, 139, 0.45) !important;
 }
 
-/* Replace Dark Navy backgrounds with warm Antique Gold tones */
+/* Replace Dark Navy backgrounds with translucent warm Antique Gold */
 [data-theme="light"] .bg-\[\#14213D\],
 [data-theme="light"] .bg-\[\#14213D\]\/90,
 [data-theme="light"] .bg-\[\#14213D\]\/80,
 [data-theme="light"] .bg-\[\#14213D\]\/65,
 [data-theme="light"] .bg-\[\#14213D\]\/50 {
-  background-color: rgba(212, 197, 178, 0.75) !important;
+  background-color: rgba(220, 206, 187, 0.6) !important;
 }
 [data-theme="light"] .bg-\[\#090e1a\],
 [data-theme="light"] .bg-\[\#0b1324\],
 [data-theme="light"] .bg-\[\#080d19\],
 [data-theme="light"] .bg-\[\#0d1527\] {
-  background-color: #EFE6D8 !important;
+  background-color: rgba(228, 214, 195, 0.55) !important;
 }
 
-/* Clear Dark Navy Gradients in Hero Cards */
-[data-theme="light"] .bg-gradient-to-br,
-[data-theme="light"] .bg-gradient-to-b {
-  background-image: none !important;
-}
-[data-theme="light"] .theme-root-container {
-  background: linear-gradient(180deg, #EFE6D8 0%, #E2D4BF 45%, #D2BEA3 100%) !important;
+/* Metric display wells inside cards */
+[data-theme="light"] .bg-\[\#090e1a\]\/70,
+[data-theme="light"] .bg-\[\#090e1a\]\/80 {
+  background-color: rgba(224, 210, 191, 0.45) !important;
+  backdrop-filter: blur(10px) !important;
+  border-color: rgba(185, 163, 139, 0.35) !important;
+  box-shadow: inset 0 2px 4px 0 rgba(44, 31, 51, 0.08) !important;
 }
 
 /* Light Theme Modal Backdrop */
 [data-theme="light"] .fixed.inset-0.bg-black\/80,
 [data-theme="light"] [class*="bg-black/80"] {
   background-color: rgba(44, 31, 51, 0.45) !important;
-  backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
 /* Form Controls & Inputs */
