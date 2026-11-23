@@ -194,7 +194,7 @@ export const Navbar: React.FC<Props> = ({
             onClick={onToggleTheme}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer shadow-xs hover:scale-[1.03] active:scale-[0.97] ${
               theme === 'light'
-                ? 'bg-[#2C1F33] text-[#FAF5EE] border border-[#2C1F33] shadow-md shadow-[#2C1F33]/25 hover:bg-[#422F4C]'
+                ? 'theme-toggle-light-btn bg-[#FAF5EE] text-[#2C1F33] border border-[#B9A38B]/60 shadow-md shadow-[#2C1F33]/10 hover:bg-white hover:border-[#2C1F33]/40'
                 : 'bg-[#F4EDE0]/12 hover:bg-[#F4EDE0]/22 text-[#F4EDE0] border border-[#F4EDE0]/25'
             }`}
             title={
@@ -205,8 +205,8 @@ export const Navbar: React.FC<Props> = ({
           >
             {theme === 'light' ? (
               <>
-                <Moon className="w-3.5 h-3.5 text-[#FAF5EE]" />
-                <span className="hidden sm:inline font-bold text-[#FAF5EE]">Dark Mode</span>
+                <Moon className="w-3.5 h-3.5 text-[#2C1F33]" />
+                <span className="hidden sm:inline font-bold text-[#2C1F33]">Dark Mode</span>
               </>
             ) : (
               <>
